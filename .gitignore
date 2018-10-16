@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+src/*.o
+src/*.so
+src/*.dll
+src/BDFM.o
+src/RcppExports.o
+src/BDFM.dll
+*.o
+plots.pdf
