@@ -1,0 +1,18 @@
+Package: BDFM
+Type: Package
+Title: Bayesain and Maximum Likelihood Estimation of Factor Models
+Version: 0.0.1
+Date: 2018-09-10
+Author: Seth Leonard
+Maintainer: Seth Leonard
+      <seth@srlanalytics.com>
+Description: Estimates dynamic factors models. Bayesian estimation is by simulation while ML estimation follows Watson and Engle 1983.
+Suggests: testthat
+License: GPL-2
+Imports:
+  Rcpp (>= 0.12.13),
+  RcppArmadillo (>= 0.7.900.2.0),
+  MASS (>= 3.1),
+  Matrix (>= 1.2)
+LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 6.1.0
