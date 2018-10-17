@@ -82,11 +82,11 @@ scale_int      <- attr(dY,"scaled:center") #save intercept
 
 # ---------- Estimate the Model -----------------
 fc  <- 1
-Est <- BDFM(dY, m = 2, p = 2, lam_B = 50, FC = fc, ITC = F)
+Est <- BDFM(dY, factors = 2, lags = 2, lam_B = 50, forecast = fc, intercept = F)
 dates <- c(dates,seq.Date(from = tail(dates,1), length.out = fc+1, by = "m")[-1])
 
 #Look at fitted values
 plot(dates,c(dY[,'INDPRO'], rep(NA,fc)), type = "l", col = "steelblue", lwd = 2)
-lines(dates,Est$Ys[,1], col = "red", lwd = 2, lty = 2)
+lines(dates,Est$predicted[,1], col = "red", lwd = 2, lty = 2)
 
 

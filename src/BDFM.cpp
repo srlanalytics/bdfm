@@ -742,7 +742,8 @@ List EstDFM(      arma::mat B,     // transition matrix
                   arma::vec R,     // covariance matrix of shocks to observables; Y are observations
                   double nu_r,     //prior degrees of freedom for elements of R used to normalize
                   arma::mat Y,     // data
-                  arma::uword reps){ //repetitions
+                  arma::uword reps, //repetitions
+                  arma::uword burn){ //burn in periods
 
   // preliminaries
 
@@ -751,7 +752,6 @@ List EstDFM(      arma::mat B,     // transition matrix
   uword T  = Y.n_rows - p;
   uword k  = H.n_rows;
   uword sA    = m*p; // size A matrix
-  uword burn  = 500; // reps for burn loop
   mat Lam_B   = lam_B*eye<mat>(sA,sA);
   mat Lam_H   = lam_H*eye<mat>(m,m);
 

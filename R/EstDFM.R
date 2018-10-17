@@ -52,10 +52,42 @@ Y_sub <- function(Y) {
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @useDynLib BDFM
-BDFM <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 1, Hp = NULL, lam_H = 1, nu_q = NULL, nu_r = NULL, ID = "PC_full", ITC = T, reps = 1000) {
+BDFM <- function(Y, factors = 1, lags = 2, forecast = 0, transition_prior = NULL, lam_B = 1, loadings_prior = NULL, lam_H = 1, nu_q = NULL, nu_r = NULL, ID = "PC_full", intercept = T, reps = 1000, burn = 500) {
 
+  # ---- Short names for inputs ---------------
+  m <- factors; p <- lags; FC <- forecast; Bp <- transition_prior; Hp <- loadings_prior; ITC <- intercept;
+  
+  # --------- Save any time series attributes of input -----------
+  class_Y <- class(Y)
+  if(any(c("ts", "xts", "zoo")%in%class_Y)){
+    Y.tsa      <- attributes(Y) #store time series attributes
+    Y.time     <- time(Y)
+    base_class <- "time_series"
+    colnames_Y <- colnames(Y)
+  }else if(any(c("data.table", "data.frame", "tbl", "tbl_ts", "tbl_time")%in%class_Y)){
+    base_class <- "table"
+    ind <- c(grep("date", colnames(Y), ignore.case = T), grep("time", colnames(Y), ignore.case = T))
+    if(length(ind)>1){
+      stop("More than one column of input data is identified as date or time")
+    }else if(length(ind)==1){
+      if(length(unique(Y[,ind])) != length(unique(Y[,ind]))){
+        stop("Dates are repeated in input data. Input data must be in tabular format with dates in rows. Try using the package tsbox to format your input data.")
+      }else{
+      Y.time     <- Y[,ind]
+      Y          <- Y[,-ind]
+      colnames_Y <- colnames(Y)
+      }
+    }
+  }else{
+    colnames_Y <- colnames(Y)
+  }
+  #tempting:
+  #else if(class_Y = "matrix"){
+  #print("Data is already in matrix format. You're a genius!")
+  #}
+  
   # ----------- Preliminaries -----------------
-
+  Y <- as.matrix(Y)
   k <- ncol(Y)
   r <- nrow(Y)
   if (ITC) {
@@ -85,7 +117,7 @@ BDFM <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 1, Hp = NULL, lam_H = 1, nu
     Y <- cbind(PC$components, Y)
     k <- k + m
     if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try a different identification method.")
+      stop("Every period contains missing data. Try a setting ID to PC_sub.")
     }
   }
 
@@ -118,7 +150,7 @@ BDFM <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 1, Hp = NULL, lam_H = 1, nu
     r   <- r + FC
   }
 
-  Parms <- EstDFM(B = B_in, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, reps = reps)
+  Parms <- EstDFM(B = B_in, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, reps = reps, burn = burn)
 
   if (ID %in% c("PC_sub", "PC_full")) {
     B <- Parms$B
@@ -127,6 +159,34 @@ BDFM <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 1, Hp = NULL, lam_H = 1, nu
     R <- diag(c(Parms$R[-(1:m)]), k, k)
 
     Est <- DSmooth(B, q, H, R, Y[, -(1:m)])
+    
+    if(base_class == "time_series"){
+      if("ts"%in%class_Y){
+        predicted <- ts(Est$Ys + matrix(1,r,1)%x%t(itc), start = Y.tsa$tsp[1], frequency = Y.tsa$tsp[3])
+        factors   <- ts(Est$Z[,1:m], start = Y.tsa$tsp[1], frequency = Y.tsa$tsp[3])
+      }else if("xts"%in%class_Y){
+        Y.time    <- c(Y.time, seq(from = tail(Y.time,1), by = median(diff(Y.time)), length.out = FC+1)[-1])
+        predicted <- xts(Est$Ys + matrix(1,r,1)%x%t(itc), order.by = Y.time)
+        factors   <- xts(Est$Z[,1:m], order.by = Y.time)
+      }else if("zoo"%in%class_Y){
+        Y.time    <- c(Y.time, seq(from = tail(Y.time,1), by = median(diff(Y.time)), length.out = FC+1)[-1])
+        predicted <- xts(Est$Ys + matrix(1,r,1)%x%t(itc), order.by = Y.time)
+        factors   <- xts(Est$Z[,1:m], order.by = Y.time)
+      }
+      colnames(predicted) <- colnames_Y
+    }else if(base_class=="table"){
+      if(FC>0){
+        Y.time    <- c(Y.time, seq(from = tail(Y.time,1), by = median(diff(Y.time)), length.out = FC+1)[-1])
+      }
+      predicted <- cbind.data.frame(Y.time, Est$Ys + matrix(1, r, 1) %x% t(itc))
+      colnames(predicted) <- c("date", colnames_Y)
+      factors   <- cbind.data.frame(Y.time, Est$Z[,1:m])
+      colnames(factors)[1] <- "date"
+    }else{
+      predicted <- Est$Ys + matrix(1, r, 1) %x% t(itc)
+      colnames(predicted) <- colnames_Y
+      factors   <- Est$Z[,1:m]
+    }
 
     Out <- list(
       B = B,
@@ -134,8 +194,8 @@ BDFM <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 1, Hp = NULL, lam_H = 1, nu
       H = H,
       R = R,
       itc = itc,
-      Ys = Est$Ys + matrix(1, r, 1) %x% t(itc),
-      Z = Est$Z,
+      predicted = predicted,
+      factors = factors,
       Qstore = Parms$Qstore,
       Bstore = Parms$Bstore,
       Rstore = Parms$Rstore[-(1:m), ],
@@ -148,14 +208,42 @@ BDFM <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 1, Hp = NULL, lam_H = 1, nu
     R <- diag(c(Parms$R), k, k)
 
     Est <- DSmooth(B, q, H, R, Y)
+    
+    if(base_class == "time_series"){
+      if("ts"%in%class_Y){
+        predicted <- ts(Est$Ys + matrix(1,r,1)%x%t(itc), start = Y.tsa$tsp[1], frequency = Y.tsa$tsp[3])
+        factors   <- ts(Est$Z[,1:m], start = Y.tsa$tsp[1], frequency = Y.tsa$tsp[3])
+      }else if("xts"%in%class_Y){
+        Y.time    <- c(Y.time, seq(from = tail(Y.time,1), by = median(diff(Y.time)), length.out = FC+1)[-1])
+        predicted <- xts(Est$Ys + matrix(1,r,1)%x%t(itc), order.by = Y.time)
+        factors   <- xts(Est$Z[,1:m], order.by = Y.time)
+      }else if("zoo"%in%class_Y){
+        Y.time    <- c(Y.time, seq(from = tail(Y.time,1), by = median(diff(Y.time)), length.out = FC+1)[-1])
+        predicted <- xts(Est$Ys + matrix(1,r,1)%x%t(itc), order.by = Y.time)
+        factors   <- xts(Est$Z[,1:m], order.by = Y.time)
+      }
+      colnames(predicted) <- colnames_Y
+    }else if(base_class=="table"){
+      if(FC>0){
+        Y.time    <- c(Y.time, seq(from = tail(Y.time,1), by = median(diff(Y.time)), length.out = FC+1)[-1])
+      }
+      predicted <- cbind.data.frame(Y.time, Est$Ys + matrix(1, r, 1) %x% t(itc))
+      colnames(predicted) <- c("date", colnames_Y)
+      factors   <- cbind.data.frame(Y.time, Est$Z[,1:m])
+      colnames(factors)[1] <- "date"
+    }else{
+      predicted <- Est$Ys + matrix(1, r, 1) %x% t(itc)
+      colnames(predicted) <- colnames_Y
+      factors   <- Est$Z[,1:m]
+    }
 
     Out <- list(
       B = B,
       q = q,
       H = H,
       R = R,
-      Ys = Est$Ys + matrix(1, r, 1) %x% t(itc),
-      Z = Est$Z,
+      predicted = predicted,
+      factors = factors,
       Qstore = Parms$Qstore, # lets us look at full distribution
       Bstore = Parms$Bstore,
       Rstore = Parms$Rstore,
@@ -167,7 +255,9 @@ BDFM <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 1, Hp = NULL, lam_H = 1, nu
 
 
 #' @export
-mlDFM <- function(Y, m, p, tol = 0.01, Loud = FALSE) {
+mlDFM <- function(Y, factors = 1, lags = 2, tol = 0.01, Loud = FALSE) {
+  m <- factors
+  p <- lags
   Y <- as.matrix(Y)
   r <- nrow(Y)
   k <- ncol(Y)
@@ -235,20 +325,41 @@ mlDFM <- function(Y, m, p, tol = 0.01, Loud = FALSE) {
   Smth <- Ksmoother(A, Q, HJ, R, Ydm)
 
   Ys <- Smth$Ys + matrix(1, r, 1) %x% t(itc)
-  Yf <- Smth$Yf + matrix(1, r, 1) %x% t(itc)
-  Z <- Smth$Z
+  X  <- Smth$Z[,1:m]
+  
+  B   <- A[1:m,1:(m*p)]
 
   return(list(
     Ys = Ys,
-    Yf = Yf,
     Lik = Smth$Lik,
-    Z = Z,
-    itc = itc,
-    A = A,
+    X = X,
+    B = B,
     Q = Q,
-    HJ = HJ,
+    H = H,
     R = R,
+    A = A,
+    HJ = HJ,
+    itc = itc,
     K = Smth$Kstr,
     PE = Smth$PEstr
   ))
 }
+#' 
+#' # methods
+#' #' @export
+#' #' @method predict bdfm
+#' predict.bdfm <- function(x) {
+#'   x$value
+#' }
+#' 
+#' #' @export
+#' #' @method print bdfm
+#' print.bdfm <- function(x) {
+#'   print("a bdfm model: short description")
+#' }
+#' 
+#' #' @export
+#' #' @method summary bdfm
+#' summary.bdfm <- function(x) {
+#'   print("a bdfm model: summary description")
+#' }
