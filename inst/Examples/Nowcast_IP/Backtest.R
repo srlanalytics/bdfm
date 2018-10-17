@@ -104,8 +104,8 @@ scale_var      <- attr(tY,"scaled:scale") #save variance
 scale_int      <- attr(tY,"scaled:center") #save intercept
 
 # ---------- Estimate the Model -----------------
-Est <- BDFM(tY, m = 2, p = 2, lam_B = 50, ITC = F)
-y   <- scale_var[1]*Est$Ys[,1]/100 + scale_int[1] #get results and re-scale them
+Est <- BDFM(tY, factors = 2, lags = 2, lam_B = 50, intercept = F)
+y   <- scale_var[1]*Est$predicted[,1]/100 + scale_int[1] #get results and re-scale them
 names(y) <- tDates
 predictions <- tail(y,2)
 print(test_date)

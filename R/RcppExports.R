@@ -49,8 +49,8 @@ FSimUF <- function(B, q, H, R, Y) {
     .Call('_BDFM_FSimUF', PACKAGE = 'BDFM', B, q, H, R, Y)
 }
 
-EstDFM <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps) {
-    .Call('_BDFM_EstDFM', PACKAGE = 'BDFM', B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps)
+EstDFM <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn) {
+    .Call('_BDFM_EstDFM', PACKAGE = 'BDFM', B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn)
 }
 
 Ksmoother <- function(A, Q, HJ, R, Y) {

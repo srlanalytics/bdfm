@@ -170,8 +170,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // EstDFM
-List EstDFM(arma::mat B, arma::mat Bp, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, double nu_r, arma::mat Y, arma::uword reps);
-RcppExport SEXP _BDFM_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP repsSEXP) {
+List EstDFM(arma::mat B, arma::mat Bp, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, double nu_r, arma::mat Y, arma::uword reps, arma::uword burn);
+RcppExport SEXP _BDFM_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP repsSEXP, SEXP burnSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -187,7 +187,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type nu_r(nu_rSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type reps(repsSEXP);
-    rcpp_result_gen = Rcpp::wrap(EstDFM(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps));
+    Rcpp::traits::input_parameter< arma::uword >::type burn(burnSEXP);
+    rcpp_result_gen = Rcpp::wrap(EstDFM(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -254,7 +255,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BDFM_DSmooth", (DL_FUNC) &_BDFM_DSmooth, 5},
     {"_BDFM_DSUF", (DL_FUNC) &_BDFM_DSUF, 5},
     {"_BDFM_FSimUF", (DL_FUNC) &_BDFM_FSimUF, 5},
-    {"_BDFM_EstDFM", (DL_FUNC) &_BDFM_EstDFM, 12},
+    {"_BDFM_EstDFM", (DL_FUNC) &_BDFM_EstDFM, 13},
     {"_BDFM_Ksmoother", (DL_FUNC) &_BDFM_Ksmoother, 5},
     {"_BDFM_KestExact", (DL_FUNC) &_BDFM_KestExact, 8},
     {"_BDFM_KSeas", (DL_FUNC) &_BDFM_KSeas, 6},
