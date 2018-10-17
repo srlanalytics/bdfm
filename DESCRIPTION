@@ -8,7 +8,7 @@ Maintainer: Seth Leonard
       <seth@srlanalytics.com>
 Description: Estimates dynamic factors models. Bayesian estimation is by simulation while ML estimation follows Watson and Engle 1983.
 Suggests: testthat
-License: GPL-2
+License: MIT + file LICENSE
 Imports:
   Rcpp (>= 0.12.13),
   RcppArmadillo (>= 0.7.900.2.0),
