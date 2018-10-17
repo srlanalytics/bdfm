@@ -18,7 +18,7 @@ Estimate a model with two factors and two lags in the transition equation
 library(BDFM)
 Est <- BDFM(Y = Data, m = 2, p = 2)
 ```
-Input data is any data type that can be coverted by ```r as.matrix() ``` and should index time in rows and series in columns.
+Input data is any data type that can be coverted by ```as.matrix() ``` and should index time in rows and series in columns.
 
 Quick time series plot estimated factors
 ```r
