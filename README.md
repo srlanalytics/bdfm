@@ -26,7 +26,7 @@ ts.plot(Est$X)
 ```
 Quick time series plot of fitted values (including forecasts and nowcasts) for first series in input data
 ```r
-ts.plot(Est$Y[,1])
+ts.plot(Est$Ys[,1])
 ```
 
 ## Full Input
