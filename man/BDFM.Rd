@@ -4,13 +4,17 @@
 \alias{BDFM}
 \title{Estimate uniform frequency dynamic factor model}
 \usage{
-BDFM(Y, m, p, Bp = NULL, lam_B = 1, Hp = NULL, lam_H = 1,
-  nu_q = 1, nu_r = 1, ID = "PC_full", ITC = T, reps = 1000)
+BDFM(Y, m, p, FC = 0, Bp = NULL, lam_B = 1, Hp = NULL, lam_H = 1,
+  nu_q = NULL, nu_r = NULL, ID = "PC_full", ITC = T, reps = 1000)
 }
 \arguments{
 \item{Y}{Data in matrix format with time in rows}
 
 \item{m}{number of factors m}
+
+\item{p}{number of lags in transition equation}
+
+\item{FC}{number of periods ahead to forecast}
 
 \item{lam_B}{prior tightness on B (Bp, the prior for B in the tranistion eq. is built in as zero)}
 
