@@ -4,7 +4,6 @@
 # This example includes a few possiblities for predetermined variables.
 # It should be simple to include others following the same format.
 
-#' @export
 DayOfWeek <- function(Days, dates) {
   # day_of_week <- seq.Date(from = as.Date(Begin), to = as.Date(End), by = "day")
   day_of_week <- weekdays(dates)
@@ -15,7 +14,15 @@ DayOfWeek <- function(Days, dates) {
   return(day_dummy)
 }
 
+#' Seasonal Factors at Daily Frequency
+#' 
+#' Generate predetermined seasonal factors at daily frequency
+#' 
+#' @param dates dates that factors will be generated for (date vector)
+#' @param predetermined seasonal adjustment factors to be generated, for example c('June', 'July')
 #' @export
+#' @importFrom Rcpp evalCpp
+#' @useDynLib BDFM
 Predetermined.d <- function(dates, predetermined) {
   mn <- length(predetermined)
   nn <- matrix(0, length(dates), mn)
@@ -475,7 +482,14 @@ Predetermined.d <- function(dates, predetermined) {
   return(nn)
 }
 
+#' Seasonal Factors at Monthly Frequency
+#' 
+#' Generate predetermined seasonal factors at monthly frequency
+#' 
+#' @param dates dates that factors will be generated for (date vector)
+#' @param predetermined seasonal adjustment factors to be generated, for example c('June', 'July')
 #' @export
+#' @useDynLib BDFM
 Predetermined.m <- function(dates, predetermined) {
   mn <- length(predetermined)
   N <- matrix(0, length(dates), mn)
@@ -620,11 +634,13 @@ Predetermined.m <- function(dates, predetermined) {
 #'
 #' @param y    data
 #' @param N    matrix of predetermined factors
-#' @param p    lags in transition equation
+#' @param lags    lags in transition equation
 #' @param tol  tolerance for convergence of likelihood function (*100)
 #' @param Loud T/F whether to output convergence of iterations
 #' @export
-SeasAdj_WE <- function(y, N, p = 1, tol = 0.01, Loud = FALSE) {
+#' @useDynLib BDFM
+SeasAdj_WE <- function(y, N, lags = 1, tol = 0.01, Loud = FALSE) {
+  p <- lags #shorthand notation
   y <- as.matrix(y) # in case data was entered as a data frame or table
   r <- nrow(y) # number of observations (rows)
   m <- ncol(N) # number of seasonal factors (columns of N)
