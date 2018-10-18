@@ -740,7 +740,7 @@ List EstDFM(      arma::mat B,     // transition matrix
                   arma::mat Hp,    //prior for H
                   double lam_H,    // prior tightness on obs. equation
                   arma::vec R,     // covariance matrix of shocks to observables; Y are observations
-                  double nu_r,     //prior degrees of freedom for elements of R used to normalize
+                  arma::vec nu_r,     //prior degrees of freedom for elements of R used to normalize
                   arma::mat Y,     // data
                   arma::uword reps, //repetitions
                   arma::uword burn){ //burn in periods
@@ -758,7 +758,6 @@ List EstDFM(      arma::mat B,     // transition matrix
   // ----- Priors -------
   //mat Bp(m,sA, fill::zeros);  //prior for B
   //mat Hp(k,m,fill::zeros); //prior for M and H (treated as the same parameters)
-  double nu_p = lam_H; // prior "deg. of freedom" for variance draws not assigned in input
 
   // Initialize variables
   mat v_1, V_1, mu, Mu, Beta, scale, xx, yy, Zd, Zs, Zsim, Yd, Ys, Rmat;
@@ -825,15 +824,10 @@ List EstDFM(      arma::mat B,     // transition matrix
       V_1   = inv_sympd(V_1);
       mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
       scl   = as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior variance is zero... a little odd but it works
-      if(j==0){
-        R(j)  = invchisq(nu_r+yy.n_elem,scl); //Draw for r
-      }else{
-        R(j)  = invchisq(nu_p+yy.n_elem,scl); //Draw for r
-      }
+      R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
       Beta  = mvrnrm(1, mu, V_1*R(j));
       Ht.row(j) = trans(Beta.col(0));
       //H.row(j) = trans(Beta.col(0));
-      
     }
 
     //Rotate and scale the factors to fit our normalization for H
@@ -850,7 +844,7 @@ List EstDFM(      arma::mat B,     // transition matrix
       V_1   = inv_sympd(V_1);
       mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
       scl   = as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior variance is zero... a little odd but it works
-      R(j)  = invchisq(nu_p+yy.n_elem,scl); //Draw for r
+      R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
       Beta  = mvrnrm(1, mu, V_1*R(j));
       H.row(j) = trans(Beta.col(0));
     }
@@ -926,11 +920,7 @@ List EstDFM(      arma::mat B,     // transition matrix
       V_1   = inv_sympd(V_1);
       mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
       scl   = as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior variance is zero... a little odd but it works
-      if(j==0){
-        R(j)  = invchisq(nu_r+yy.n_elem,scl); //Draw for r
-      }else{
-        R(j)  = invchisq(nu_p+yy.n_elem,scl); //Draw for r
-      }
+      R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
       Beta  = mvrnrm(1, mu, V_1*R(j));
       Ht.row(j) = trans(Beta.col(0));
       //H.row(j) = trans(Beta.col(0));
@@ -950,7 +940,7 @@ List EstDFM(      arma::mat B,     // transition matrix
       V_1   = inv_sympd(V_1);
       mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
       scl   = as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior variance is zero... a little odd but it works
-      R(j)  = invchisq(nu_p+yy.n_elem,scl); //Draw for r
+      R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
       Beta  = mvrnrm(1, mu, V_1*R(j));
       H.row(j) = trans(Beta.col(0));
     }
