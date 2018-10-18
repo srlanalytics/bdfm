@@ -55,23 +55,14 @@ Y_sub <- function(Y) {
 #' @useDynLib BDFM
 bdfm <- function(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = 'PC_full', intercept = TRUE, reps = 1000, burn = 500) {
   
-  try_tsbox <- try(library(tsbox), silent = T) #Is tsbox present?
-  if(inherits(try_tsbox,"try-error")){ #If not, output warning
-    warning("Preserving time series attributes of input data requires the packages tsbox; time series attributes of inputs will be lost.")
-    Y <- as.matrix(Y)
-    E <- BDFM(Y = Y, m = factors, p = lags, FC = forecast, Bp = B_prior, lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r, ID = ID, ITC = intercept, reps = reps, burn = burn)
-    colnames(E$values) <- colnames(Y)
+  # non time series
+  if (!ts_boxable(Y) && is.matrix(Y)) {
+      E <- BDFM(Y = Y, m = factors, p = lags, FC = forecast, Bp = B_prior, lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r, ID = ID, ITC = intercept, reps = reps, burn = burn)
+      colnames(E$values) <- colnames(Y)
+      return(E)
   }else{
-    # non time series
-    if (!ts_boxable(Y)) {
-      if (is.matrix(Y)) {
-        E <- BDFM(Y = Y, m = factors, p = lags, FC = forecast, Bp = B_prior, lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r, ID = ID, ITC = intercept, reps = reps, burn = burn)
-        colnames(E$values) <- colnames(Y)
-      }else{
-        stop('Data format not accepted. Data must be ts_boxable() or matrix format.')
-      }
-    }else{  # time series --- i.e. is ts_boxable
-
+    # time series
+    stopifnot(ts_boxable(Y))
     # convert to mts
     Y.uc  <- unclass(ts_ts(Y))
     Y.tsp <- attr(Y.uc, "tsp")
@@ -79,15 +70,12 @@ bdfm <- function(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B =
     
     E <- BDFM(Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior, lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r, ID = ID, ITC = intercept, reps = reps, burn = burn)
     
-    ts(E$values, start = Y.tsp[1], frequency = Y.tsp[3])
-    ts(E$factors, start = Y.tsp[1], frequency = Y.tsp[3])
-    colnames(E$values) <- colnames(Y)
+    ts(E$values, start = Y.tsp[1], frequency = Y.tsp[3])  #make predicted values a ts timeseries
+    ts(E$factors, start = Y.tsp[1], frequency = Y.tsp[3]) #make estimated factors a ts timeseries
+    colnames(E$values) <- colnames(Y) #apply column names from Y
     
-    E$values  <- copy_class(E$values, Y)
-    E$factors <- copy_class(E$factors, Y)
-    
-    
-    }
+    E$values  <- copy_class(E$values, Y)  #put predicted values back into original class
+    E$factors <- copy_class(E$factors, Y) #put estimated factors back into original class
   }
   class(E) <- "bdfm"
   return(E)
@@ -398,12 +386,12 @@ summary.bdfm <- function(x) {
   cat("Posterior medians for observation equation: \n")
   cat("\n Coefficients H: \n")
   H <- data.frame(x$H)
-  row.names(H) <- colnames(Est$values)
+  row.names(H) <- colnames(x$values)
   colnames(H) <- as.character(seq(1,ncol(H)))
   print(H)
   cat("\n shocks R: \n")
   r <- data.frame(diag(x$R))
-  row.names(r) <- colnames(Est$values)
+  row.names(r) <- colnames(x$values)
   colnames(r) <- "Variance of Shocks"
   print(r)
   

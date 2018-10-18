@@ -14,7 +14,7 @@ dY    <- 100*diff(log(Y))
 #Estimate ML factor model with:
 #m = 1 factor
 #p = 5 lags
-Est   <- mlDFM(dY,factors = 1,lags = 5, Loud = T)
+#Est   <- mlDFM(dY,factors = 1,lags = 5, Loud = T)
 
 #Estimate Bayesian factor model with:
 #m = 1 factor
