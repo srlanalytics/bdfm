@@ -100,6 +100,7 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
   Y <- as.matrix(Y)
   k <- ncol(Y)
   r <- nrow(Y)
+  n_obs <- sum(is.finite(Y))
   if (ITC) {
     itc <- colMeans(Y, na.rm = T)
     Y <- Y - matrix(1, r, 1) %x% t(itc) # De-mean data. Data is not automatically stadardized --- that is left up to the user and should be done before estimation if desired.
@@ -175,9 +176,11 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
     B <- Parms$B
     q <- Parms$Q
     H <- as.matrix(Parms$H[-(1:m), ])
-    R <- diag(c(Parms$R[-(1:m)]), k, k)
+    R <- diag(c(Parms$R[-(1:m)]))
 
     Est <- DSmooth(B, q, H, R, Y[, -(1:m)])
+    
+    BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
 
     Out <- list(
       B = B,
@@ -192,7 +195,8 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
       Rstore  = Parms$Rstore[-(1:m), ],
       Hstore  = Parms$Hstore[-(1:m), , ],
       Kstore  = Est$Kstr,
-      PEstore = Est$PEstore
+      PEstore = Est$PEstore,
+      BIC     = BIC
     )
   } else {
     B <- Parms$B
@@ -201,6 +205,8 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
     R <- diag(c(Parms$R), k, k)
 
     Est <- DSmooth(B, q, H, R, Y)
+    
+    BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
 
     Out <- list(
       B = B,
@@ -214,7 +220,8 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
       Rstore  = Parms$Rstore,
       Hstore  = Parms$Hstore,
       Kstore  = Est$Kstr,
-      PEstore = Est$PEstore
+      PEstore = Est$PEstore,
+      BIC     = BIC
     )
   }
   return(Out)
@@ -359,22 +366,45 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, Loud = FALSE) {
     PEstore = Smth$PEstr
   ))
 }
-#' 
-#' # methods
-#' #' @export
-#' #' @method predict bdfm
-#' predict.bdfm <- function(x) {
-#'   x$values
-#' }
-#' 
-#' #' @export
-#' #' @method print bdfm
-#' print.bdfm <- function(x) {
-#'   print("a bdfm model: short description")
-#' }
-#' 
-#' #' @export
-#' #' @method summary bdfm
-#' summary.bdfm <- function(x) {
-#'   print("a bdfm model: summary description")
-#' }
+
+# methods
+#' @export
+#' @method predict bdfm
+predict.bdfm <- function(x) {
+  x$values
+}
+
+#' @export
+#' @method print bdfm
+print.bdfm <- function(x) {
+  cat("Call: \n Bayesian dynamic factor model with", nrow(x$B), "factor(s) and", ncol(x$B)/nrow(x$B), "lag(s).")
+  cat("\n")
+  cat("BIC:", x$BIC)
+}
+
+#' @export
+#' @method summary bdfm
+summary.bdfm <- function(x) {
+  cat("Call: \n Bayesian dynamic factor model with", nrow(x$B), "factor(s) and", ncol(x$B)/nrow(x$B), "lag(s).")
+  cat("\n \n")
+  cat("BIC:", x$BIC)
+  cat("\n \n")
+  cat("Posterior medians for transition equation: \n")
+  cat("\n Coefficients B: \n")
+  print(x$B)
+  cat("\n Covariance Q: \n")
+  print(x$q)
+  cat("\n \n")
+  cat("Posterior medians for observation equation: \n")
+  cat("\n Coefficients H: \n")
+  H <- data.frame(x$H)
+  row.names(H) <- colnames(Est$values)
+  colnames(H) <- as.character(seq(1,ncol(H)))
+  print(H)
+  cat("\n shocks R: \n")
+  r <- data.frame(diag(x$R))
+  row.names(r) <- colnames(Est$values)
+  colnames(r) <- "Variance of Shocks"
+  print(r)
+  
+}
