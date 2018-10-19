@@ -15,9 +15,9 @@ DayOfWeek <- function(Days, dates) {
 }
 
 #' Seasonal Factors at Daily Frequency
-#' 
+#'
 #' Generate predetermined seasonal factors at daily frequency
-#' 
+#'
 #' @param dates dates that factors will be generated for (date vector)
 #' @param predetermined seasonal adjustment factors to be generated, for example c('June', 'July')
 #' @export
@@ -483,9 +483,9 @@ Predetermined.d <- function(dates, predetermined) {
 }
 
 #' Seasonal Factors at Monthly Frequency
-#' 
+#'
 #' Generate predetermined seasonal factors at monthly frequency
-#' 
+#'
 #' @param dates dates that factors will be generated for (date vector)
 #' @param predetermined seasonal adjustment factors to be generated, for example c('June', 'July')
 #' @export
