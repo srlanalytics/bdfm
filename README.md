@@ -1,9 +1,11 @@
 # BDFM
 Bayesian dynamic factor model estimation in R.
 
+[![Build Status](https://travis-ci.org/christophsax/tsbox.svg?branch=master)](https://travis-ci.org/srlanalytics/BDFM)
+
 ## Description
 
-BDFM estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or "ragged edges" due to different start or end dates. 
+BDFM estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or "ragged edges" due to different start or end dates.
 
 ## Installation
 
