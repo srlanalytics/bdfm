@@ -38,23 +38,25 @@ Y_sub <- function(Y) {
 #' Estimate Bayesian dynamic factor model
 #'
 #' @param Y Data in matrix format with time in rows
-#' @param factors number of factors 
+#' @param factors number of factors
 #' @param lags number of lags in transition equation
 #' @param forecast number of periods ahead to forecast
 #' @param B_prior prior matrix for B in the transition equation. Default is zeros.
-#' @param lam_B prior tightness on B 
-#' @param H_prior prior matrix for H (loadings) in the observation equation. Default is zeros. 
+#' @param lam_B prior tightness on B
+#' @param H_prior prior matrix for H (loadings) in the observation equation. Default is zeros.
 #' @param lam_H prior tightness on H
-#' @param nu_q prior deg. of freedom for transition equation, entered as vector with length equal to the number of factors.  
+#' @param nu_q prior deg. of freedom for transition equation, entered as vector with length equal to the number of factors.
 #' @param nu_r prior deg. of freedom for observables, entered as vector with length equal to the number of observables.
-#' @param ID Factor Identification. 'PC_full' is the default (using all observed series), 'PC_sub' finds a submatrix of the data that maximizes the number of observations for a square (no missing values) data set. Use 'PC_sub' when many observations are missing. 
+#' @param ID Factor Identification. 'PC_full' is the default (using all observed series), 'PC_sub' finds a submatrix of the data that maximizes the number of observations for a square (no missing values) data set. Use 'PC_sub' when many observations are missing.
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
 #' @export
 #' @importFrom Rcpp evalCpp
+#' @importFrom stats dnorm na.omit ts var
+#' @importFrom utils head tail")
 #' @useDynLib BDFM
 bdfm <- function(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = 'PC_full', intercept = TRUE, reps = 1000, burn = 500) {
-  
+
   # non time series
   if (!ts_boxable(Y) && is.matrix(Y)) {
       E <- BDFM(Y = Y, m = factors, p = lags, FC = forecast, Bp = B_prior, lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r, ID = ID, ITC = intercept, reps = reps, burn = burn)
@@ -67,23 +69,23 @@ bdfm <- function(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B =
     Y.uc  <- unclass(ts_ts(Y))
     Y.tsp <- attr(Y.uc, "tsp")
     attr(Y.uc, "tsp") <- NULL
-    
+
     E <- BDFM(Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior, lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r, ID = ID, ITC = intercept, reps = reps, burn = burn)
-    
+
     ts(E$values, start = Y.tsp[1], frequency = Y.tsp[3])  #make predicted values a ts timeseries
     ts(E$factors, start = Y.tsp[1], frequency = Y.tsp[3]) #make estimated factors a ts timeseries
     colnames(E$values) <- colnames(Y) #apply column names from Y
-    
+
     E$values  <- copy_class(E$values, Y)  #put predicted values back into original class
     E$factors <- copy_class(E$factors, Y) #put estimated factors back into original class
   }
   class(E) <- "bdfm"
   return(E)
 }
-  
+
 
 BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = "PC_full", ITC = T, reps = 1000, burn = 500) {
-  
+
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
   k <- ncol(Y)
@@ -95,8 +97,8 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
   } else {
     itc <- rep(0, k)
   }
-  
-  
+
+
   # Identification is based on the first m variables so the initial guess just uses these variables as factors.
 
   if (ID == "PC_sub") {
@@ -114,12 +116,12 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
       stop("Every period contains missing data. Try setting ID to PC_sub.")
     }
   }
-  
+
   # ----------- Format Priors ------------------
   #enter priors multiplicatively so that 0 is a weak prior and 1 is a strong prior (additive        priors are relative to the number of observations)
   lam_B <- r*lam_B + 1
   nu_q  <- r*nu_q  + lam_B
-  lam_H <- r*lam_H + 1 
+  lam_H <- r*lam_H + 1
   if(is.null(nu_r)){
     nu_r = rep(1,k)*lam_H
   }else{
@@ -127,7 +129,7 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
     nu_r = rep(1,k)*lam_H + r*nu_r
   }
   # ---------------------------------------------
-  
+
 
   H <- matrix(0, k, m)
   H[1:m, 1:m] <- diag(1, m, m)
@@ -167,7 +169,7 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
     R <- diag(c(Parms$R[-(1:m)]))
 
     Est <- DSmooth(B, q, H, R, Y[, -(1:m)])
-    
+
     BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
 
     Out <- list(
@@ -193,7 +195,7 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
     R <- diag(c(Parms$R), k, k)
 
     Est <- DSmooth(B, q, H, R, Y)
-    
+
     BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
 
     Out <- list(
@@ -216,20 +218,20 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
 }
 
 #' ML Estimation for Dynamic Factor Models
-#' 
-#' Estimate a dynamic factor model by maximum likelihood using the EM Algorithm in Watson and Engle (1983). 
-#' 
+#'
+#' Estimate a dynamic factor model by maximum likelihood using the EM Algorithm in Watson and Engle (1983).
+#'
 #' @param Y data with time indexed by row
 #' @param factors number of factors to estimate
 #' @param lags number of lags in the transition equation
 #' @param forecast number of periods ahead to forecast
-#' @param tol tollerance for convergence of the EM Algorithm 
+#' @param tol tollerance for convergence of the EM Algorithm
 #' @param Loud T/F, print change in log likelihood at each iteration
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @useDynLib BDFM
 mlDFM <- function(Y, factors = 1, lags = 2, forecast = 0, tol = 0.01, Loud = FALSE) {
-  
+
   try_tsbox <- try(library(tsbox), silent = T) #Is tsbox present?
   if(inherits(try_tsbox,"try-error")){ #If not, output warning
     warning("Preserving time series attributes of input data requires the packages tsbox; time series attributes of inputs will be lost.")
@@ -246,18 +248,18 @@ mlDFM <- function(Y, factors = 1, lags = 2, forecast = 0, tol = 0.01, Loud = FAL
         stop('Data format not accepted. Data must be ts_boxable() or matrix format.')
       }
     }else{  # time series --- i.e. is ts_boxable
-      
+
       # convert to mts
       Y.uc  <- unclass(ts_ts(Y))
       Y.tsp <- attr(Y.uc, "tsp")
       attr(Y.uc, "tsp") <- NULL
-      
+
       E <- MLdfm(Y, m = factors, p = lags, FC = forecast, tol = tol, Loud = Loud)
-      
+
       ts(E$values, start = Y.tsp[1], frequency = Y.tsp[3])
       ts(E$factors, start = Y.tsp[1], frequency = Y.tsp[3])
       colnames(E$values) <- colnames(Y)
-      
+
       E$values   <- copy_class(E$values, Y)
       E$factors <- copy_class(E$factors, Y)
     }
@@ -297,7 +299,7 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, Loud = FALSE) {
 
   # Arbitrary intitial guess for R
   R <- diag(1, k, k)
-  
+
   if(FC>0){
     tmp <- matrix(NA,FC,k)
     Y   <- rbind(Y, tmp)
@@ -394,5 +396,5 @@ summary.bdfm <- function(x) {
   row.names(r) <- colnames(x$values)
   colnames(r) <- "Variance of Shocks"
   print(r)
-  
+
 }
