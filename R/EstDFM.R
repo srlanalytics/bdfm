@@ -50,10 +50,13 @@ Y_sub <- function(Y) {
 #' @param ID Factor Identification. 'PC_full' is the default (using all observed series), 'PC_sub' finds a submatrix of the data that maximizes the number of observations for a square (no missing values) data set. Use 'PC_sub' when many observations are missing.
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
+#' @param intercept logical, should an icept be included?
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats dnorm na.omit ts var
-#' @importFrom utils head tail")
+#' @importFrom utils head tail
+#' @importFrom stats dnorm na.omit ts var
+#' @importFrom utils head tail
 #' @useDynLib BDFM
 bdfm <- function(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = 'PC_full', intercept = TRUE, reps = 1000, burn = 500) {
 
@@ -360,13 +363,13 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, Loud = FALSE) {
 # methods
 #' @export
 #' @method predict bdfm
-predict.bdfm <- function(x) {
-  x$values
+predict.bdfm <- function(object, ...) {
+  object$values
 }
 
 #' @export
 #' @method print bdfm
-print.bdfm <- function(x) {
+print.bdfm <- function(x, ...) {
   cat("Call: \n Bayesian dynamic factor model with", nrow(x$B), "factor(s) and", ncol(x$B)/nrow(x$B), "lag(s).")
   cat("\n")
   cat("BIC:", x$BIC)
@@ -374,26 +377,26 @@ print.bdfm <- function(x) {
 
 #' @export
 #' @method summary bdfm
-summary.bdfm <- function(x) {
-  cat("Call: \n Bayesian dynamic factor model with", nrow(x$B), "factor(s) and", ncol(x$B)/nrow(x$B), "lag(s).")
+summary.bdfm <- function(object, ...) {
+  cat("Call: \n Bayesian dynamic factor model with", nrow(object$B), "factor(s) and", ncol(object$B)/nrow(object$B), "lag(s).")
   cat("\n \n")
-  cat("BIC:", x$BIC)
+  cat("BIC:", object$BIC)
   cat("\n \n")
   cat("Posterior medians for transition equation: \n")
   cat("\n Coefficients B: \n")
-  print(x$B)
+  print(object$B)
   cat("\n Covariance Q: \n")
-  print(x$q)
+  print(object$q)
   cat("\n \n")
   cat("Posterior medians for observation equation: \n")
   cat("\n Coefficients H: \n")
-  H <- data.frame(x$H)
-  row.names(H) <- colnames(x$values)
+  H <- data.frame(object$H)
+  row.names(H) <- colnames(object$values)
   colnames(H) <- as.character(seq(1,ncol(H)))
   print(H)
   cat("\n shocks R: \n")
-  r <- data.frame(diag(x$R))
-  row.names(r) <- colnames(x$values)
+  r <- data.frame(diag(object$R))
+  row.names(r) <- colnames(object$values)
   colnames(r) <- "Variance of Shocks"
   print(r)
 

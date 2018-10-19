@@ -15,3 +15,4 @@ Imports:
   Matrix (>= 1.2)
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.0
+Encoding: UTF-8
