@@ -4,14 +4,14 @@
 \alias{SeasAdj_WE}
 \title{Watson and Engle (1983) Algorithm}
 \usage{
-SeasAdj_WE(y, N, p = 1, tol = 0.01, Loud = FALSE)
+SeasAdj_WE(y, N, lags = 1, tol = 0.01, Loud = FALSE)
 }
 \arguments{
 \item{y}{data}
 
 \item{N}{matrix of predetermined factors}
 
-\item{p}{lags in transition equation}
+\item{lags}{lags in transition equation}
 
 \item{tol}{tolerance for convergence of likelihood function (*100)}
 
