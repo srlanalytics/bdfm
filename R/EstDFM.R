@@ -433,12 +433,12 @@ predict.bdfm <- function(object, ...) {
 
 #' @export
 #' @method print bdfm
-print.bdfm <- function(object, ...) {
-  cat("Call: \n Bayesian dynamic factor model with", nrow(object$B), "factor(s) and", ncol(object$B)/nrow(object$B), "lag(s).")
+print.bdfm <- function(x, ...) {
+  cat("Call: \n Bayesian dynamic factor model with", nrow(x$B), "factor(s) and", ncol(x$B)/nrow(x$B), "lag(s).")
   cat("\n \n")
-  cat("Log Likelihood:", object$Lik)
+  cat("Log Likelihood:", x$Lik)
   cat("\n \n")
-  cat("BIC:", object$BIC)
+  cat("BIC:", x$BIC)
 }
 
 #' @export
