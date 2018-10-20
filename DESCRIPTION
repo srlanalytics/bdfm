@@ -11,6 +11,9 @@ Imports:
   Rcpp (>= 0.12.13),
   RcppArmadillo (>= 0.7.900.2.0),
   Matrix (>= 1.2)
+Suggests:
+    testthat,
+    tsbox
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.0
 Encoding: UTF-8
