@@ -41,6 +41,7 @@ Y_sub <- function(Y) {
 #' @param factors number of factors
 #' @param lags number of lags in transition equation
 #' @param forecast number of periods ahead to forecast
+#' @param method character, method to be used
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats dnorm na.omit ts var

@@ -14,6 +14,8 @@ dfm(Y, factors = 1, lags = 2, forecast = 0, method = "Bayesian")
 \item{lags}{number of lags in transition equation}
 
 \item{forecast}{number of periods ahead to forecast}
+
+\item{method}{character, method to be used}
 }
 \description{
 Estimate Bayesian dynamic factor model
