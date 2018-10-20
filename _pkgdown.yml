@@ -1,0 +1,36 @@
+# see here, for different themes https://bootswatch.com/
+
+template:
+  params:
+    bootswatch: darkly
+
+reference:
+- title: Dynamic Factor Model
+  desc: >
+    tsbox is built around a set of converters, which convert time series stored
+    as `ts`, `xts`, `data.frame`, `data.table` or `tibble` to each
+    other.
+  contents:
+  - dfm
+
+# navbar:
+#   title: ~
+#   type: default
+#   left:
+#   - text: Intro
+#     href: articles/tsbox.html
+#   - text: Reference
+#     href: reference/index.html
+#   - text: Advanced
+#     menu:
+#     - text: User Defined ts-Functions
+#       href: articles/ts-functions.html
+#     - text: Time Conversion and Reguarization
+#       href: articles/convert.html
+#     - text: Additional Examples
+#       href: articles/class-struggle.html
+#   - text: News
+#     href: news/index.html
+#   right:
+#   - icon: fa-github fa-lg
+#     href: https://github.com/christophsax/tsbox
