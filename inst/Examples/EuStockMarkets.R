@@ -13,7 +13,7 @@ dY    <- 100*diff(log(Y))
 #Estimate ML factor model with:
 m = 1 #factor
 p = 5 #lags
-Est_ML   <- dfm(dY,factors = 1,lags = 5, method = "ML")
+Est_ML   <- dfm(dY,factors = 1,lags = 5, method = "ML", Loud = T)
 
 #Estimate PC factor model with:
 m = 1 #factor
@@ -23,7 +23,7 @@ Est_PC   <- dfm(dY,factors = 1,lags = 5, method = "PC")
 #Estimate Bayesian factor model with:
 #m = 1 factor
 #p = 5 lags
-Est   <- dfm(dY,factors = 1,lags = 5)
+Est   <- dfm(dY,factors = 1,lags = 5, Loud = T)
 
 #Look at the common factor for the last 20 observations
 ts.plot(cbind(tail(Est$factors,50), tail(dY,50)), col = c("red", "steelblue", "steelblue", "steelblue", "steelblue" ), lty = c(1,2,2,2,2))

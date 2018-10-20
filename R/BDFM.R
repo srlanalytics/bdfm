@@ -1,4 +1,4 @@
-BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = "PC_full", ITC = T, reps = 1000, burn = 500) {
+BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = "PC_full", ITC = T, reps = 1000, burn = 500, Loud = FALSE) {
 
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
@@ -74,7 +74,7 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
     r   <- r + FC
   }
 
-  Parms <- EstDFM(B = B_in, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, reps = reps, burn = burn)
+  Parms <- EstDFM(B = B_in, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, reps = reps, burn = burn, Loud = Loud)
 
   if (ID %in% c("PC_sub", "PC_full")) {
     B <- Parms$B
@@ -131,4 +131,33 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
     )
   }
   return(Out)
+}
+
+
+#' MCMC Routine for Bayesian Dynamic Factor Models
+#' 
+#' \code{CppBDFM} is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model
+#' 
+#' \code{CppBDFM} is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (\url{http://arma.sourceforge.net/}) linear algebra library for C++ and the packages needed for interfacing with R (\code{\link{Rcpp}} and \code{\link{RcppArmadillo::RcppArmadillo-package}}).
+#' 
+#' @param B  initial guess for B in transition equation 
+#' @param Bp prior for B
+#' @param lam_B prior tightness for B (additive)
+#' @param q initial guess for q in the transition equation
+#' @param nu_q prior "degrees of freedom" for inverse-Whishart prior for q (additive, prior scale is fixed so that increasing nu_q shrinks the variance towards zero)
+#' @param H initial guess for H in the trasition equation 
+#' @param Hp prior for H
+#' @param lam_H prior tightness for H (additive)
+#' @param R initial guess for diagonal elements of R in the transition equation, entered as a vector
+#' @param nu_r prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r[j] shrinks the variance of shocks to series j towards zero)
+#' @param Y Input data. Data must be scaled and centered prior to estimation if desired.
+#' @param reps number of repetitions for MCMC sampling
+#' @param burn number of iterations to burn in MCMC sampling
+#' @param Loud print status of function during evaluation.
+#' @export
+#' @importFrom Rcpp evalCpp
+#' @useDynLib BDFM
+CppBDFM <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn, Loud){
+  OUT <- EstDFM(B = B, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = R, nu_r = nu_r, Y = Y, reps = reps, burn = burn, Loud = Loud)
+  return(OUT)
 }
