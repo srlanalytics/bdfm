@@ -233,17 +233,29 @@ List PrinComp(arma::mat Y,     // Observations Y
 //Bayesian linear regression --- does NOT accept missing variables
 // [[Rcpp::export]]
 List BReg(arma::mat X,   // RHS variables
-               arma::mat Y,   // LHS variables
-               arma::mat Bp,  // prior for B
-               double lam,    // prior tightness
-               double nu,     //prior "deg of freedom"
-               arma::uword reps){
+          arma::mat Y,   // LHS variables
+          bool Int,      // Estimate intercept term?
+          arma::mat Bp,  // prior for B
+          double lam,    // prior tightness
+          double nu,     //prior "deg of freedom"
+          arma::uword reps = 1000,
+          arma::uword burn = 1000){
   
   uword k    = Y.n_cols;
   uword m    = X.n_cols;
   uword T    = Y.n_rows;
   mat Lam    = lam*eye<mat>(m,m);
-  uword burn = 500;
+  mat tmp;
+  
+  if(Int){ //if we should estimate an intercept term
+    m        = m+1;
+    Lam      = lam*eye<mat>(m,m);
+    Lam(0,0) = 0;
+    tmp      = zeros<mat>(k,1);
+    Bp       = join_horiz(tmp, Bp);
+    tmp      = ones<mat>(T,1);
+    X        = join_horiz(tmp,X);
+  }
   
   //declairing variables
   cube Bstore(k,m,reps), Qstore(k,k,reps);
@@ -253,15 +265,15 @@ List BReg(arma::mat X,   // RHS variables
   //Burn Loop
   
   for(uword rep = 0; rep<burn; rep++){
-
+    
     Rcpp::checkUserInterrupt();
-    Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
-
+    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
+    
     v_1   = trans(X)*X+Lam;
     v_1   = (trans(v_1)+v_1)/2;
     v_1   = inv_sympd(v_1);
     Mu    = v_1*(trans(X)*Y+Lam*trans(Bp));
-    scale = eye(m,m)+trans(Y-X*Mu)*(Y-X*Mu)+trans(Mu-trans(Bp))*Lam*(Mu-trans(Bp)); // eye(k) is the prior scale parameter for the IW distribution and eye(k)+junk the posterior.
+    scale = eye(k,k)+trans(Y-X*Mu)*(Y-X*Mu)+trans(Mu-trans(Bp))*Lam*(Mu-trans(Bp)); // eye(k) is the prior scale parameter for the IW distribution and eye(k)+junk the posterior.
     scale = (scale+trans(scale))/2;
     q     = rinvwish(1,nu+T,scale); // Draw for q
     mu    = vectorise(trans(Mu));   // vectorized posterior mean for beta
@@ -273,15 +285,15 @@ List BReg(arma::mat X,   // RHS variables
   //Sampling Loop
   
   for(uword rep = 0; rep<reps; rep++){
-
+    
     Rcpp::checkUserInterrupt();
-    Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
-
+    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations 
+    
     v_1   = trans(X)*X+Lam;
     v_1   = (trans(v_1)+v_1)/2;
     v_1   = inv_sympd(v_1);
     Mu    = v_1*(trans(X)*Y+Lam*trans(Bp));
-    scale = eye(m,m)+trans(Y-X*Mu)*(Y-X*Mu)+trans(Mu-trans(Bp))*Lam*(Mu-trans(Bp)); // eye(k) is the prior scale parameter for the IW distribution and eye(k)+junk the posterior.
+    scale = eye(k,k)+trans(Y-X*Mu)*(Y-X*Mu)+trans(Mu-trans(Bp))*Lam*(Mu-trans(Bp)); // eye(k) is the prior scale parameter for the IW distribution and eye(k)+junk the posterior.
     scale = (scale+trans(scale))/2;
     q     = rinvwish(1,nu+T,scale); // Draw for q
     mu    = vectorise(trans(Mu));   // vectorized posterior mean for beta
@@ -310,94 +322,115 @@ List BReg(arma::mat X,   // RHS variables
   Out["q"]   = q;
   Out["Bstore"]   = Bstore;
   Out["Qstore"]   = Qstore;
- 
+  
   return(Out);
-
+  
 }
 
 
 //Bayesian linear regression with diagonal covariance to shocks. Accepts missing obs.
 // [[Rcpp::export]]
 List BReg_diag(arma::mat X,   // RHS variables
-          arma::mat Y,   // LHS variables
-          arma::mat Bp,  // prior for B
-          double lam,    // prior tightness
-          double nu,     //prior "deg of freedom"
-          arma::uword reps){
+               arma::mat Y,   // LHS variables
+               bool Int,      //Estimate intercept terms?
+               arma::mat Bp,  // prior for B
+               double lam,    // prior tightness
+               arma::vec nu,  //prior "deg of freedom"
+               arma::uword reps = 1000, //MCMC sampling iterations
+               arma::uword burn = 1000){ //MCMC burn in iterations
   
   uword k    = Y.n_cols;
   uword m    = X.n_cols;
   uword T    = Y.n_rows;
   mat Lam    = lam*eye<mat>(m,m);
-  uword burn = 500;
+  mat tmp;
+  
+  if(Int){ //if we should estimate an intercept term
+    m        = m+1;
+    Lam      = lam*eye<mat>(m,m);
+    Lam(0,0) = 0;
+    tmp      = zeros<mat>(k,1);
+    Bp       = join_horiz(tmp, Bp);
+    tmp      = ones<mat>(T,1);
+    X        = join_horiz(tmp,X);
+  }
   
   //declairing variables
   cube Bstore(k,m,reps);
-  mat v_1, Beta, Qstore(reps,k);
-  vec mu, q;
+  mat v_1, Beta, Qstore(k,reps), xx;
+  vec mu, q(k,fill::zeros);
   double scl;
   uvec ind_rm, ind;
   vec y, x;
-  mat B(k, m, fill::zeros), xx;
+  mat B(k, m, fill::zeros);
   uvec indX = find_nonfinite(X.col(0));
-  for(uword k = 1; k<X.n_cols; k++){
-    x = X.col(k);
-    indX = unique( join_cols(indX, find_nonfinite(x))); //index of missing X values
+  if(m>1){
+    for(uword j = 1; j<m; j++){
+      x = X.col(j);
+      indX = unique( join_cols(indX, find_nonfinite(x))); //index of missing X values
+    }
   }
   
   //Burn Loop
   
   for(uword rep = 0; rep<burn; rep++){
-  
-  for(uword j=0; j<k; j++){
-    y       = Y.col(j);
-    ind     = unique(join_cols(indX,find_nonfinite(y))); //index of elements to remove
-    xx      = X;
-    //this seems a tedious way to shed non-contiguous indexes
-    for(uword k = ind.n_elem; k>0; k--){
-      xx.shed_row(ind(k-1));
-      y.shed_row(ind(k-1));
+    Rcpp::checkUserInterrupt();
+    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
+    
+    for(uword j=0; j<k; j++){
+      y       = Y.col(j);
+      ind     = unique(join_cols(indX,find_nonfinite(y))); //index of elements to remove
+      xx      = X;
+      
+      //this seems a tedious way to shed non-contiguous indexes
+      for(uword n = ind.n_elem; n>0; n--){
+        xx.shed_row(ind(n-1));
+        y.shed_row(ind(n-1));
+      }
+      
+      v_1   = trans(xx)*xx+Lam;
+      v_1   = (trans(v_1)+v_1)/2;
+      v_1   = inv_sympd(v_1);
+      mu    = v_1*(trans(xx)*y+Lam*trans(Bp.row(j)));
+      scl   = as_scalar(trans(y-xx*mu)*(y-xx*mu)+trans(mu-trans(Bp.row(j)))*Lam*(mu-trans(Bp.row(j)))); // prior variance is zero... a little odd but it works
+      q(j)  = invchisq(nu(j)+y.n_rows,scl); //Draw for r
+      Beta  = mvrnrm(1, mu, v_1*q(j));
+      B.row(j) = trans(Beta.col(0));
     }
-    v_1   = trans(xx)*xx+Lam;
-    v_1   = (trans(v_1)+v_1)/2;
-    v_1   = inv_sympd(v_1);
-    mu    = v_1*(trans(xx)*y+Lam*trans(Bp.row(j)));
-    scl   = as_scalar(trans(y-xx*mu)*(y-xx*mu)+trans(mu-trans(Bp.row(j)))*Lam*(mu-trans(Bp.row(j)))); // prior variance is zero... a little odd but it works
-    q(j)  = invchisq(nu+T,scl); //Draw for r
-    Beta  = mvrnrm(1, mu, v_1*q(j));
-    B.row(j) = trans(Beta.col(0));
-  }
-  
+    
   }
   
   // Sampling loop
   
   for(uword rep = 0; rep<reps; rep++){
     
+    Rcpp::checkUserInterrupt();
+    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
+    
     for(uword j=0; j<k; j++){
       y       = Y.col(j);
       ind     = unique(join_cols(indX,find_nonfinite(y))); //index of elements to remove
       xx      = X;
       //this seems a tedious way to shed non-contiguous indexes
-      for(uword k = ind.n_elem; k>0; k--){
-        xx.shed_row(ind(k-1));
-        y.shed_row(ind(k-1));
+      for(uword n = ind.n_elem; n>0; n--){
+        xx.shed_row(ind(n-1));
+        y.shed_row(ind(n-1));
       }
       v_1   = trans(xx)*xx+Lam;
       v_1   = (trans(v_1)+v_1)/2;
       v_1   = inv_sympd(v_1);
       mu    = v_1*(trans(xx)*y+Lam*trans(Bp.row(j)));
       scl   = as_scalar(trans(y-xx*mu)*(y-xx*mu)+trans(mu-trans(Bp.row(j)))*Lam*(mu-trans(Bp.row(j)))); // prior variance is zero... a little odd but it works
-      q(j)  = invchisq(nu+T,scl); //Draw for r
+      q(j)  = invchisq(nu(j)+y.n_rows,scl); //Draw for r
       Beta  = mvrnrm(1, mu, v_1*q(j));
       B.row(j) = trans(Beta.col(0));
     }
-    Qstore.row(rep)   = q;
+    Qstore.col(rep)   = q;
     Bstore.slice(rep) = B;
     
   }
   
- 
+  
   //For B
   for(uword rw=0;rw<k;rw++){
     for(uword cl=0;cl<m;cl++){
@@ -405,11 +438,11 @@ List BReg_diag(arma::mat X,   // RHS variables
     }
   }
   //For q
-
-    for(uword cl=0;cl<k;cl++){
-      q(cl) = as_scalar(median(Qstore.col(cl)));
-    }
-
+  
+  for(uword rw=0;rw<k;rw++){
+    q(rw) = as_scalar(median(Qstore.row(rw)));
+  }
+  
   
   List Out;
   Out["B"]   = B;
@@ -418,7 +451,6 @@ List BReg_diag(arma::mat X,   // RHS variables
   Out["Qstore"]   = Qstore;
   
   return(Out);
-  
 }
 
 

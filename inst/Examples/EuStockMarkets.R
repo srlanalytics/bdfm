@@ -1,6 +1,5 @@
 library(tsbox)
 library(BDFM)
-library(Matrix)
 
 # data(EuStockMarkets) #load data
 # Y     <- as.matrix(EuStockMarkets) #data in tabular (matrix) format
@@ -12,14 +11,19 @@ Y <- EuStockMarkets
 dY    <- 100*diff(log(Y))
 
 #Estimate ML factor model with:
-#m = 1 factor
-#p = 5 lags
-#Est   <- mlDFM(dY,factors = 1,lags = 5, Loud = T)
+m = 1 #factor
+p = 5 #lags
+Est_ML   <- dfm(dY,factors = 1,lags = 5, method = "ML")
+
+#Estimate PC factor model with:
+m = 1 #factor
+p = 5 #lags
+Est_PC   <- dfm(dY,factors = 1,lags = 5, method = "PC")
 
 #Estimate Bayesian factor model with:
 #m = 1 factor
 #p = 5 lags
-Est   <- bdfm(dY,factors = 1,lags = 5)
+Est   <- dfm(dY,factors = 1,lags = 5)
 
 #Look at the common factor for the last 20 observations
 ts.plot(cbind(tail(Est$factors,50), tail(dY,50)), col = c("red", "steelblue", "steelblue", "steelblue", "steelblue" ), lty = c(1,2,2,2,2))
@@ -27,6 +31,18 @@ ts.plot(cbind(tail(Est$factors,50), tail(dY,50)), col = c("red", "steelblue", "s
 #Compare the common factor to the first principal component
 pc <- prcomp(dY, center = F, scale. = F)
 ts.plot(cbind(tail(Est$factors,50), tail(pc$x[,1],50)), col = c("red", "steelblue"), lty = c(1,2))
+
+#Compare the common factor to "2-step" estimation
+pc <- prcomp(dY, center = F, scale. = F)
+ts.plot(cbind(tail(Est$factors,50), tail(Est_PC$factors,50)), col = c("red", "steelblue"), lty = c(1,2))
+
+#Compare estimated parameters
+print(Est_PC)
+print(Est)
+
+
+
+#They are (more or less) the same as there are no missing values in this example!
 
 #Re-estimate the factor model shrinking the variance of shocks in the transition equation towards zero (i.e. smooth factors)
 Est2  <- bdfm(dY, factors = 1, lags = 5, nu_q = 10)
