@@ -2,6 +2,7 @@
 Bayesian dynamic factor model estimation in R.
 
 [![Build Status](https://travis-ci.org/christophsax/tsbox.svg?branch=master)](https://travis-ci.org/srlanalytics/BDFM)
+[![codecov](https://codecov.io/github/srlanalytics/BDFM/branch/master/graphs/badge.svg)](https://codecov.io/github/srlanalytics/BDFM)
 
 ## Description
 
