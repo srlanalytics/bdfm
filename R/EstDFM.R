@@ -62,7 +62,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0, method = "Bayesian") {
     Y.uc  <- unclass(ts_ts(Y))
     Y.tsp <- attr(Y.uc, "tsp")
     attr(Y.uc, "tsp") <- NULL
-    
+
     if(method == "Bayesian"){
       B_prior   <- getOption('B_prior', default = NULL)
       lam_B     <- getOption('lam_B', default = 0)
@@ -332,7 +332,7 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, Loud = FALSE) {
 }
 
 PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = "PC_full", ITC = T, reps = 1000, burn = 500) {
-  
+
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
   k <- ncol(Y)
@@ -346,7 +346,7 @@ PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, n
   }
 
   #Estimate principal components
-  
+
   if (ID == "PC_sub") {
     Ysub <- Y_sub(Y) # submatrix of Y with complete data, i.e. no missing values
     PC   <- PrinComp(Ysub$Ysub, m)
@@ -359,7 +359,7 @@ PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, n
       stop("Every period contains missing data. Try setting ID to PC_sub.")
     }
   }
-  
+
   # ----------- Format Priors ------------------
   #enter priors multiplicatively so that 0 is a weak prior and 1 is a strong prior (additive        priors are relative to the number of observations)
   lam_B <- r*lam_B + 1
@@ -383,7 +383,7 @@ PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, n
   Hest <- BReg_diag(X, Y, Int = F, Bp = Hp, lam = lam_H, nu = nu_r, reps = reps, burn = burn)
   H    <- Hest$B
   R    <- diag(c(Hest$q))
-  
+
   #Estimate parameters of the transition equation (Bayesian VAR)
   Z    <- stack_obs(X, p = p)
   Z    <- as.matrix(Z[-nrow(Z),])
@@ -394,17 +394,17 @@ PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, n
   Best <- BReg(Z, xx, Int = FALSE, Bp = Bp, lam = lam_B, nu = nu_q, reps = reps, burn = burn)
   B    <- Best$B
   q    <- Best$q
-  
+
   if(FC>0){
     tmp <- matrix(NA,FC,k)
     Y   <- rbind(Y, tmp)
     r   <- r + FC
   }
-    
+
     Est <- DSmooth(B, q, H, R, Y)
-    
+
     BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
-    
+
     Out <- list(
       B = B,
       q = q,
