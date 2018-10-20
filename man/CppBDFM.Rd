@@ -3,7 +3,6 @@
 \name{CppBDFM}
 \alias{CppBDFM}
 \title{MCMC Routine for Bayesian Dynamic Factor Models}
-\description{\code{CppBDFM} is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (\url{http://arma.sourceforge.net/}) linear algebra library for C++ and the packages needed for interfacing with R (\code{\link{Rcpp}} and \code{\link{RcppArmadillo::RcppArmadillo-package}}).}
 \usage{
 CppBDFM(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn, Loud)
 }
@@ -37,6 +36,5 @@ CppBDFM(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn, Loud)
 \item{Loud}{if method is Bayesian, print MCMC iterations. If ML, print difference in likelihood at each iteration of the EM algorithm.}
 }
 \description{
-MCMC Routine for Bayesian Dynamic Factor Models
-This is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the Armadillo \url{http://arma.sourceforge.net/} linear algebra library for C++ and the packages needed for interfacing with R (Rcpp \link{Rcpp::Rcpp-package} and RcppArmadillo \link{RcppArmadillo::RcppArmadillo-package}).
+This is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the Armadillo \url{http://arma.sourceforge.net/} linear algebra library for C++ and the packages needed for interfacing with R (Rcpp \link{Rcpp} and RcppArmadillo \link{RcppArmadillo}).
 }
