@@ -1,11 +1,14 @@
 ---
 title: "BDFM"
+subtitle: "Bayesian Dynamic Factor Models"
 author: "Seth Leonard, Christoph Sax"
-date: "October 20, 2018"
-output:
-  pdf_document: default
-  html_document: default
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Bayesian Dynamic Factor Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -20,10 +23,12 @@ Time series data for real world applications can be messy. Potential difficultie
 We can describe dynamic factor modes in two parts. The first part is called the measurement or observation equation. Mathematically, we can write this equation as
 \[ y_t = H x_t + \varepsilon_t \]
 Conceptually, this step relates our meaningful information or factors, represented by the vector $x_t$, to our large set of noisy data, represented by $y_t$. The second part of the model is called the transition equation, which we can write mathematically as
-\[ x_t = A x_{t-1} + \epsilon_t \] 
+\[ x_t = A x_{t-1} + \epsilon_t \]
 This part of the model describes how our factors $x_t$, the meaningful information in which we are interested, evolve over time. The Kalman filter, the work horse of the linear-Guassian model, operates by first predicting $x_t$ based on $x_{t-1}$ (the model here is written in terms of one lag but is easily extended to $p$ lags). Predictions for $x_t$ are then updated using data in $y_t$ as it becomes available. Data need not be realized at the same time; as soon as any additional information becomes available it can be incorporated into the model.
 
-In economic and financial applications the greatest difficulty in implementing factor models is parameter estimation (in many physical models parameters may be informed by theory and thus need not be estimated). The package `BDFM` supports three methods for esimtating these models. Bayesian estimation (`method = 'Bayesian'`) is the default; this approach is able to incorporate prior beliefs we have about the data --- which series are more important for example --- and thus may yield superior predictions. Maxiumim likelihood estimation (`method = 'ML'`) finds the parameters maximize the log likelihood of what we observe yeilding results that are nearly identical to Baysian estimation when we do not specify any prior beliefs about the model. Finally, "two step" estimation (`method = 'PC'`) is useful when we have very large data sets (hundreds or thousands of series) without too many missing observations. When the number of observed series gets very large Bayesian and maximum likelihood estimation can be slow. Two step estimation, however, remains quick and computationally light by estimating parameters using principal components as factors. 
+In economic and financial applications the greatest difficulty in implementing factor models is parameter estimation (in many physical models parameters may be informed by theory and thus need not be estimated). The package `BDFM` supports three methods for esimtating these models. Bayesian estimation (`method = 'Bayesian'`) is the default; this approach is able to incorporate prior beliefs we have about the data --- which series are more important for example --- and thus may yield superior predictions. Maxiumim likelihood estimation (`method = 'ML'`) finds the parameters maximize the log likelihood of what we observe yeilding results that are nearly identical to Baysian estimation when we do not specify any prior beliefs about the model. Finally, "two step" estimation (`method = 'PC'`) is useful when we have very large data sets (hundreds or thousands of series) without too many missing observations. When the number of observed series gets very large Bayesian and maximum likelihood estimation can be slow. Two step estimation, however, remains quick and computationally light by estimating parameters using principal components as factors.
 
 ## Getting Started
+
+
 
