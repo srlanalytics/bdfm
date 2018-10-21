@@ -1,4 +1,6 @@
 .Rproj.user
+*.Rproj
+BDFM.Rproj
 .Rhistory
 .RData
 .Ruserdata

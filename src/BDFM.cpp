@@ -774,8 +774,9 @@ List EstDFM(      arma::mat B,     // transition matrix
                   arma::vec R,     // covariance matrix of shocks to observables; Y are observations
                   arma::vec nu_r,     //prior degrees of freedom for elements of R used to normalize
                   arma::mat Y,     // data
-                  arma::uword reps, //repetitions
-                  arma::uword burn){ //burn in periods
+                  arma::uword reps = 1000, //repetitions
+                  arma::uword burn = 500,
+                  bool Loud = false){ //burn in periods
 
   // preliminaries
 
@@ -819,11 +820,12 @@ List EstDFM(      arma::mat B,     // transition matrix
   Ytmp.shed_rows(0,p-1); //shed initial values to match Z
 
   //Burn Loop
-
+  if(Loud){
+    Rcpp::Rcout << "Entering burn iterations" <<endl;
+  }
   for(uword rep = 0; rep<burn; rep++){
 
     Rcpp::checkUserInterrupt();
-    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations
 
     // --------- Sample Factors given Data and Parameters ---------
 
@@ -855,7 +857,7 @@ List EstDFM(      arma::mat B,     // transition matrix
       V_1   = (trans(V_1)+V_1)/2;
       V_1   = inv_sympd(V_1);
       mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
-      scl   = as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior variance is zero... a little odd but it works
+      scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
       R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
       Beta  = mvrnrm(1, mu, V_1*R(j));
       Ht.row(j) = trans(Beta.col(0));
@@ -875,7 +877,7 @@ List EstDFM(      arma::mat B,     // transition matrix
       V_1   = (trans(V_1)+V_1)/2;
       V_1   = inv_sympd(V_1);
       mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
-      scl   = as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior variance is zero... a little odd but it works
+      scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
       R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
       Beta  = mvrnrm(1, mu, V_1*R(j));
       H.row(j) = trans(Beta.col(0));
@@ -914,6 +916,9 @@ List EstDFM(      arma::mat B,     // transition matrix
   }
 
   // ------------------ Sampling Loop ------------------------------------
+  if(Loud){
+    Rcpp::Rcout << "Completed " << burn << " burn iterations; entering sampling iterations " <<endl;
+  }
 
   for(uword rep = 0; rep<reps; rep++){
 
@@ -951,7 +956,7 @@ List EstDFM(      arma::mat B,     // transition matrix
       V_1   = (trans(V_1)+V_1)/2;
       V_1   = inv_sympd(V_1);
       mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
-      scl   = as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior variance is zero... a little odd but it works
+      scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
       R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
       Beta  = mvrnrm(1, mu, V_1*R(j));
       Ht.row(j) = trans(Beta.col(0));
@@ -971,7 +976,7 @@ List EstDFM(      arma::mat B,     // transition matrix
       V_1   = (trans(V_1)+V_1)/2;
       V_1   = inv_sympd(V_1);
       mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
-      scl   = as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior variance is zero... a little odd but it works
+      scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
       R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
       Beta  = mvrnrm(1, mu, V_1*R(j));
       H.row(j) = trans(Beta.col(0));
@@ -1013,6 +1018,10 @@ List EstDFM(      arma::mat B,     // transition matrix
     Hstore.slice(rep) = H;
     Rstore.col(rep)   = R;
 
+  }
+  
+  if(Loud){
+    Rcpp::Rcout << "Completed " << reps << " sampling iterations " <<endl;
   }
 
   //Getting posterior medians
