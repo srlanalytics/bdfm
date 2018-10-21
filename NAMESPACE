@@ -3,6 +3,7 @@
 S3method(predict,dfm)
 S3method(print,dfm)
 S3method(summary,dfm)
+export(CppBDFM)
 export(Predetermined.d)
 export(Predetermined.m)
 export(SeasAdj_WE)

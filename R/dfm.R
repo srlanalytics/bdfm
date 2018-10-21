@@ -1,10 +1,22 @@
-#' Estimate Bayesian dynamic factor model
+#' Estimate dynamic factor model
 #'
-#' @param Y Data in matrix format with time in rows
+#' @param Y data in matrix format with time in rows
 #' @param factors number of factors
 #' @param lags number of lags in transition equation
 #' @param forecast number of periods ahead to forecast
 #' @param method character, method to be used
+#' @param B_prior prior matrix for B in the transition equation. Default is zeros.
+#' @param lam_B prior tightness on B
+#' @param H_prior prior matrix for H (loadings) in the observation equation. Default is zeros.
+#' @param lam_H prior tightness on H
+#' @param nu_q prior deg. of freedom for transition equation, entered as vector with length equal to the number of factors.
+#' @param nu_r prior deg. of freedom for observables, entered as vector with length equal to the number of observables.
+#' @param identification factor identification. 'PC_full' is the default (using all observed series), 'PC_sub' finds a submatrix of the data that maximizes the number of observations for a square (no missing values) data set. Use 'PC_sub' when many observations are missing.
+#' @param intercept logical, should an icept be included?
+#' @param reps number of repetitions for MCMC sampling
+#' @param burn number of iterations to burn in MCMC sampling
+#' @param Loud print status of function during evalutation. If ML, print difference in likelihood at each iteration of the EM algorithm. 
+#' @param EM_tolerance tolerance for convergence of EM algorithm. Convergence criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1 is the log likelihood from this iteration and Lik0 is the likelihood from the previous iteration.
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats dnorm na.omit ts var
@@ -12,7 +24,7 @@
 #' @importFrom stats dnorm na.omit ts var
 #' @importFrom utils head tail
 #' @useDynLib BDFM
-dfm <- function(Y, factors = 1, lags = 2, forecast = 0, method = "Bayesian") {
+dfm <- function(Y, factors = 1, lags = 2, forecast = 0, method = "Bayesian", B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, identification = "PC_full", intercept = TRUE, reps = 1000, burn = 500, Loud = F, EM_tolerance = 0.01) {
 
   # non time series
   if (!ts_boxable(Y) && is.matrix(Y)) {
@@ -28,33 +40,11 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0, method = "Bayesian") {
     attr(Y.uc, "tsp") <- NULL
 
     if(method == "Bayesian"){
-      B_prior   <- getOption('B_prior', default = NULL)
-      lam_B     <- getOption('lam_B', default = 0)
-      H_prior   <- getOption('H_prior', default = NULL)
-      lam_H     <- getOption('lam_H', default = 0)
-      nu_q      <- getOption('nu_q', default = 0)
-      nu_r      <- getOption('nu_r', default = NULL)
-      ID        <- getOption('ID', default = "PC_full")
-      intercept <- getOption('intercept', default = T)
-      reps      <- getOption('reps', default = 1000)
-      burn      <- getOption('burn', default = 500)
-      E <- BDFM(Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior, lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r, ID = ID, ITC = intercept, reps = reps, burn = burn)
+      E <- BDFM(Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior, lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r, ID = identification, ITC = intercept, reps = reps, burn = burn, Loud = Loud)
     }else if(method == "ML"){
-      tol       <- getOption('tol', default = 0.01)
-      Loud      <- getOption('Loud', default = FALSE)
-      E <- MLdfm(Y, m = factors, p = lags, FC = forecast, tol = tol, Loud = Loud)
+      E <- MLdfm(Y, m = factors, p = lags, FC = forecast, tol = EM_tolerance, Loud = Loud)
     }else if(method == "PC"){
-      B_prior   <- getOption('B_prior', default = NULL)
-      lam_B     <- getOption('lam_B', default = 0)
-      H_prior   <- getOption('H_prior', default = NULL)
-      lam_H     <- getOption('lam_H', default = 0)
-      nu_q      <- getOption('nu_q', default = 0)
-      nu_r      <- getOption('nu_r', default = NULL)
-      ID        <- getOption('ID', default = "PC_full")
-      intercept <- getOption('intercept', default = T)
-      reps      <- getOption('reps', default = 1000)
-      burn      <- getOption('burn', default = 500)
-      E <- PCdfm(Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior, lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r, ID = ID, ITC = intercept, reps = reps, burn = burn)
+      E <- PCdfm(Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior, lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r, ID = identification, ITC = intercept, reps = reps, burn = burn)
     }else{
       stop("method must be either Bayesian, ML, or PC")
     }
