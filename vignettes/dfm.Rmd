@@ -1,12 +1,12 @@
 ---
-title: "BDFM"
-subtitle: "Bayesian Dynamic Factor Models"
+title: "Bayesian Dynamic Factor Models"
 author: "Seth Leonard, Christoph Sax"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Bayesian Dynamic Factor Models}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  \usepackage[utf8]{inputenc}
 ---
 
 
