@@ -11,6 +11,12 @@ reference:
     and Koopman's (2012) disturbance smoother.
   contents:
   - dfm
+- title: Backend
+  desc: >
+    Watson and Engle (1983) Algorithm
+  contents:
+  - SeasAdj_WE
+
 
 navbar:
   title: ~
