@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Estimate dynamic factor model — dfm • BDFM</title>
+<title>MCMC Routine for Bayesian Dynamic Factor Models — CppBDFM • BDFM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Estimate dynamic factor model — dfm" />
+<meta property="og:title" content="MCMC Routine for Bayesian Dynamic Factor Models — CppBDFM" />
 
-<meta property="og:description" content="Estimate dynamic factor model" />
+<meta property="og:description" content="CppBDFM is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (http://arma.sourceforge.net/) linear algebra library for C++ and the packages needed for interfacing with R (Rcpp and RcppArmadillo)." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -97,76 +97,65 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Estimate dynamic factor model</h1>
+    <h1>MCMC Routine for Bayesian Dynamic Factor Models</h1>
     
-    <div class="hidden name"><code>dfm.Rd</code></div>
+    <div class="hidden name"><code>CppBDFM.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Estimate dynamic factor model</p>
+    <p><code>CppBDFM</code> is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (<a href='http://arma.sourceforge.net/'>http://arma.sourceforge.net/</a>) linear algebra library for C++ and the packages needed for interfacing with R (<code>Rcpp</code> and <code>RcppArmadillo</code>).</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>dfm</span>(<span class='no'>Y</span>, <span class='kw'>factors</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>lags</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>forecast</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"Bayesian"</span>,
-  <span class='kw'>B_prior</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>lam_B</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>H_prior</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>lam_H</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>nu_q</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>nu_r</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>identification</span> <span class='kw'>=</span> <span class='st'>"PC_full"</span>, <span class='kw'>intercept</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>reps</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>burn</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>Loud</span> <span class='kw'>=</span> <span class='no'>F</span>, <span class='kw'>EM_tolerance</span> <span class='kw'>=</span> <span class='fl'>0.01</span>)</pre>
+    <pre class="usage"><span class='fu'>CppBDFM</span>(<span class='no'>B</span>, <span class='no'>Bp</span>, <span class='no'>lam_B</span>, <span class='no'>q</span>, <span class='no'>nu_q</span>, <span class='no'>H</span>, <span class='no'>Hp</span>, <span class='no'>lam_H</span>, <span class='no'>R</span>, <span class='no'>nu_r</span>, <span class='no'>Y</span>, <span class='no'>reps</span>, <span class='no'>burn</span>, <span class='no'>Loud</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>Y</th>
-      <td><p>data in matrix format with time in rows</p></td>
+      <th>B</th>
+      <td><p>initial guess for B in transition equation</p></td>
     </tr>
     <tr>
-      <th>factors</th>
-      <td><p>number of factors</p></td>
-    </tr>
-    <tr>
-      <th>lags</th>
-      <td><p>number of lags in transition equation</p></td>
-    </tr>
-    <tr>
-      <th>forecast</th>
-      <td><p>number of periods ahead to forecast</p></td>
-    </tr>
-    <tr>
-      <th>method</th>
-      <td><p>character, method to be used</p></td>
-    </tr>
-    <tr>
-      <th>B_prior</th>
-      <td><p>prior matrix for B in the transition equation. Default is zeros.</p></td>
+      <th>Bp</th>
+      <td><p>prior for B</p></td>
     </tr>
     <tr>
       <th>lam_B</th>
-      <td><p>prior tightness on B</p></td>
+      <td><p>prior tightness for B (additive)</p></td>
     </tr>
     <tr>
-      <th>H_prior</th>
-      <td><p>prior matrix for H (loadings) in the observation equation. Default is zeros.</p></td>
-    </tr>
-    <tr>
-      <th>lam_H</th>
-      <td><p>prior tightness on H</p></td>
+      <th>q</th>
+      <td><p>initial guess for q in the transition equation</p></td>
     </tr>
     <tr>
       <th>nu_q</th>
-      <td><p>prior deg. of freedom for transition equation, entered as vector with length equal to the number of factors.</p></td>
+      <td><p>prior "degrees of freedom" for inverse-Whishart prior for q (additive, prior scale is fixed so that increasing nu_q shrinks the variance towards zero)</p></td>
+    </tr>
+    <tr>
+      <th>H</th>
+      <td><p>initial guess for H in the trasition equation</p></td>
+    </tr>
+    <tr>
+      <th>Hp</th>
+      <td><p>prior for H</p></td>
+    </tr>
+    <tr>
+      <th>lam_H</th>
+      <td><p>prior tightness for H (additive)</p></td>
+    </tr>
+    <tr>
+      <th>R</th>
+      <td><p>initial guess for diagonal elements of R in the transition equation, entered as a vector</p></td>
     </tr>
     <tr>
       <th>nu_r</th>
-      <td><p>prior deg. of freedom for observables, entered as vector with length equal to the number of observables.</p></td>
+      <td><p>prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r[j] shrinks the variance of shocks to series j towards zero)</p></td>
     </tr>
     <tr>
-      <th>identification</th>
-      <td><p>factor identification. 'PC_full' is the default (using all observed series), 'PC_sub' finds a submatrix of the data that maximizes the number of observations for a square (no missing values) data set. Use 'PC_sub' when many observations are missing.</p></td>
-    </tr>
-    <tr>
-      <th>intercept</th>
-      <td><p>logical, should an icept be included?</p></td>
+      <th>Y</th>
+      <td><p>Input data. Data must be scaled and centered prior to estimation if desired.</p></td>
     </tr>
     <tr>
       <th>reps</th>
@@ -178,11 +167,7 @@
     </tr>
     <tr>
       <th>Loud</th>
-      <td><p>print status of function during evalutation. If ML, print difference in likelihood at each iteration of the EM algorithm.</p></td>
-    </tr>
-    <tr>
-      <th>EM_tolerance</th>
-      <td><p>tolerance for convergence of EM algorithm. Convergence criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1 is the log likelihood from this iteration and Lik0 is the likelihood from the previous iteration.</p></td>
+      <td><p>print status of function during evaluation.</p></td>
     </tr>
     </table>
     

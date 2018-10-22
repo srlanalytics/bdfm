@@ -40,7 +40,7 @@ dfm(Y, factors = 1, lags = 2, forecast = 0, method = "Bayesian",
 
 \item{burn}{number of iterations to burn in MCMC sampling}
 
-\item{Loud}{if method is Bayesian, print MCMC iterations. If ML, print difference in likelihood at each iteration of the EM algorithm.}
+\item{Loud}{print status of function during evalutation. If ML, print difference in likelihood at each iteration of the EM algorithm.}
 
 \item{EM_tolerance}{tolerance for convergence of EM algorithm. Convergence criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1 is the log likelihood from this iteration and Lik0 is the likelihood from the previous iteration.}
 }
