@@ -4,10 +4,11 @@
 \alias{dfm}
 \title{Estimate dynamic factor model}
 \usage{
-dfm(Y, factors = 1, lags = 2, forecast = 0, method = "Bayesian",
-  B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
-  nu_r = NULL, identification = "PC_full", intercept = TRUE,
-  reps = 1000, burn = 500, Loud = F, EM_tolerance = 0.01)
+dfm(Y, factors = 1, lags = 2, forecast = 0, method = c("bayesian",
+  "ml", "pc"), B_prior = NULL, lam_B = 0, H_prior = NULL,
+  lam_H = 0, nu_q = 0, nu_r = NULL, identification = "PC_full",
+  intercept = TRUE, reps = 1000, burn = 500, Loud = FALSE,
+  EM_tolerance = 0.01)
 }
 \arguments{
 \item{Y}{data in matrix format with time in rows}
@@ -20,19 +21,26 @@ dfm(Y, factors = 1, lags = 2, forecast = 0, method = "Bayesian",
 
 \item{method}{character, method to be used}
 
-\item{B_prior}{prior matrix for B in the transition equation. Default is zeros.}
+\item{B_prior}{prior matrix for B in the transition equation. Default is
+zeros.}
 
 \item{lam_B}{prior tightness on B}
 
-\item{H_prior}{prior matrix for H (loadings) in the observation equation. Default is zeros.}
+\item{H_prior}{prior matrix for H (loadings) in the observation equation.
+Default is zeros.}
 
 \item{lam_H}{prior tightness on H}
 
-\item{nu_q}{prior deg. of freedom for transition equation, entered as vector with length equal to the number of factors.}
+\item{nu_q}{prior deg. of freedom for transition equation, entered as vector
+with length equal to the number of factors.}
 
-\item{nu_r}{prior deg. of freedom for observables, entered as vector with length equal to the number of observables.}
+\item{nu_r}{prior deg. of freedom for observables, entered as vector with
+length equal to the number of observables.}
 
-\item{identification}{factor identification. 'PC_full' is the default (using all observed series), 'PC_sub' finds a submatrix of the data that maximizes the number of observations for a square (no missing values) data set. Use 'PC_sub' when many observations are missing.}
+\item{identification}{factor identification. 'PC_full' is the default (using
+all observed series), 'PC_sub' finds a submatrix of the data that maximizes
+the number of observations for a square (no missing values) data set. Use
+'PC_sub' when many observations are missing.}
 
 \item{intercept}{logical, should an icept be included?}
 
@@ -40,10 +48,24 @@ dfm(Y, factors = 1, lags = 2, forecast = 0, method = "Bayesian",
 
 \item{burn}{number of iterations to burn in MCMC sampling}
 
-\item{Loud}{if method is Bayesian, print MCMC iterations. If ML, print difference in likelihood at each iteration of the EM algorithm.}
+\item{Loud}{print status of function during evalutation. If ML, print
+difference in likelihood at each iteration of the EM algorithm.}
 
-\item{EM_tolerance}{tolerance for convergence of EM algorithm. Convergence criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1 is the log likelihood from this iteration and Lik0 is the likelihood from the previous iteration.}
+\item{EM_tolerance}{tolerance for convergence of EM algorithm. Convergence
+criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
+is the log likelihood from this iteration and Lik0 is the likelihood from
+the previous iteration.}
 }
 \description{
 Estimate dynamic factor model
+}
+\examples{
+fdeaths0 <- fdeaths
+fdeaths0[length(fdeaths0)] <- NA
+dta <- cbind(fdeaths0, mdeaths)
+
+library(BDFM)
+m <- dfm(dta, forecast = 2)
+predict(m)
+
 }
