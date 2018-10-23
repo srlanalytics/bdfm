@@ -82,7 +82,7 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
     H <- as.matrix(Parms$H[-(1:m), ])
     R <- diag(c(Parms$R[-(1:m)]))
 
-    Est <- DSmooth(B, q, H, R, Y[, -(1:m)])
+    Est <- DSmooth(B, q, H, R, Y[, -(1:m), drop = FALSE])
 
     BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
 
@@ -92,7 +92,7 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
       H = H,
       R = R,
       itc = itc,
-      values  = Est$Ys,
+      values  = Est$Ys + matrix(1, r, 1) %x% t(itc),
       factors = Est$Z[,1:m],
       Qstore  = Parms$Qstore,
       Bstore  = Parms$Bstore,
@@ -118,7 +118,7 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
       q = q,
       H = H,
       R = R,
-      values  = Est$Ys,
+      values  = Est$Ys + matrix(1, r, 1) %x% t(itc),
       factors = Est$Z[,1:m],
       Qstore  = Parms$Qstore, # lets us look at full distribution
       Bstore  = Parms$Bstore,
