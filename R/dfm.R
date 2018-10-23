@@ -46,27 +46,38 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
                 method = c("bayesian", "ml", "pc"),
                 B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
                 nu_r = NULL, identification = "PC_full", intercept = TRUE,
-                reps = 1000, burn = 500, Loud = FALSE, EM_tolerance = 0.01) {
+                reps = 1000, burn = 500, loud = FALSE, EM_tolerance = 0.01) {
 
   method <- match.arg(method)  # checks and picks the first if unspecified
 
-  tsobjs <- c("zoo", "xts", "tslist", "tbl_ts", "ts", "timeSeries",
+  tsobjs <- c("zoo", "xts", "tslist", "tbl_ts", "mts", "ts", "timeSeries",
     "tbl_time", "tbl_df", "data.table", "data.frame", "dts")
 
-  if (!requireNamespace("tsbox") & class(Y)[1] %in% tsobjs) {
+  if (!requireNamespace("tsbox") & any(class(Y) %in% tsobjs)) {
     stop('"tsbox" is needed for time series support. To install: \n\n  install.packages("tsbox")', call. = FALSE)
   }
 
   # non time series
-  if (!(class(Y)[1] %in% tsobjs) && is.matrix(Y)) {
+  if (!any(class(Y) %in% tsobjs) && is.matrix(Y)) {
+    if (method == "bayesian") {
       ans <- BDFM(
-        Y = Y, m = factors, p = lags, FC = forecast, Bp = B_prior,
+        Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
         lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-        ID = ID, ITC = intercept, reps = reps, burn = burn,
+        ID = identification, ITC = intercept, reps = reps, burn = burn,
         Loud = loud
       )
-      colnames(ans$values) <- colnames(Y)
-      return(ans)
+    } else if (method == "ml") {
+      ans <- MLdfm(
+        Y, m = factors, p = lags, FC = forecast, tol = EM_tolerance,
+        Loud = loud
+      )
+    } else if (method == "pc") {
+      ans <- PCdfm(
+        Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
+        lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
+        ID = identification, ITC = intercept, reps = reps, burn = burn
+      )
+    }
   } else {
     stopifnot(requireNamespace("tsbox"))
     # time series
