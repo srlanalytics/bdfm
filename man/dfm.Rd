@@ -7,7 +7,7 @@
 dfm(Y, factors = 1, lags = 2, forecast = 0, method = c("bayesian",
   "ml", "pc"), B_prior = NULL, lam_B = 0, H_prior = NULL,
   lam_H = 0, nu_q = 0, nu_r = NULL, identification = "PC_full",
-  intercept = TRUE, reps = 1000, burn = 500, Loud = FALSE,
+  intercept = TRUE, reps = 1000, burn = 500, loud = FALSE,
   EM_tolerance = 0.01)
 }
 \arguments{
@@ -48,7 +48,7 @@ the number of observations for a square (no missing values) data set. Use
 
 \item{burn}{number of iterations to burn in MCMC sampling}
 
-\item{Loud}{print status of function during evalutation. If ML, print
+\item{loud}{print status of function during evalutation. If ML, print
 difference in likelihood at each iteration of the EM algorithm.}
 
 \item{EM_tolerance}{tolerance for convergence of EM algorithm. Convergence

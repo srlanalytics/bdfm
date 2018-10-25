@@ -22,7 +22,7 @@
 #' @param intercept logical, should an icept be included?
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
-#' @param Loud print status of function during evalutation. If ML, print
+#' @param loud print status of function during evalutation. If ML, print
 #'   difference in likelihood at each iteration of the EM algorithm.
 #' @param EM_tolerance tolerance for convergence of EM algorithm. Convergence
 #'   criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
@@ -79,11 +79,18 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
       )
     }
   } else {
-    stopifnot(requireNamespace("tsbox"))
-    # time series
-    stopifnot(ts_boxable(Y))
-    # convert to mts
-    Y.uc  <- unclass(ts_ts(Y))
+
+    # no need for tsbox if Y is ts or mts
+    if (inherits(Y, "ts")) {
+      Y.uc  <- unclass(Y)
+    } else {
+      stopifnot(requireNamespace("tsbox"))
+      # time series
+      stopifnot(tsbox::ts_boxable(Y))
+      # convert to mts
+      Y.uc  <- unclass(tsbox::ts_ts(Y))
+    }
+
     Y.tsp <- attr(Y.uc, "tsp")
     attr(Y.uc, "tsp") <- NULL
 
@@ -114,13 +121,14 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     colnames(ans$values) <- colnames(Y)
 
     # put values back into original class
-    ans$values  <- copy_class(ans$values, Y)
-    ans$factors <- copy_class(ans$factors, Y, preserve.mode = FALSE)
+    if (!inherits(Y, "ts")) {
+      ans$values  <- tsbox::copy_class(ans$values, Y)
+      ans$factors <- tsbox::copy_class(ans$factors, Y, preserve.mode = FALSE)
+    }
   }
   class(ans) <- "dfm"
   return(ans)
 }
-
 
 
 #' extractor function for factors
