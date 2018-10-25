@@ -1,3 +1,4 @@
+#' @importFrom Matrix Matrix Diagonal sparseMatrix
 MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, loud = FALSE) {
 
   Y <- as.matrix(Y)
