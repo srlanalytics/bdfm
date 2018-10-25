@@ -9,8 +9,6 @@ src/*.so
 src/*.dll
 src/BDFM.o
 src/RcppExports.o
-src/RcppExports.cpp
-R/RcppExports.R
 src/BDFM.dll
 *.o
 plots.pdf
