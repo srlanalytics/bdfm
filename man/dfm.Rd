@@ -51,7 +51,7 @@ the number of observations for a square (no missing values) data set. Use
 \item{loud}{print status of function during evalutation. If ML, print
 difference in likelihood at each iteration of the EM algorithm.}
 
-\item{EM_tolerance}{tolerance for convergence of EM algorithm. Convergence
+\item{EM_tolerance}{tolerance for convergence of EM algorithm (method `ml` only). Convergence
 criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
 is the log likelihood from this iteration and Lik0 is the likelihood from
 the previous iteration.}
