@@ -12,9 +12,9 @@ Imports:
   RcppArmadillo (>= 0.7.900.2.0),
   Matrix (>= 1.2)
 Suggests:
-    testthat,
-    tsbox,
-    knitr
+  testthat,
+  tsbox,
+  knitr
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.0
 Encoding: UTF-8
