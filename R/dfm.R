@@ -22,9 +22,9 @@
 #' @param intercept logical, should an icept be included?
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
-#' @param Loud print status of function during evalutation. If ML, print
+#' @param loud print status of function during evalutation. If ML, print
 #'   difference in likelihood at each iteration of the EM algorithm.
-#' @param EM_tolerance tolerance for convergence of EM algorithm. Convergence
+#' @param EM_tolerance tolerance for convergence of EM algorithm (method `ml` only). Convergence
 #'   criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
 #'   is the log likelihood from this iteration and Lik0 is the likelihood from
 #'   the previous iteration.
@@ -59,53 +59,35 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
 
   # non time series
   if (!any(class(Y) %in% tsobjs) && is.matrix(Y)) {
-    if (method == "bayesian") {
-      ans <- BDFM(
-        Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
-        lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-        ID = identification, ITC = intercept, reps = reps, burn = burn,
-        Loud = loud
-      )
-    } else if (method == "ml") {
-      ans <- MLdfm(
-        Y, m = factors, p = lags, FC = forecast, tol = EM_tolerance,
-        Loud = loud
-      )
-    } else if (method == "pc") {
-      ans <- PCdfm(
-        Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
-        lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-        ID = identification, ITC = intercept, reps = reps, burn = burn
-      )
-    }
+
+    ans <- dfm_core(
+      Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
+      lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
+      ID = identification, ITC = intercept, reps = reps, burn = burn,
+      loud = loud, tol = EM_tolerance, method = method
+    )
+
   } else {
-    stopifnot(requireNamespace("tsbox"))
-    # time series
-    stopifnot(ts_boxable(Y))
-    # convert to mts
-    Y.uc  <- unclass(ts_ts(Y))
+
+    # no need for tsbox if Y is ts or mts
+    if (inherits(Y, "ts")) {
+      Y.uc  <- unclass(Y)
+    } else {
+      stopifnot(requireNamespace("tsbox"))
+      # time series
+      stopifnot(tsbox::ts_boxable(Y))
+      # convert to mts
+      Y.uc  <- unclass(tsbox::ts_ts(Y))
+    }
+
     Y.tsp <- attr(Y.uc, "tsp")
     attr(Y.uc, "tsp") <- NULL
-
-    if (method == "bayesian") {
-      ans <- BDFM(
-        Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
-        lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-        ID = identification, ITC = intercept, reps = reps, burn = burn,
-        Loud = loud
-      )
-    } else if (method == "ml") {
-      ans <- MLdfm(
-        Y, m = factors, p = lags, FC = forecast, tol = EM_tolerance,
-        Loud = loud
-      )
-    } else if (method == "pc") {
-      ans <- PCdfm(
-        Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
-        lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-        ID = identification, ITC = intercept, reps = reps, burn = burn
-      )
-    }
+    ans <- dfm_core(
+      Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
+      lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
+      ID = identification, ITC = intercept, reps = reps, burn = burn,
+      loud = loud, tol = EM_tolerance, method = method
+    )
 
     # make values a ts timeseries
     ans$values <- ts(ans$values, start = Y.tsp[1], frequency = Y.tsp[3])
@@ -114,13 +96,37 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     colnames(ans$values) <- colnames(Y)
 
     # put values back into original class
-    ans$values  <- copy_class(ans$values, Y)
-    ans$factors <- copy_class(ans$factors, Y, preserve.mode = FALSE)
+    if (!inherits(Y, "ts")) {
+      ans$values  <- tsbox::copy_class(ans$values, Y)
+      ans$factors <- tsbox::copy_class(ans$factors, Y, preserve.mode = FALSE)
+    }
   }
   class(ans) <- "dfm"
   return(ans)
 }
 
+dfm_core <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC,
+                     reps, burn, tol, loud, method) {
+  if (method == "bayesian") {
+    BDFM(
+      Y = Y, m = m, p = p, FC = FC, Bp = Bp,
+      lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
+      ID = ID, ITC = ITC, reps = reps, burn = burn,
+      loud = loud
+    )
+  } else if (method == "ml") {
+    MLdfm(
+      Y = Y, m = m, p = p, FC = FC, tol = tol,
+      loud = loud
+    )
+  } else if (method == "pc") {
+    PCdfm(
+      Y, m = m, p = p, FC = FC, Bp = Bp,
+      lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
+      ID = ID, ITC = ITC, reps = reps, burn = burn
+    )
+  }
+}
 
 
 #' extractor function for factors
