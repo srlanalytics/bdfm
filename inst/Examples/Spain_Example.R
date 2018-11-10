@@ -6,11 +6,10 @@
 library(Rcpp)
 library(Matrix)
 library(readr)
-sourceCpp(file = "src/BDFM.cpp")
-source(file = "R/SA_Programs.R")
+library(BDFM)
 
 # ------- load data --------------
-Spain <- read_csv("Examples/Spain_IP.csv",
+Spain <- read_csv(system.file("Examples/Spain_IP.csv", package = "BDFM"),
   col_types = cols(date = col_date(format = "%Y-%m-%d"))
 )
 y <- Spain$IP
@@ -19,7 +18,7 @@ dates <- Spain$date
 
 N <- Predetermined.m(dates, predetermined = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
 
-y_SA <- SeasAdj_WE(y, N, p = 2, Loud = T) # y - data, N - seasonal factors, p - lags in transition equation, Loud = T - print convergence of likelihood
+y_SA <- SeasAdj_WE(y, N, lags = 2, Loud = T) # y - data, N - seasonal factors, p - lags in transition equation, Loud = T - print convergence of likelihood
 
 plot(as.Date(dates), y, type = "l", col = "red", xlab = "Year", ylab = "Industrial Production")
 lines(as.Date(dates), y_SA$y_SA, col = "steelblue")
