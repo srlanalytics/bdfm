@@ -21,11 +21,9 @@ N <- Predetermined.m(dates, predetermined = c("January", "February", "March", "A
 
 y_SA <- SeasAdj_WE(y, N, p = 2, Loud = T) # y - data, N - seasonal factors, p - lags in transition equation, Loud = T - print convergence of likelihood
 
-gr({
-  plot(as.Date(dates), y, type = "l", col = "red", xlab = "Year", ylab = "Industrial Production")
-  lines(as.Date(dates), y_SA$y_SA, col = "steelblue")
-  legend("topright",
-    legend = c("Unadjusted IP", "Seasonally Adjusted IP"),
-    lty = c(1, 1), col = c("red", "steelblue")
-  )
-})
+plot(as.Date(dates), y, type = "l", col = "red", xlab = "Year", ylab = "Industrial Production")
+lines(as.Date(dates), y_SA$y_SA, col = "steelblue")
+legend("topright",
+  legend = c("Unadjusted IP", "Seasonally Adjusted IP"),
+  lty = c(1, 1), col = c("red", "steelblue")
+)
