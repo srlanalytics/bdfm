@@ -13,17 +13,17 @@ dY    <- 100*diff(log(Y))
 #Estimate ML factor model with:
 m = 1 #factor
 p = 5 #lags
-Est_ML   <- dfm(dY,factors = 1,lags = 5, method = "ML", Loud = T)
+Est_ML   <- dfm(dY,factors = 1,lags = 5, method = "ml", loud = T)
 
 #Estimate PC factor model with:
 m = 1 #factor
 p = 5 #lags
-Est_PC   <- dfm(dY,factors = 1,lags = 5, method = "PC")
+Est_PC   <- dfm(dY,factors = 1,lags = 5, method = "pc")
 
 #Estimate Bayesian factor model with:
 #m = 1 factor
 #p = 5 lags
-Est   <- dfm(dY,factors = 1,lags = 5, Loud = T)
+Est   <- dfm(dY,factors = 1,lags = 5, loud = T)
 
 #Look at the common factor for the last 20 observations
 ts.plot(cbind(tail(Est$factors,50), tail(dY,50)), col = c("red", "steelblue", "steelblue", "steelblue", "steelblue" ), lty = c(1,2,2,2,2))
@@ -45,7 +45,7 @@ print(Est)
 #They are (more or less) the same as there are no missing values in this example!
 
 #Re-estimate the factor model shrinking the variance of shocks in the transition equation towards zero (i.e. smooth factors)
-Est2  <- bdfm(dY, factors = 1, lags = 5, nu_q = 10)
+Est2  <- dfm(dY, factors = 1, lags = 5, nu_q = 10)
 ts.plot(cbind(tail(Est2$factors,50), tail(pc$x[,1],50)), col = c("red", "steelblue"), lty = c(1,2))
 
 Est2$B
@@ -57,14 +57,14 @@ Est2$q
 # ts.plot(cbind(tail(Est3$factors,50), tail(dY[,1],50)), col = c("red", "steelblue"), lty = c(1,2))
 
 #Enter data as data.frame
-dates  <- unique(as.Date(ts_data.frame(EuStockMarkets)$time))
-Y      <- as.matrix(EuStockMarkets)
-dY     <- data.frame(dates[-1], diff(log(Y)))
+library(tsbox)
+df <- EuStockMarkets %>%
+  ts_tbl()
 
 #Estimate factor model with:
 #m = 1 factor
 #p = 5 lags
-Est   <- BDFM(dY,factors = 1,lags = 5, forecast = 5)
+Est <- dfm(df,factors = 1,lags = 5, forecast = 5)
 
 tail(Est$predicted)
 
