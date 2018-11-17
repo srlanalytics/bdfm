@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Seasonal Factors at Monthly Frequency — Predetermined.m • BDFM</title>
+<title>extractor function for factors — factors • BDFM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Seasonal Factors at Monthly Frequency — Predetermined.m" />
+<meta property="og:title" content="extractor function for factors — factors" />
 
-<meta property="og:description" content="Generate predetermined seasonal factors at monthly frequency" />
+<meta property="og:description" content="extractor function for factors" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -109,29 +109,25 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Seasonal Factors at Monthly Frequency</h1>
+    <h1>extractor function for factors</h1>
     
-    <div class="hidden name"><code>Predetermined.m.Rd</code></div>
+    <div class="hidden name"><code>factors.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Generate predetermined seasonal factors at monthly frequency</p>
+    <p>extractor function for factors</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>Predetermined.m</span>(<span class='no'>dates</span>, <span class='no'>predetermined</span>)</pre>
+    <pre class="usage"><span class='fu'>factors</span>(<span class='no'>x</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>dates</th>
-      <td><p>dates that factors will be generated for (date vector)</p></td>
-    </tr>
-    <tr>
-      <th>predetermined</th>
-      <td><p>seasonal adjustment factors to be generated, for example c('June', 'July')</p></td>
+      <th>x</th>
+      <td><p>obeject of class `"dfm"`</p></td>
     </tr>
     </table>
     

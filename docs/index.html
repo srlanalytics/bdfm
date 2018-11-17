@@ -41,6 +41,18 @@
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Advanced
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="articles/intro.html">Bayesian Dynamic Factor Models</a>
+    </li>
+  </ul>
+</li>
 <li>
   <a href="news/index.html">News</a>
 </li>
@@ -68,61 +80,26 @@
 <a href="#bdfm" class="anchor"></a>BDFM</h1></div>
 <p>Bayesian dynamic factor model estimation in R.</p>
 <p><a href="https://travis-ci.org/srlanalytics/BDFM"><img src="https://travis-ci.org/christophsax/tsbox.svg?branch=master" alt="Build Status"></a> <a href="https://codecov.io/github/srlanalytics/BDFM"><img src="https://codecov.io/github/srlanalytics/BDFM/branch/master/graphs/badge.svg" alt="codecov"></a></p>
-<div id="description" class="section level2">
-<h2 class="hasAnchor">
-<a href="#description" class="anchor"></a>Description</h2>
-<p>BDFM estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or “ragged edges” due to different start or end dates.</p>
-</div>
+<p>BDFM estimates dynamic factor models by simulation using the Durbin and Koopman</p>
+<p>(2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or “ragged edges” due to different start or end dates.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<pre class="t"><code>remotes::install_github("srlanalytics/BDFM")</code></pre>
+<p>To install the development version:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">remotes<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/remotes/topics/install_github">install_github</a></span>(<span class="st">"srlanalytics/BDFM"</span>)</code></pre></div>
 </div>
 <div id="basic-use" class="section level2">
 <h2 class="hasAnchor">
 <a href="#basic-use" class="anchor"></a>Basic Use</h2>
-<p>Estimate a model with two factors and two lags in the transition equation</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">library</span>(BDFM)</a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">Est &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/BDFM/topics/bdfm">bdfm</a></span>(<span class="dt">Y =</span> Data, <span class="dt">factors =</span> <span class="dv">2</span>, <span class="dt">lags =</span> <span class="dv">2</span>)</a></code></pre></div>
-<p>Input data is any data type that can be coverted by <code>as.matrix()</code> and should index time in rows and series in columns. If the library <a href="https://github.com/christophsax/tsbox">tsbox</a> is present time seires attributes of input data are preserved for any <code>ts_boxable()</code> data format. In this case data need not be entered in tabular format for types such as <code>data.table</code> or <code>data.frame</code>.</p>
-<p>Quick time series plot estimated factors</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">ts.plot</span>(Est<span class="op">$</span>factors)</a></code></pre></div>
-<p>Quick time series plot of fitted values (including forecasts and nowcasts) for first series in input data</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">ts.plot</span>(Est<span class="op">$</span>values[,<span class="dv">1</span>])</a></code></pre></div>
-</div>
-<div id="full-input" class="section level2">
-<h2 class="hasAnchor">
-<a href="#full-input" class="anchor"></a>Full Input</h2>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">Est &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/BDFM/topics/bdfm">bdfm</a></span>(Y, <span class="dt">factors =</span> <span class="dv">1</span>, <span class="dt">lags =</span> <span class="dv">2</span>, <span class="dt">forecast =</span> <span class="dv">0</span>, <span class="dt">B_prior =</span> <span class="ot">NULL</span>, <span class="dt">lam_B =</span> <span class="dv">0</span>, <span class="dt">H_prior =</span> <span class="ot">NULL</span>, <span class="dt">lam_H =</span> <span class="dv">0</span>, <span class="dt">nu_q =</span> <span class="dv">0</span>, <span class="dt">nu_r =</span> <span class="ot">NULL</span>, <span class="dt">ID =</span> <span class="st">'PC_full'</span>, <span class="dt">intercept =</span> <span class="ot">TRUE</span>, <span class="dt">reps =</span> <span class="dv">1000</span>, <span class="dt">burn =</span> <span class="dv">500</span>)</a></code></pre></div>
-<p><code>Y</code> Input data</p>
-<p><code>factors</code> Number of factors</p>
-<p><code>lags</code> Number of lags in transition equation</p>
-<p><code>forecast</code> Number of periods ahead to forecast</p>
-<p><code>B_prior</code> Prior on transtion equation (default is to shrink values towards zero)</p>
-<p><code>lam_B</code> Prior tightness on transition equation</p>
-<p><code>H_prior</code> Prior on loadings/observation equation (default is zero)</p>
-<p><code>lam_H</code> Prior tightness on loadings, scalar</p>
-<p><code>nu_q</code> Prior “degrees of freedom” for transition equation (i.e. shrink covariance of shocks towards zero), scalar</p>
-<p><code>nu_r</code> Prior “degrees of freedom” for observation equation (i.e. shrink covariance of shocks towards zero), vector with elements equaling number of observed series</p>
-<p><code>ID</code> Model identification technique. ‘PC_full’ identifies on principal components using all series. ‘PC-sub’ identifies on principal components using a subset of the data that maximizes the number of observations when many observations are missing.</p>
-<p><code>intercept</code> T/F estimate intercept term</p>
-<p><code>reps</code> Number of MCMC draws</p>
-</div>
-<div id="full-output" class="section level2">
-<h2 class="hasAnchor">
-<a href="#full-output" class="anchor"></a>Full Output</h2>
-<p><code>B</code> Estimated transition matrix (posterior median)</p>
-<p><code>q</code> Estimated covariance of shocks to transition equation (posterior median)</p>
-<p><code>H</code> Estimated loadings (posterior median)</p>
-<p><code>R</code> Estimated covariance of shocks to observation equation (poserior median, diagonal matrix)</p>
-<p><code>itc</code> Intercept terms for observables</p>
-<p><code>values</code> Fitted (smoothed) values for observables (including nowcasts and forecasts)</p>
-<p><code>factors</code> Estimated factors (posterior median)</p>
-<p><code>Bstore</code> Full posterior distribution for <code>B</code></p>
-<p><code>Qstore</code> Full posterior distribution for <code>Q</code></p>
-<p><code>Hstore</code> Full posterior distribution for <code>H</code></p>
-<p><code>Rstore</code> Full posterior distribution for <code>R</code></p>
-<p><code>UDstore</code> Forecast updates (prediction error times gain) at each period</p>
+<p>Estimate a model with one factor and two lags in the transition equation:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(BDFM)
+dta &lt;-<span class="st"> </span><span class="kw">cbind</span>(fdeaths, mdeaths)
+m &lt;-<span class="st"> </span><span class="kw"><a href="reference/dfm.html">dfm</a></span>(dta, <span class="dt">forecast =</span> <span class="dv">2</span>)</code></pre></div>
+<p>Input data should be an object of class <code>"ts"</code>. If the <a href="https://www.tsbox.help/">tsbox</a> package is installed, any ts-boxable time series objects can be supplied, such as <code>"xts"</code>, <code>"zoo"</code>, <code>"timeSeries"</code> or <code>"data.frame"</code>.</p>
+<p>Extract the resulting series, using <code>predict()</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">predict</span>(m))</code></pre></div>
+<p>Or have a look at the esimated factors, using <code><a href="reference/factors.html">factors()</a></code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw"><a href="reference/factors.html">factors</a></span>(m))</code></pre></div>
 </div>
 <div id="estimation-details" class="section level2">
 <h2 class="hasAnchor">
