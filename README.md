@@ -37,7 +37,7 @@ Extract the resulting series, using `predict()`.
 plot(predict(m))
 ```
 
-![](README-predict-1.png)
+![](man/figures/README-predict-1.png)
 
 Or have a look at the esimated factors, using `factors()`:
 
@@ -45,7 +45,7 @@ Or have a look at the esimated factors, using `factors()`:
 plot(factors(m))
 ```
 
-![](README-factors-1.png)
+![](man/figures/README-factors-1.png)
 
 Estimation Details
 ------------------

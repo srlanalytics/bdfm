@@ -10,7 +10,7 @@ output:
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
+  fig.path = "man/figures/README-"
 )
 ```
 
@@ -69,12 +69,3 @@ plot(factors(m))
 You can find details on estimation routines and derivations in the short book
 *Practical Implementation of Factor Models*. [Free
 Download](http://srlquantitative.com)
-
-## Examples
-
-Examples scripts are included in the
-[Examples](https://github.com/srlanalytics/BDFM/tree/master/inst/Examples) file
-of this repository including code to run your own live nowcasts of US industrial
-production using the [Fred](https://fred.stlouisfed.org/) API:
-
-![](https://github.com/srlanalytics/BDFM/blob/master/img/US_IP.png)

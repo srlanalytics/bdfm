@@ -18,7 +18,7 @@
 <![endif]-->
 </head>
 <body>
-    <div class="container template-home">
+    <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -74,14 +74,18 @@
 
       
       </header><div class="row">
-  <div class="contents col-md-9">
-    <div id="bdfm" class="section level1">
+  <div class="col-md-9 contents">
+    
+
+    
+    
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+<div id="bdfm" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#bdfm" class="anchor"></a>BDFM</h1></div>
 <p>Bayesian dynamic factor model estimation in R.</p>
 <p><a href="https://travis-ci.org/srlanalytics/BDFM"><img src="https://travis-ci.org/christophsax/tsbox.svg?branch=master" alt="Build Status"></a> <a href="https://codecov.io/github/srlanalytics/BDFM"><img src="https://codecov.io/github/srlanalytics/BDFM/branch/master/graphs/badge.svg" alt="codecov"></a></p>
-<p>BDFM estimates dynamic factor models by simulation using the Durbin and Koopman</p>
-<p>(2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or “ragged edges” due to different start or end dates.</p>
+<p>BDFM estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or “ragged edges” due to different start or end dates.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
@@ -94,12 +98,15 @@
 <p>Estimate a model with one factor and two lags in the transition equation:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(BDFM)
 dta &lt;-<span class="st"> </span><span class="kw">cbind</span>(fdeaths, mdeaths)
-m &lt;-<span class="st"> </span><span class="kw"><a href="reference/dfm.html">dfm</a></span>(dta, <span class="dt">forecast =</span> <span class="dv">2</span>)</code></pre></div>
+m &lt;-<span class="st"> </span><span class="kw"><a href="reference/dfm.html">dfm</a></span>(dta, <span class="dt">forecast =</span> <span class="dv">2</span>)
+<span class="co">#&gt; Loading required namespace: tsbox</span></code></pre></div>
 <p>Input data should be an object of class <code>"ts"</code>. If the <a href="https://www.tsbox.help/">tsbox</a> package is installed, any ts-boxable time series objects can be supplied, such as <code>"xts"</code>, <code>"zoo"</code>, <code>"timeSeries"</code> or <code>"data.frame"</code>.</p>
 <p>Extract the resulting series, using <code>predict()</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">predict</span>(m))</code></pre></div>
+<p><img src="reference/figures/README-predict-1.png" width="700"></p>
 <p>Or have a look at the esimated factors, using <code><a href="reference/factors.html">factors()</a></code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw"><a href="reference/factors.html">factors</a></span>(m))</code></pre></div>
+<p><img src="reference/figures/README-factors-1.png" width="700"></p>
 </div>
 <div id="estimation-details" class="section level2">
 <h2 class="hasAnchor">
@@ -110,12 +117,14 @@ m &lt;-<span class="st"> </span><span class="kw"><a href="reference/dfm.html">df
 <h2 class="hasAnchor">
 <a href="#examples" class="anchor"></a>Examples</h2>
 <p>Examples scripts are included in the <a href="https://github.com/srlanalytics/BDFM/tree/master/inst/Examples">Examples</a> file of this repository including code to run your own live nowcasts of US industrial production using the <a href="https://fred.stlouisfed.org/">Fred</a> API:</p>
-<p><img src="https://github.com/srlanalytics/BDFM/blob/master/img/US_IP.png"></p>
+<div class="figure">
+<img src="https://github.com/srlanalytics/BDFM/blob/master/img/US_IP.png">
+</div>
 </div>
 </div>
   </div>
 
-  <div class="col-md-3" id="sidebar">
+  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <div class="links">
 <h2>Links</h2>
 <ul class="list-unstyled">
@@ -138,7 +147,8 @@ m &lt;-<span class="st"> </span><span class="kw"><a href="reference/dfm.html">df
 </ul>
 </div>
 
-  </div>
+      </div>
+
 </div>
 
 
