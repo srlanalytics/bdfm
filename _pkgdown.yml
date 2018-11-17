@@ -1,7 +1,7 @@
 # https://bootswatch.com/
 template:
   params:
-    bootswatch: darkly
+    bootswatch: flatly
 
 reference:
 - title: Dynamic Factor Model
