@@ -61,7 +61,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
   if (!any(class(Y) %in% c(tsobjs, "ts", "mts")) && is.matrix(Y)) {
 
     ans <- dfm_core(
-      Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
+      Y = Y, m = factors, p = lags, FC = forecast, Bp = B_prior,
       lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
       ID = identification, ITC = intercept, reps = reps, burn = burn,
       loud = loud, tol = EM_tolerance, method = method
