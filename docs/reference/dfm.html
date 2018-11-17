@@ -11,7 +11,7 @@
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
-<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/darkly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
@@ -73,6 +73,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Advanced
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/intro.html">Bayesian Dynamic Factor Models</a>
+    </li>
+  </ul>
+</li>
 <li>
   <a href="../news/index.html">News</a>
 </li>
@@ -108,10 +120,11 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>dfm</span>(<span class='no'>Y</span>, <span class='kw'>factors</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>lags</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>forecast</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"Bayesian"</span>,
-  <span class='kw'>B_prior</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>lam_B</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>H_prior</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>lam_H</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>nu_q</span> <span class='kw'>=</span> <span class='fl'>0</span>,
-  <span class='kw'>nu_r</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>identification</span> <span class='kw'>=</span> <span class='st'>"PC_full"</span>, <span class='kw'>intercept</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>reps</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>burn</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>Loud</span> <span class='kw'>=</span> <span class='no'>F</span>, <span class='kw'>EM_tolerance</span> <span class='kw'>=</span> <span class='fl'>0.01</span>)</pre>
+    <pre class="usage"><span class='fu'>dfm</span>(<span class='no'>Y</span>, <span class='kw'>factors</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>lags</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>forecast</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"bayesian"</span>,
+  <span class='st'>"ml"</span>, <span class='st'>"pc"</span>), <span class='kw'>B_prior</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>lam_B</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>H_prior</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>lam_H</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>nu_q</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>nu_r</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>identification</span> <span class='kw'>=</span> <span class='st'>"PC_full"</span>,
+  <span class='kw'>intercept</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>reps</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>burn</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>loud</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>EM_tolerance</span> <span class='kw'>=</span> <span class='fl'>0.01</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -138,7 +151,8 @@
     </tr>
     <tr>
       <th>B_prior</th>
-      <td><p>prior matrix for B in the transition equation. Default is zeros.</p></td>
+      <td><p>prior matrix for B in the transition equation. Default is
+zeros.</p></td>
     </tr>
     <tr>
       <th>lam_B</th>
@@ -146,7 +160,8 @@
     </tr>
     <tr>
       <th>H_prior</th>
-      <td><p>prior matrix for H (loadings) in the observation equation. Default is zeros.</p></td>
+      <td><p>prior matrix for H (loadings) in the observation equation.
+Default is zeros.</p></td>
     </tr>
     <tr>
       <th>lam_H</th>
@@ -154,15 +169,20 @@
     </tr>
     <tr>
       <th>nu_q</th>
-      <td><p>prior deg. of freedom for transition equation, entered as vector with length equal to the number of factors.</p></td>
+      <td><p>prior deg. of freedom for transition equation, entered as vector
+with length equal to the number of factors.</p></td>
     </tr>
     <tr>
       <th>nu_r</th>
-      <td><p>prior deg. of freedom for observables, entered as vector with length equal to the number of observables.</p></td>
+      <td><p>prior deg. of freedom for observables, entered as vector with
+length equal to the number of observables.</p></td>
     </tr>
     <tr>
       <th>identification</th>
-      <td><p>factor identification. 'PC_full' is the default (using all observed series), 'PC_sub' finds a submatrix of the data that maximizes the number of observations for a square (no missing values) data set. Use 'PC_sub' when many observations are missing.</p></td>
+      <td><p>factor identification. 'PC_full' is the default (using
+all observed series), 'PC_sub' finds a submatrix of the data that maximizes
+the number of observations for a square (no missing values) data set. Use
+'PC_sub' when many observations are missing.</p></td>
     </tr>
     <tr>
       <th>intercept</th>
@@ -177,22 +197,110 @@
       <td><p>number of iterations to burn in MCMC sampling</p></td>
     </tr>
     <tr>
-      <th>Loud</th>
-      <td><p>print status of function during evalutation. If ML, print difference in likelihood at each iteration of the EM algorithm.</p></td>
+      <th>loud</th>
+      <td><p>print status of function during evalutation. If ML, print
+difference in likelihood at each iteration of the EM algorithm.</p></td>
     </tr>
     <tr>
       <th>EM_tolerance</th>
-      <td><p>tolerance for convergence of EM algorithm. Convergence criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1 is the log likelihood from this iteration and Lik0 is the likelihood from the previous iteration.</p></td>
+      <td><p>tolerance for convergence of EM algorithm (method `ml` only). Convergence
+criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
+is the log likelihood from this iteration and Lik0 is the likelihood from
+the previous iteration.</p></td>
     </tr>
     </table>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='no'>fdeaths0</span> <span class='kw'>&lt;-</span> <span class='no'>fdeaths</span>
+<span class='no'>fdeaths0</span>[<span class='fu'>length</span>(<span class='no'>fdeaths0</span>)] <span class='kw'>&lt;-</span> <span class='fl'>NA</span>
+<span class='no'>dta</span> <span class='kw'>&lt;-</span> <span class='fu'>cbind</span>(<span class='no'>fdeaths0</span>, <span class='no'>mdeaths</span>)
+
+<span class='fu'>library</span>(<span class='no'>BDFM</span>)
+<span class='no'>m</span> <span class='kw'>&lt;-</span> <span class='fu'>dfm</span>(<span class='no'>dta</span>, <span class='kw'>forecast</span> <span class='kw'>=</span> <span class='fl'>2</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required namespace: tsbox</span></div><div class='input'><span class='fu'>predict</span>(<span class='no'>m</span>)</div><div class='output co'>#&gt;           fdeaths0   mdeaths
+#&gt; Jan 1974  820.0496 2136.9894
+#&gt; Feb 1974  709.1714 1863.1459
+#&gt; Mar 1974  717.7432 1884.3162
+#&gt; Apr 1974  713.3606 1873.4921
+#&gt; May 1974  558.0762 1489.9757
+#&gt; Jun 1974  459.3264 1246.0864
+#&gt; Jul 1974  471.8216 1276.9468
+#&gt; Aug 1974  412.4125 1130.2198
+#&gt; Sep 1974  442.9569 1205.6575
+#&gt; Oct 1974  559.2180 1492.7957
+#&gt; Nov 1974  610.3722 1619.1347
+#&gt; Dec 1974  701.3139 1843.7395
+#&gt; Jan 1975  806.6398 2103.8704
+#&gt; Feb 1975  818.4413 2133.0172
+#&gt; Mar 1975  825.1282 2149.5324
+#&gt; Apr 1975  695.9599 1830.5165
+#&gt; May 1975  521.6876 1400.1042
+#&gt; Jun 1975  475.1213 1285.0961
+#&gt; Jul 1975  434.7101 1185.2899
+#&gt; Aug 1975  413.3003 1132.4125
+#&gt; Sep 1975  380.5507 1051.5286
+#&gt; Oct 1975  498.1589 1341.9936
+#&gt; Nov 1975  579.6323 1543.2141
+#&gt; Dec 1975  789.6577 2061.9283
+#&gt; Jan 1976  774.0148 2023.2941
+#&gt; Feb 1976 1068.8315 2751.4233
+#&gt; Mar 1976  879.6000 2284.0651
+#&gt; Apr 1976  553.5180 1478.7179
+#&gt; May 1976  436.4870 1189.6784
+#&gt; Jun 1976  424.2923 1159.5604
+#&gt; Jul 1976  404.5483 1110.7973
+#&gt; Aug 1976  347.2354  969.2475
+#&gt; Sep 1976  359.3140  999.0788
+#&gt; Oct 1976  443.7452 1207.6044
+#&gt; Nov 1976  549.1598 1467.9543
+#&gt; Dec 1976  787.6513 2056.9731
+#&gt; Jan 1977  860.8862 2237.8464
+#&gt; Feb 1977  618.5114 1639.2367
+#&gt; Mar 1977  652.2441 1722.5486
+#&gt; Apr 1977  682.1323 1796.3655
+#&gt; May 1977  461.1541 1250.6005
+#&gt; Jun 1977  424.2128 1159.3639
+#&gt; Jul 1977  395.3681 1088.1241
+#&gt; Aug 1977  364.4484 1011.7598
+#&gt; Sep 1977  344.6136  962.7724
+#&gt; Oct 1977  430.4775 1174.8364
+#&gt; Nov 1977  451.7606 1227.4006
+#&gt; Dec 1977  625.0287 1655.3327
+#&gt; Jan 1978  773.1065 2021.0508
+#&gt; Feb 1978  878.4212 2281.1538
+#&gt; Mar 1978  740.8756 1941.4479
+#&gt; Apr 1978  531.8519 1425.2076
+#&gt; May 1978  497.9233 1341.4117
+#&gt; Jun 1978  435.8214 1188.0344
+#&gt; Jul 1978  400.1892 1100.0312
+#&gt; Aug 1978  361.3433 1004.0909
+#&gt; Sep 1978  348.8920  973.3390
+#&gt; Oct 1978  416.1384 1139.4222
+#&gt; Nov 1978  405.6554 1113.5316
+#&gt; Dec 1978  688.0446 1810.9676
+#&gt; Jan 1979  868.8154 2257.4295
+#&gt; Feb 1979  695.1554 1828.5296
+#&gt; Mar 1979  702.3399 1846.2736
+#&gt; Apr 1979  575.7578 1533.6450
+#&gt; May 1979  447.6945 1217.3583
+#&gt; Jun 1979  391.1854 1077.7940
+#&gt; Jul 1979  382.8878 1057.3006
+#&gt; Aug 1979  350.3998  977.0629
+#&gt; Sep 1979  337.0814  944.1696
+#&gt; Oct 1979  393.0897 1082.4971
+#&gt; Nov 1979  478.7870 1294.1496
+#&gt; Dec 1979  497.8981 1341.3497
+#&gt; Jan 1980  528.3557 1416.5727
+#&gt; Feb 1980  553.6721 1479.0986</div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-                </ul>
+            
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>
