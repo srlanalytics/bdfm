@@ -26,10 +26,10 @@ navbar:
     href: articles/dfm.html
   - text: Reference
     href: reference/index.html
-  # - text: Advanced
-  #   menu:
-  #   - text: Bayesian Dynamic Factor Models
-  #     href: articles/ts-functions.html
+  - text: Advanced
+    menu:
+    - text: Bayesian Dynamic Factor Models
+      href: articles/intro.html
   - text: News
     href: news/index.html
   right:
