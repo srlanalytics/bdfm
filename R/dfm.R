@@ -50,7 +50,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
 
   method <- match.arg(method)  # checks and picks the first if unspecified
 
-  tsobjs <- c("zoo", "xts", "tslist", "tbl_ts", "mts", "ts", "timeSeries",
+  tsobjs <- c("zoo", "xts", "tslist", "tbl_ts", "timeSeries",
     "tbl_time", "tbl_df", "data.table", "data.frame", "dts")
 
   if (!requireNamespace("tsbox") & any(class(Y) %in% tsobjs)) {
@@ -58,7 +58,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
   }
 
   # non time series
-  if (!any(class(Y) %in% tsobjs) && is.matrix(Y)) {
+  if (!any(class(Y) %in% c(tsobjs, "ts", "mts")) && is.matrix(Y)) {
 
     ans <- dfm_core(
       Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
