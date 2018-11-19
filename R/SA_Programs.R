@@ -532,6 +532,17 @@ Predetermined.m <- function(dates, predetermined) {
     N[,indx] <- sapply(X = yearmonth, FUN = sum_yearmonth, daily_seq = daily_seq, x = weekday_count)
     indx <- indx+1
   }  
+  #Fast data.table code, but doesn't seem to work when building package:
+  
+  # if("trading_days"%in%predetermined){
+  #   daily_sequence <- seq.Date(from = as.Date(paste(year(dates[1]), month(dates[1]), "01", sep = "-")), to = End_This_Month(tail(dates,1)), by = "day")
+  #   weekday_count <- rep(1, length(daily_sequence))
+  #   weekday_count[weekdays(daily_sequence)%in%c("Saturday", "Sunday")] <- 0
+  #   tmp_dt <- data.table(dates = daily_sequence, count = weekday_count)
+  #   out <- tmp_dt[, lapply(.SD,sum), by = .(year(dates), month(dates))]
+  #   nn[,indx] <- out$count
+  #   indx <- indx+1
+  # }
   if ("January" %in% predetermined) {
     Month <- format.Date(dates, "%m")
     N[Month == "01", indx] <- 1
