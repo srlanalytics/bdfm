@@ -407,7 +407,7 @@ Predetermined.d <- function(dates, predetermined) {
   if("Easter"%in%predetermined || "CNY"%in%predetermined || "Diwali"%in%predetermined){
     load(system.file("data/Holiday.RData", package = "BDFM"))
   }
-  
+
   if("CNY"%in%predetermined){ #Chinese New Year
     #month_day   <- format.Date(dates_ex_long, "%m-%d")
     H_dates     <- which(dates_ex_long%in%(holiday$cny+7))  #Mid of CNY
@@ -438,8 +438,8 @@ Predetermined.d <- function(dates, predetermined) {
     }
     indx <- indx+1
   }
-  
-  if("Easter"%in%predetermined){ 
+
+  if("Easter"%in%predetermined){
     #month_day   <- format.Date(dates_ex_long, "%m-%d")
     H_dates     <- which(dates_ex_long%in%holiday$easter)  #Index of dates
     if(!length(H_dates)==0){
@@ -456,8 +456,8 @@ Predetermined.d <- function(dates, predetermined) {
     }
     indx <- indx+1
   }
-  
-  if("Diwali"%in%predetermined){ 
+
+  if("Diwali"%in%predetermined){
     #month_day   <- format.Date(dates_ex_long, "%m-%d")
     H_dates     <- which(dates_ex_long%in%holiday$diwali)  #Index of dates
     if(!length(H_dates)==0){
@@ -485,7 +485,18 @@ Predetermined.d <- function(dates, predetermined) {
 #' @param dates dates that factors will be generated for (date vector)
 #' @param predetermined seasonal adjustment factors to be generated, for example c('June', 'July')
 #' @export
+#' @import data.table
 #' @useDynLib BDFM
+#' @examples
+#' library(BDFM)
+#' library(tidyverse)
+#' Spain <- read_csv(system.file("Examples/Spain_IP.csv", package = "BDFM"),
+#'   col_types = cols(date = col_date(format = "%Y-%m-%d"))
+#' )
+#' y <- Spain$IP
+#' dates <- Spain$date
+#' predetermined = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "Easter", "trading_days")
+#' N <- Predetermined.m(dates, predetermined)
 Predetermined.m <- function(dates, predetermined) {
   mn <- length(predetermined)
   N <- matrix(0, length(dates), mn)
@@ -524,25 +535,27 @@ Predetermined.m <- function(dates, predetermined) {
     N[Month == "02", indx] <- .5
     indx <- indx + 1
   }
-  if("trading_days"%in%predetermined){
-    daily_seq <- seq.Date(from = as.Date(paste(format.Date(dates[1], "%Y-%m"), "01", sep = "-")), to = End_This_Month(tail(dates,1)), by = "day")
-    weekday_count <- rep(1, length(daily_seq))
-    weekday_count[weekdays(daily_seq)%in%c("Saturday", "Sunday")] <- 0
-    yearmonth <- unique(format.Date(daily_seq, "%Y-%m"))
-    N[,indx] <- sapply(X = yearmonth, FUN = sum_yearmonth, daily_seq = daily_seq, x = weekday_count)
-    indx <- indx+1
-  }  
-  #Fast data.table code, but doesn't seem to work when building package:
-  
   # if("trading_days"%in%predetermined){
-  #   daily_sequence <- seq.Date(from = as.Date(paste(year(dates[1]), month(dates[1]), "01", sep = "-")), to = End_This_Month(tail(dates,1)), by = "day")
-  #   weekday_count <- rep(1, length(daily_sequence))
-  #   weekday_count[weekdays(daily_sequence)%in%c("Saturday", "Sunday")] <- 0
-  #   tmp_dt <- data.table(dates = daily_sequence, count = weekday_count)
-  #   out <- tmp_dt[, lapply(.SD,sum), by = .(year(dates), month(dates))]
-  #   nn[,indx] <- out$count
+  #   daily_seq <- seq.Date(from = as.Date(paste(format.Date(dates[1], "%Y-%m"), "01", sep = "-")), to = End_This_Month(tail(dates,1)), by = "day")
+  #   weekday_count <- rep(1, length(daily_seq))
+  #   weekday_count[weekdays(daily_seq)%in%c("Saturday", "Sunday")] <- 0
+  #   yearmonth <- unique(format.Date(daily_seq, "%Y-%m"))
+  #   N[,indx] <- sapply(X = yearmonth, FUN = sum_yearmonth, daily_seq = daily_seq, x = weekday_count)
   #   indx <- indx+1
   # }
+
+  # browser()
+  #Fast data.table code, but doesn't seem to work when building package:
+
+  if("trading_days"%in%predetermined){
+    daily_sequence <- seq.Date(from = as.Date(paste(year(dates[1]), month(dates[1]), "01", sep = "-")), to = End_This_Month(tail(dates,1)), by = "day")
+    weekday_count <- rep(1, length(daily_sequence))
+    weekday_count[weekdays(daily_sequence)%in%c("Saturday", "Sunday")] <- 0
+    tmp_dt <- data.table(dates = daily_sequence, count = weekday_count)
+    out <- tmp_dt[, lapply(.SD,sum), by = .(year(dates), month(dates))]
+    N[,indx] <- out$count
+    indx <- indx+1
+  }
   if ("January" %in% predetermined) {
     Month <- format.Date(dates, "%m")
     N[Month == "01", indx] <- 1

@@ -10,7 +10,8 @@ License: MIT + file LICENSE
 Imports:
   Rcpp (>= 0.12.13),
   RcppArmadillo (>= 0.7.900.2.0),
-  Matrix (>= 1.2)
+  Matrix (>= 1.2),
+  data.table
 Suggests:
   testthat,
   tsbox,
