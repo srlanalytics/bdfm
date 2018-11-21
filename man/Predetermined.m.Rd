@@ -14,3 +14,14 @@ Predetermined.m(dates, predetermined)
 \description{
 Generate predetermined seasonal factors at monthly frequency
 }
+\examples{
+library(BDFM)
+Spain <- read.csv(
+  system.file("Examples/Spain_IP.csv", package = "BDFM"),
+  stringsAsFactors = FALSE
+)
+y <- Spain$IP
+dates <- as.Date(Spain$date)
+predetermined = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "Easter", "trading_days")
+N <- Predetermined.m(dates, predetermined)
+}
