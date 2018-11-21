@@ -38,6 +38,34 @@ arma::mat QuickReg(arma::mat X,
   return(B);
 }
 
+// [[Rcpp::export]]
+arma::uword MonthDays(double year,
+                      double month){
+  double days;
+  if((month == 1) || (month == 3) || (month == 5) || (month == 7) || (month == 8) || (month == 10) || (month == 12)){
+    days = 31;
+  }
+  else if((month == 4) || (month == 6) || (month == 9) || (month == 11) ){
+    days = 30;
+  }
+  else if(round((year-1940)/4) == ((year-1940)/4) ){
+    days = 29;
+  }
+  else{
+    days = 28;
+  }
+  return(days);
+}
+
+//return last day for the given month
+// [[Rcpp::export]]
+arma::mat end_of_month(arma::mat Dates){
+  for(uword t=0; t<Dates.n_rows; t++){
+    Dates(t,2) = MonthDays(Dates(t,0), Dates(t,1));
+  }
+  return(Dates);
+}
+
 arma::sp_mat MakeSparse(arma::mat A){
   uword n_rows   = A.n_rows;
   uword n_cols   = A.n_cols;
