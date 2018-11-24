@@ -44,7 +44,8 @@ legend("topright",
 
 dates_long <- c(dates, End_This_Month(seq.Date(from = as.Date(paste(format(tail(dates,1), "%Y-%m"), "01", sep = "-")), length.out = 6, by = "month")[-1]) )
 
-N <- Predetermined.m(dates, predetermined = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "Easter", "trading_days"))
+N <- Predetermined.m(dates, predetermined = c("January", "February", "March", "April", "May", "June",
+"July", "August", "September", "October", "November", "December", "Easter", "trading_days"))
 
 y_SA <- SeasAdj_WE(100*y, N, lags = 2, Loud = T) # 100*y - scaled up data, N - seasonal factors, p - lags in transition equation, Loud = T - print convergence of likelihood
 

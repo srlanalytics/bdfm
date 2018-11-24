@@ -2,10 +2,15 @@
 % Please edit documentation in R/utils.R
 \name{End_of_Month}
 \alias{End_of_Month}
-\title{Get date for last day of month shift months ago or ahead}
+\title{End of Month Date}
 \usage{
 End_of_Month(last_date, shift = 0)
 }
+\arguments{
+\item{last_date}{date in the month of interest}
+
+\item{shift}{Months ahead (positive value) or behind (negative value)}
+}
 \description{
-Get date for last day of month shift months ago or ahead
+Get date for the last day of month shift months ago (-) or ahead (+)
 }
