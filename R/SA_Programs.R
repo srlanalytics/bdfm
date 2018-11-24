@@ -1,4 +1,7 @@
-
+#' holiday data
+#'
+#' @name holiday
+#' @docType data
 
 #--- creating matrix of predetermined variables ---
 # This example includes a few possiblities for predetermined variables.

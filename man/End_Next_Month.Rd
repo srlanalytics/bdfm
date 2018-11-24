@@ -2,10 +2,13 @@
 % Please edit documentation in R/utils.R
 \name{End_Next_Month}
 \alias{End_Next_Month}
-\title{Get date for end of the next month}
+\title{End Next Month Date}
 \usage{
 End_Next_Month(last_date)
 }
+\arguments{
+\item{last_date}{date in the month of interest}
+}
 \description{
-Get date for end of the next month
+Get date for the end of the next month
 }
