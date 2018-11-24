@@ -6,7 +6,6 @@
 library(readr)
 library(tsbox)
 library(BDFM)
-
 # ------- load data --------------
 Spain <- read_csv(system.file("Examples/Spain_IP.csv", package = "BDFM"),
   col_types = cols(date = col_date(format = "%Y-%m-%d"))

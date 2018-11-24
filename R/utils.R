@@ -45,6 +45,10 @@ Dates_to_R <- function(Dates_cpp){
   return(dts)
 }
 
+#' Get date for end of the next month
+#'
+#' @param last_date
+#' @export
 End_Next_Month <- function(last_date){
   r   <- length(last_date)
   ymd <- Dates_to_cpp(last_date) + matrix(1,r,1)%x%matrix(c(0,1,0),1,3)
@@ -57,11 +61,19 @@ End_Next_Month <- function(last_date){
   return(end_next_month)
 }
 
+#' Get date for end of the current month
+#'
+#' @param last_date
+#' @export
 End_This_Month <- function(last_date){
   end_this_month <- Dates_to_R(end_of_month(Dates_to_cpp(last_date)))
   return(end_this_month)
 }
 
+#' Get date for end of the previous month
+#'
+#' @param last_date
+#' @export
 End_Last_Month <- function(last_date){
   r   <- length(last_date)
   ymd <- Dates_to_cpp(last_date) - matrix(1,r,1)%x%matrix(c(0,1,0),1,3)
@@ -74,6 +86,11 @@ End_Last_Month <- function(last_date){
   return(end_last_month)
 }
 
+#' Get date for last day of month shift months ago or ahead
+#'
+#' @param last_date
+#' @param shift
+#' @export
 End_of_Month <- function(last_date, shift = 0){
   r   <- length(last_date)
   ymd <- Dates_to_cpp(last_date) + matrix(1,r,1)%x%matrix(c(0,shift,0),1,3)
