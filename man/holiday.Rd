@@ -3,11 +3,7 @@
 \docType{data}
 \name{holiday}
 \alias{holiday}
-\alias{DayOfWeek}
 \title{holiday data}
-\usage{
-DayOfWeek(Days, dates)
-}
 \description{
-holiday data
+Data for holidays that do not land on the same date every year
 }
