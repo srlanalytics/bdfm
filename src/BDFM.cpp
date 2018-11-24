@@ -1157,13 +1157,13 @@ List Ksmoother(arma::sp_mat A,  // companion form of transition matrix
       P0str.slice(t) = P0;
       log_det(tmp,tmpp,S);
       Lik    = -.5*tmp-.5*trans(PE)*solve(S,PE)+Lik;
+    }
       //next period variables
       Zp               = A*trans(Z.row(t)); //prediction for Z(t+1)
       Z1.row(t+1)      = trans(Zp);
       P1               = A*P0*trans(A)+Q; //variance Z(t+1)|Y(1:t)
       P1               = (P1+trans(P1))/2;
       P1str.slice(t+1) = P1;
-    }
   }
 
   //Declairing additional variables
@@ -1192,6 +1192,7 @@ List Ksmoother(arma::sp_mat A,  // companion form of transition matrix
   Out["Kstr"] = Kstr;
   Out["PEstr"]= PEstr;
   Out["Ps"]   = Ps;
+  Out["P1str"] = P1str;
   return(Out);
 }
 
@@ -1380,6 +1381,12 @@ List KSeas(arma::mat B,
   // mat Y_hat = h*Z.col(0) + N*trans(M);
 
   List Out;
+  
+  // Out["A"] = A;
+  // Out["Q"] = Q;
+  // Out["R"] = R;
+  // Out["HJ"] = HJ;
+  // Out["Ydm"] = Ydm;
   Out["B"]    = B;
   Out["M"]    = M;
   Out["q"]    = q;
