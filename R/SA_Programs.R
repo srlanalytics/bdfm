@@ -1,7 +1,10 @@
 #' holiday data
 #'
+#' Data for holidays that do not land on the same date every year
+#'
 #' @name holiday
 #' @docType data
+NULL
 
 #--- creating matrix of predetermined variables ---
 # This example includes a few possiblities for predetermined variables.

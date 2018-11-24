@@ -54,7 +54,7 @@ plot(as.Date(dates), y_SA$sa/100, type = "l", col = "red", xlab = "Year", ylab =
 #------------------------------------------------------------------------
 
 #----- Example 3: Weekday Adjustments for Non-Stationary Daily Data ----
-wil5000 <- read_csv(system.file("data/Wil5000.csv", package = "BDFM"),
+wil5000 <- read_csv(system.file("Examples/Wil5000.csv", package = "BDFM"),
                         col_types = cols(Date = col_date(format = "%Y-%m-%d"))
 )
 y         <- 10000*log(wil5000$Value)
