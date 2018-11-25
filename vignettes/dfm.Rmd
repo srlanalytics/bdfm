@@ -14,7 +14,7 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-`BDFM` is an R package for estimating dynamic factor models. The emphasis of the package is on fully Bayesian estimation using MCMC methods via Durbin and Koopman's (2012) disturbance smoother. However, maximum likelihood estimation via Watson and Engle's (1983) EM algorithm and two step estimation following Doz, Giannone, and Reichlin (2011) is also supported. This document begins with a non-technical overview of dynamic factor models including simple examples. The second section introduces more rigorous notation and technical details regarding estimation techniques. For even more detail the book *Practical Implementation of Factor Models* is available for free download at \url{srlquantitative.com}.
+`bdfm` is an R package for estimating dynamic factor models. The emphasis of the package is on fully Bayesian estimation using MCMC methods via Durbin and Koopman's (2012) disturbance smoother. However, maximum likelihood estimation via Watson and Engle's (1983) EM algorithm and two step estimation following Doz, Giannone, and Reichlin (2011) is also supported. This document begins with a non-technical overview of dynamic factor models including simple examples. The second section introduces more rigorous notation and technical details regarding estimation techniques. For even more detail the book *Practical Implementation of Factor Models* is available for free download at \url{srlquantitative.com}.
 
 # Non-Technichal Overview
 
@@ -26,9 +26,48 @@ Conceptually, this step relates our meaningful information or factors, represent
 \[ x_t = A x_{t-1} + \epsilon_t \]
 This part of the model describes how our factors $x_t$, the meaningful information in which we are interested, evolve over time. The Kalman filter, the work horse of the linear-Guassian model, operates by first predicting $x_t$ based on $x_{t-1}$ (the model here is written in terms of one lag but is easily extended to $p$ lags). Predictions for $x_t$ are then updated using data in $y_t$ as it becomes available. Data need not be realized at the same time; as soon as any additional information becomes available it can be incorporated into the model.
 
-In economic and financial applications the greatest difficulty in implementing factor models is parameter estimation (in many physical models parameters may be informed by theory and thus need not be estimated). The package `BDFM` supports three methods for esimtating these models. Bayesian estimation (`method = 'Bayesian'`) is the default; this approach is able to incorporate prior beliefs we have about the data --- which series are more important for example --- and thus may yield superior predictions. Maxiumim likelihood estimation (`method = 'ML'`) finds the parameters maximize the log likelihood of what we observe yeilding results that are nearly identical to Baysian estimation when we do not specify any prior beliefs about the model. Finally, "two step" estimation (`method = 'PC'`) is useful when we have very large data sets (hundreds or thousands of series) without too many missing observations. When the number of observed series gets very large Bayesian and maximum likelihood estimation can be slow. Two step estimation, however, remains quick and computationally light by estimating parameters using principal components as factors.
+In economic and financial applications the greatest difficulty in implementing factor models is parameter estimation (in many physical models parameters may be informed by theory and thus need not be estimated). The package `bdfm` supports three methods for esimtating these models. Bayesian estimation (`method = 'Bayesian'`) is the default; this approach is able to incorporate prior beliefs we have about the data --- which series are more important for example --- and thus may yield superior predictions. Maxiumim likelihood estimation (`method = 'ML'`) finds the parameters maximize the log likelihood of what we observe yeilding results that are nearly identical to Baysian estimation when we do not specify any prior beliefs about the model. Finally, "two step" estimation (`method = 'PC'`) is useful when we have very large data sets (hundreds or thousands of series) without too many missing observations. When the number of observed series gets very large Bayesian and maximum likelihood estimation can be slow. Two step estimation, however, remains quick and computationally light by estimating parameters using principal components as factors.
 
 ## Getting Started
+
+Input data, $y_t$ in the observation equation, is the only minumum requirement to estimate a DFM using the `bdfm` package. However, it is helpful to have an idea of where to start in terms of the number of lags in the transition equation and number of factors you would like to estimate. If you're using monthly data, 3 lags (one quarter) is a decent starting point. For daily data, 7 lags (one week, or 5 if data includes only business days) is probably a good guess. The defaults are (somewhat arbitrarily) one factor and two lags. Note that input data should be statonary. It can also be helpful to scale data and to ensure values are not too small; the Kalman filter requires inverting the covariance matrix for estiamtes of observations. If observed values are small the determinant of this matrix can get very small (close to machine percision) impacting the accuracy of the results. As a simple example, we can estimate a DFM using five series from the St. Louis Fed's Fred database. To begin with, we import the data and enforce stationarity by taking logs and differences where needed.
+```
+fred <- read_csv(system.file("Examples/freddata.csv", package = "BDFM"),
+                  col_types = cols(DATE = col_date(format = "%Y-%m-%d"))
+)
+
+#Make the data stationary by taking log differences. Note that we do not take logs of inventory:sales ratios (indexes 3 and 4), but we do difference them as they are not stationary.
+data <- as.matrix(fred[,-1])
+data[,c(1,2,5)] <- log(data[,c(1,2,5)])
+data <- diff(data)
+dates <- fred$DATE[-1] #keep corresponding dates (the first is dropped due to differencing)
+```
+As previously mentioned, small values can result in inacurate estimations. It's therefore a good idea to scale up the data.
+```
+data <- 100*scale(data)
+```
+We can then estimate our DFM. A model with one factor is a good way to create an index of the data, in this case a small index of monthly real activity in the U.S.
+```
+est <- dfm(data, factors = 1, lags = 3)
+```
+And finally, we can look a this index against the observed series.
+```
+ts.plot(cbind(data, est$factors), col = c(rep("steelblue", 5), "red"), lwd = c(rep(1,5),2))
+```
+
+*Picture*
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
