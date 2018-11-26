@@ -36,3 +36,25 @@ predicted <- predict(est)
 #Convert back to original (differenced) units
 predicted <- unscale(predicted/100, data)
 
+#How much does each observed series contribute to the factor?
+diag(est$R)
+
+#Use priors to update more aggressively on initial jobless claims
+nu_r <- c(0,0,0,0,1)
+est2  <- dfm(data, factors = 1, lags = 3, nu_r = nu_r)
+diag(est2$R)
+
+#Look at traces for a few of the parameters in our first estimation
+par(mfrow=c(2,2))
+ts.plot(est$Bstore[1,1,])
+ts.plot(est$Hstore[1,1,])
+ts.plot(est$Qstore[1,1,])
+ts.plot(est$Rstore[1,])
+
+
+
+
+
+
+
+

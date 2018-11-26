@@ -28,7 +28,9 @@ This part of the model describes how our factors $x_t$, the meaningful informati
 
 In economic and financial applications the greatest difficulty in implementing factor models is parameter estimation (in many physical models parameters may be informed by theory and thus need not be estimated). The package `bdfm` supports three methods for esimtating these models. Bayesian estimation (`method = 'Bayesian'`) is the default; this approach is able to incorporate prior beliefs we have about the data --- which series are more important for example --- and thus may yield superior predictions. Maxiumim likelihood estimation (`method = 'ML'`) finds the parameters maximize the log likelihood of what we observe yeilding results that are nearly identical to Baysian estimation when we do not specify any prior beliefs about the model. Finally, "two step" estimation (`method = 'PC'`) is useful when we have very large data sets (hundreds or thousands of series) without too many missing observations. When the number of observed series gets very large Bayesian and maximum likelihood estimation can be slow. Two step estimation, however, remains quick and computationally light by estimating parameters using principal components as factors.
 
-## Getting Started
+# Getting Started
+
+## Basic Estimation
 
 Input data, $y_t$ in the observation equation, is the only minumum requirement to estimate a DFM using the `bdfm` package. However, it is helpful to have an idea of where to start in terms of the number of lags in the transition equation and number of factors you would like to estimate. If you're using monthly data, 3 lags (one quarter) is a decent starting point. For daily data, 7 lags (one week, or 5 if data includes only business days) is probably a good guess. The defaults are (somewhat arbitrarily) one factor and two lags. Note that input data should be statonary. It can also be helpful to scale data and to ensure values are not too small; the Kalman filter requires inverting the covariance matrix for estiamtes of observations. If observed values are small the determinant of this matrix can get very small (close to machine percision) impacting the accuracy of the results. As a simple example, we can estimate a DFM using five series from the St. Louis Fed's Fred database. To begin with, we import the data and enforce stationarity by taking logs and differences where needed.
 ```
@@ -57,10 +59,89 @@ ts.plot(cbind(data, est$factors), col = c(rep("steelblue", 5), "red"), lwd = c(r
 
 *Picture*
 
+## Forecasts
 
 
 
+# Working with Bayesian DFMs
 
+Our dynamic factor model can be described by the observation equation
+\[ y_t = H x_t + \varepsilon_t \]
+the transition equation
+\[ z_t = A z_{t-1} + \epsilon_t \]
+where $z_t = \begin{bmatrix} x_t & x_{t-1} & \ldots & x_{t-p+1} \end{bmatrix}$ and $A$ is the companion form of $B$ in the vector autoregression (VAR)
+\[x_t = B \begin{bmatrix} 
+x_{t-1} \\
+x_{t-2} \\
+\vdots \\
+x_{t-p} 
+\end{bmatrix} + \epsilon_t \]
+and the distribution of shocks
+\[
+\begin{bmatrix}
+\epsilon_t\\
+\varepsilon_t
+\end{bmatrix}
+\sim \mathcal{N}\left( \begin{bmatrix} 0\\ 0 \end{bmatrix}, \begin{bmatrix} Q & 0 \\ 0 & R \end{bmatrix} \right)
+\]
+Our goal is therefore to estimate the parameters $B$, $H$, $Q$, and $R$. The default Bayesian estimation routine does this by sequeintially drawing factors given parameters using Durban and Koopman's (2012) disturbance/simulation smoother and then drawing parameters given factors. We accept draws with probability 1, that is, `bdfm` performs these iterations via Gibbs sampling. The model is normalized by setting the top $m \times m$ submatrix of $H$ to the identity matrix where $m$ is the number of factors. This involves drawing the first $m$ rows of $H$ from the appropriate posterior distribution and then using this draw to rotate factors to meet our normalization criteria. By default, the model is normalized on the first $m$ principal components of the data; you can set `identification = "Name"` to normalize on the first $m$ observed series. 
+
+Note that because Bayesian models are estimated by simulation, results will not always be identical. `bdfm` does not currently support setting the random number generator seed in the C++ functions, though this is a feature we are working on. 
+
+## Including Informative Priors
+
+An important question with any dynamic factor model is how much each observed series contributes to factors. To answer this quesion we can look at the estimated parameters of the transition equation. Going back to the simple model we estimated above using 5 series from Fred, the loadings $H$ are stored as `est$H`, and are
+\[
+H = \begin{bmatrix}
+ -0.4235054 \\
+ -0.5097094 \\
+  0.4580355 \\
+  0.5263077 \\
+  0.2723454
+  \end{bmatrix}
+\]
+Industrial production and new orders (the first two series) load negatively; invantory sales ratios and jobless claims load positively. Note that we could multiply $H$ and the factors by $-1$ and the model would be unchanged. Perhaps more importantly, the variances of shocks to the observation equation tell us how well the model fits each observed series. These are stored as `diag(est$R)` and are
+\[  
+diag(R) = \begin{bmatrix}
+5941 &  4084 & 5297 & 3373 & 8334
+\end{bmatrix}
+\]
+Since we have normalized the vairance of each series to 10000, this gives us a good idea of how much each series contributes to factor updates. If the estimated variance of shocks to a series was near 10000, that series would contribute nothing or very little to our model. In this case, every series contributes to our updates, though initial jobless claims contributes the least. 
+
+A great advantage of fully Bayesain DFM estimation is that it allows us to incorporate prior belifes into parameter estimates. Suppose, for example, that we wanted a model in which intial jobless claims played a bigger role. We can accommplish this by incorporating the prior belief that shocks to initial jobless claims in the transition equation are small. We can specify this prior using the "degrees of freedom" for the inverse gamma prior distribution for $R_{5,5}$, the variance of shocks to the observed series initial jobless claims. We can specify this prior using `nu_r = c(0,0,0,0,1)` and then estimate the model as
+```
+est <- dfm(data, factors = 1, lags = 3, nu_r = nu_r)
+```
+Estimated shocks to the transition equation are now
+\[  
+diag(R) = \begin{bmatrix}
+5940 &  4076 & 5292 & 3364 & 4151
+\end{bmatrix}
+\]
+implying jobless claims will play a bigger role in updating our factor. 
+
+## Checking Convergence
+
+Parameters for Bayesian DFMs estimated using the `bdfm` package are median values of the entire posterior distribution of draws. By default `bdfm` uses 500 burn in iterations and 1000 sampling iterations. \footnote{The current C++ code uses only one chain; parallelization using multiple chains may be included in future versions.} However, 500 burn in iterations may not be sufficient. The best way to evaluate whether our model has converged to a stationary distribution is to look at the trace for estimated parameters. Parameter posteior distributions are stored as `Bstore`, `Hstore`, `Qstore`, and `Rstore`. The first three are cubes. `Bstore`, for example, has dimensions `[m, m*p, reps]`. For the first model we estimated, 
+```
+est <- dfm(data, factors = 1, lags = 3)
+```
+we can look at a few trace plots using the following: 
+```
+#Look at traces for a few of the parameters in our first estimation
+par(mfrow=c(2,2))
+ts.plot(est$Bstore[1,1,])
+ts.plot(est$Hstore[1,1,])
+ts.plot(est$Qstore[1,1,])
+ts.plot(est$Rstore[1,])
+```
+*Picture*
+
+While this is not a formal test, things here look pretty good, so there is probably no need to change the defaults. 
+
+## Full Posterior Distributions of Predicted Values
+
+## Forecast Updates
 
 
 
