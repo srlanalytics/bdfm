@@ -22,10 +22,16 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
     tmp[Ysub$ind, ] <- PC$components
     Y <- cbind(tmp, Y)
     k <- k + m
+    if(!is.null(nu_r)){
+      nu_r <- c(rep(0,m), nu_r)
+    }
   } else if (ID == "PC_full") {
     PC <- PrinComp(Y, m)
     Y <- cbind(PC$components, Y)
     k <- k + m
+    if(!is.null(nu_r)){
+      nu_r <- c(rep(0,m), nu_r)
+    }
     if (!any(!is.na(PC$components))) {
       stop("Every period contains missing data. Try setting ID to PC_sub.")
     }
@@ -96,8 +102,8 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
       factors = Est$Z[,1:m],
       Qstore  = Parms$Qstore,
       Bstore  = Parms$Bstore,
-      Rstore  = Parms$Rstore[-(1:m), ],
-      Hstore  = Parms$Hstore[-(1:m), , ],
+      Rstore  = Parms$Rstore[-(1:m), ,drop=FALSE],
+      Hstore  = Parms$Hstore[-(1:m), , ,drop=FALSE],
       Kstore  = Est$Kstr,
       PEstore = Est$PEstore,
       Lik     = Est$Lik,
