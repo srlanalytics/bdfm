@@ -20,6 +20,7 @@
 #'   the number of observations for a square (no missing values) data set. Use
 #'   'PC_sub' when many observations are missing.
 #' @param intercept logical, should an icept be included?
+#' @param store_idx, if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
 #' @param loud print status of function during evalutation. If ML, print
@@ -45,8 +46,9 @@
 dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
                 method = c("bayesian", "ml", "pc"),
                 B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
-                nu_r = NULL, identification = "PC_full", intercept = TRUE,
-                reps = 1000, burn = 500, loud = FALSE, EM_tolerance = 0.01) {
+                nu_r = NULL, identification = "PC_full", intercept = TRUE, 
+                store_idx = NULL, reps = 1000, burn = 500, loud = FALSE, 
+                EM_tolerance = 0.01) {
 
   method <- match.arg(method)  # checks and picks the first if unspecified
 
@@ -61,10 +63,10 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
   if (!any(class(Y) %in% c(tsobjs, "ts", "mts")) && is.matrix(Y)) {
 
     ans <- dfm_core(
-      Y = Y, m = factors, p = lags, FC = forecast, Bp = B_prior,
+      Y = Y, m = factors, p = lags, FC = forecast, method = method, Bp = B_prior,
       lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-      ID = identification, ITC = intercept, reps = reps, burn = burn,
-      loud = loud, tol = EM_tolerance, method = method
+      ID = identification, ITC = intercept, store_idx = store_idx, reps = reps,
+      burn = burn, loud = loud, tol = EM_tolerance
     )
 
   } else {
@@ -83,15 +85,16 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     Y.tsp <- attr(Y.uc, "tsp")
     attr(Y.uc, "tsp") <- NULL
     ans <- dfm_core(
-      Y = Y.uc, m = factors, p = lags, FC = forecast, Bp = B_prior,
+      Y = Y.uc, m = factors, p = lags, FC = forecast, method = method, Bp = B_prior,
       lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-      ID = identification, ITC = intercept, reps = reps, burn = burn,
-      loud = loud, tol = EM_tolerance, method = method
+      ID = identification, ITC = intercept, store_idx = store_idx, reps = reps,
+      burn = burn, loud = loud, tol = EM_tolerance
     )
 
     # make values a ts timeseries
     ans$values <- ts(ans$values, start = Y.tsp[1], frequency = Y.tsp[3])
     ans$factors <- ts(ans$factors, start = Y.tsp[1], frequency = Y.tsp[3])
+    ans$Ymedian <- ts(ans$Ymedian, start = Y.tsp[1], frequency = Y.tsp[3])
     # apply column names from Y
     colnames(ans$values) <- colnames(Y)
 
@@ -99,6 +102,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     if (!inherits(Y, "ts")) {
       ans$values  <- tsbox::copy_class(ans$values, Y)
       ans$factors <- tsbox::copy_class(ans$factors, Y, preserve.mode = FALSE)
+      ans$Ymedian <- tsbox::copy_class(ans$Ymedian, Y)
     }
   }
   class(ans) <- "dfm"
@@ -106,12 +110,12 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
 }
 
 dfm_core <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC,
-                     reps, burn, tol, loud, method) {
+                     store_idx, reps, burn, tol, loud, method) {
   if (method == "bayesian") {
     BDFM(
       Y = Y, m = m, p = p, FC = FC, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-      ID = ID, ITC = ITC, reps = reps, burn = burn,
+      ID = ID, ITC = ITC, store_idx = store_idx, reps = reps, burn = burn,
       loud = loud
     )
   } else if (method == "ml") {

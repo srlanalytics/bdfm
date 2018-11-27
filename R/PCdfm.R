@@ -84,7 +84,7 @@ PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, n
       Rstore  = Hest$Rstore,
       Hstore  = Hest$Hstore,
       Kstore  = Est$Kstr,
-      PEstore = Est$PEstore,
+      PEstore = Est$PEstr,
       Lik     = Est$Lik,
       BIC     = BIC
     )

@@ -1,4 +1,4 @@
-BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = "PC_full", ITC = T, reps = 1000, burn = 500, loud = FALSE) {
+BDFM <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_idx, reps, burn, loud) {
 
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
@@ -79,8 +79,19 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
     Y   <- rbind(Y, tmp)
     r   <- r + FC
   }
+  if(is.null(store_idx)){
+    store_idx = 0
+    store_Y   = FALSE
+  }else{
+    store_Y = TRUE
+    if (ID %in% c("PC_sub", "PC_full")) {
+      store_idx = store_idx + m - 1 # -1 due to zero indexing in C++
+    }else{
+      store_idx = store_idx - 1 
+    }
+  }
 
-  Parms <- EstDFM(B = B_in, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, reps = reps, burn = burn, Loud = loud)
+  Parms <- EstDFM(B = B_in, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, store_Y = store_Y, store_idx = store_idx, reps = reps, burn = burn, Loud = loud)
 
   if (ID %in% c("PC_sub", "PC_full")) {
     B <- Parms$B
@@ -105,9 +116,11 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
       Rstore  = Parms$Rstore[-(1:m), ,drop=FALSE],
       Hstore  = Parms$Hstore[-(1:m), , ,drop=FALSE],
       Kstore  = Est$Kstr,
-      PEstore = Est$PEstore,
+      PEstore = Est$PEstr,
       Lik     = Est$Lik,
-      BIC     = BIC
+      BIC     = BIC,
+      Ystore  = Parms$Ystore,
+      Ymedian = Parms$Y_median
     )
   } else {
     B <- Parms$B
@@ -131,9 +144,11 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
       Rstore  = Parms$Rstore,
       Hstore  = Parms$Hstore,
       Kstore  = Est$Kstr,
-      PEstore = Est$PEstore,
+      PEstore = Est$PEstr,
       Lik     = Est$Lik,
-      BIC     = BIC
+      BIC     = BIC,
+      Ystore  = Parms$Ystore,
+      Ymedian = Parms$Y_median
     )
   }
   return(Out)
@@ -155,13 +170,15 @@ BDFM <- function(Y, m, p, FC, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q =
 #' @param R initial guess for diagonal elements of R in the transition equation, entered as a vector
 #' @param nu_r prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r[j] shrinks the variance of shocks to series j towards zero)
 #' @param Y Input data. Data must be scaled and centered prior to estimation if desired.
+#' @param Ystore T/F, should the distribution of Y be stored
+#' @param store_idx, if Ystore is TRUE, index of which observed series to store. Note C++ uses zero indexing (i.e. subtract 1 from the R index value)
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
 #' @param Loud print status of function during evaluation.
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @useDynLib BDFM
-CppBDFM <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn, Loud){
+CppBDFM <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, Loud = FALSE){
   OUT <- EstDFM(B = B, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = R, nu_r = nu_r, Y = Y, reps = reps, burn = burn, Loud = Loud)
   return(OUT)
 }

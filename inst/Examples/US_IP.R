@@ -51,9 +51,20 @@ ts.plot(est$Hstore[1,1,])
 ts.plot(est$Qstore[1,1,])
 ts.plot(est$Rstore[1,])
 
+#Store the posterior distribution of predicted industrial production values
+est <- dfm(data, factors = 1, lags = 3, store_idx = 1)
+#How do predicted values compare to actual values?
+median_parameters <- mean((est$values[,1] - data[,1])^2, na.rm = T)
+median_draw       <- mean((est$Ymedian[,1] - data[,1])^2, na.rm = T)
 
+#What does the distribution of predicted values look like in period 321 (the second to last period)?
+period = 321
+hist(est$Ystore[period,], breaks = 30)
 
-
+#How much did each series contribute to forecast updates in period 320?
+Update <- c(est$Kstore[[320]][1,]*est$PEstore[[320]])
+names(Update) <- colnames(data)
+print(Update)
 
 
 

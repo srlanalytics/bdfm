@@ -7,8 +7,8 @@
 dfm(Y, factors = 1, lags = 2, forecast = 0, method = c("bayesian",
   "ml", "pc"), B_prior = NULL, lam_B = 0, H_prior = NULL,
   lam_H = 0, nu_q = 0, nu_r = NULL, identification = "PC_full",
-  intercept = TRUE, reps = 1000, burn = 500, loud = FALSE,
-  EM_tolerance = 0.01)
+  intercept = TRUE, store_idx = NULL, reps = 1000, burn = 500,
+  loud = FALSE, EM_tolerance = 0.01)
 }
 \arguments{
 \item{Y}{data in matrix format with time in rows}
@@ -43,6 +43,8 @@ the number of observations for a square (no missing values) data set. Use
 'PC_sub' when many observations are missing.}
 
 \item{intercept}{logical, should an icept be included?}
+
+\item{store_idx, }{if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.}
 
 \item{reps}{number of repetitions for MCMC sampling}
 
