@@ -33,7 +33,10 @@ In economic and financial applications the greatest difficulty in implementing f
 ## Basic Estimation
 
 Input data, $y_t$ in the observation equation, is the only minumum requirement to estimate a DFM using the `bdfm` package. However, it is helpful to have an idea of where to start in terms of the number of lags in the transition equation and number of factors you would like to estimate. If you're using monthly data, 3 lags (one quarter) is a decent starting point. For daily data, 7 lags (one week, or 5 if data includes only business days) is probably a good guess. The defaults are (somewhat arbitrarily) one factor and two lags. Note that input data should be statonary. It can also be helpful to scale data and to ensure values are not too small; the Kalman filter requires inverting the covariance matrix for estiamtes of observations. If observed values are small the determinant of this matrix can get very small (close to machine percision) impacting the accuracy of the results. As a simple example, we can estimate a DFM using five series from the St. Louis Fed's Fred database. To begin with, we import the data and enforce stationarity by taking logs and differences where needed.
-```
+```{r echo = FALSE}
+library(BDFM)
+library(readr)
+library(tsbox)
 fred <- read_csv(system.file("Examples/freddata.csv", package = "BDFM"),
                   col_types = cols(DATE = col_date(format = "%Y-%m-%d"))
 )
@@ -45,19 +48,17 @@ data <- diff(data)
 dates <- fred$DATE[-1] #keep corresponding dates (the first is dropped due to differencing)
 ```
 As previously mentioned, small values can result in inacurate estimations. It's therefore a good idea to scale up the data.
-```
+```{r echo = FALSE}
 data <- 100*scale(data)
 ```
 We can then estimate our DFM. A model with one factor is a good way to create an index of the data, in this case a small index of monthly real activity in the U.S.
-```
+```{r echo = FALSE}
 est <- dfm(data, factors = 1, lags = 3)
 ```
 And finally, we can look a this index against the observed series.
-```
+```{r echo = FALSE}
 ts.plot(cbind(data, est$factors), col = c(rep("steelblue", 5), "red"), lwd = c(rep(1,5),2))
 ```
-
-*Picture*
 
 ## Forecasts
 
@@ -91,34 +92,24 @@ Note that because Bayesian models are estimated by simulation, results will not 
 ## Including Informative Priors
 
 An important question with any dynamic factor model is how much each observed series contributes to factors. To answer this quesion we can look at the estimated parameters of the transition equation. Going back to the simple model we estimated above using 5 series from Fred, the loadings $H$ are stored as `est$H`, and are
-\[
-H = \begin{bmatrix}
- -0.4235054 \\
- -0.5097094 \\
-  0.4580355 \\
-  0.5263077 \\
-  0.2723454
-  \end{bmatrix}
-\]
+```{r echo = FALSE}
+print(est$H)
+```
+
 Industrial production and new orders (the first two series) load negatively; invantory sales ratios and jobless claims load positively. Note that we could multiply $H$ and the factors by $-1$ and the model would be unchanged. Perhaps more importantly, the variances of shocks to the observation equation tell us how well the model fits each observed series. These are stored as `diag(est$R)` and are
-\[  
-diag(R) = \begin{bmatrix}
-5941 &  4084 & 5297 & 3373 & 8334
-\end{bmatrix}
-\]
+```{r echo = FALSE}
+print(diag(est$R))
+```
+
 Since we have normalized the vairance of each series to 10000, this gives us a good idea of how much each series contributes to factor updates. If the estimated variance of shocks to a series was near 10000, that series would contribute nothing or very little to our model. In this case, every series contributes to our updates, though initial jobless claims contributes the least. 
 
 A great advantage of fully Bayesain DFM estimation is that it allows us to incorporate prior belifes into parameter estimates. Suppose, for example, that we wanted a model in which intial jobless claims played a bigger role. We can accommplish this by incorporating the prior belief that shocks to initial jobless claims in the transition equation are small. We can specify this prior using the "degrees of freedom" for the inverse gamma prior distribution for $R_{5,5}$, the variance of shocks to the observed series initial jobless claims. We can specify this prior using `nu_r = c(0,0,0,0,1)` and then estimate the model as
+```{r echo = FALSE}
+nu_r = c(0,0,0,0,1)
+estB <- dfm(data, factors = 1, lags = 3, nu_r = nu_r)
+print(diag(estB$R))
 ```
-est <- dfm(data, factors = 1, lags = 3, nu_r = nu_r)
-```
-Estimated shocks to the transition equation are now
-\[  
-diag(R) = \begin{bmatrix}
-5940 &  4076 & 5292 & 3364 & 4151
-\end{bmatrix}
-\]
-implying jobless claims will play a bigger role in updating our factor. 
+Estimated shocks to the transition equation are now smaller implying jobless claims will play a bigger role in updating our factor. 
 
 ## Checking Convergence
 
@@ -127,23 +118,52 @@ Parameters for Bayesian DFMs estimated using the `bdfm` package are median value
 est <- dfm(data, factors = 1, lags = 3)
 ```
 we can look at a few trace plots using the following: 
-```
+```{r echo= FALSE}
 #Look at traces for a few of the parameters in our first estimation
 par(mfrow=c(2,2))
+saved_par <- par("mar") #this is just for knitting the document
+par(mar = c(3,2,2,1))   #this is just for knitting the document
 ts.plot(est$Bstore[1,1,])
 ts.plot(est$Hstore[1,1,])
 ts.plot(est$Qstore[1,1,])
 ts.plot(est$Rstore[1,])
+par(mar = saved_par)    #this is just for knitting the document
 ```
-*Picture*
 
 While this is not a formal test, things here look pretty good, so there is probably no need to change the defaults. 
 
 ## Full Posterior Distributions of Predicted Values
 
+If we are using a dynamic factor model to predict a certain variable, such as a nowcast of industrial production, it is far better to use the full distribution of predicted values for our series of interest. The full posterior distribution is of course interesting in its own right, but it will also tend to be more accurate then predicted values estimated using posterior medians for parameters. This is due to the fact that the posterior median for predicted values of a series is more robust to non-stationary parameter draws and underidentification. However, the full distribution of fitted or predicted values can be very large. In the curent example with 5 observed series, 322 observations, and 1000 draws, storing the distribution of every series would require storing 1.6 million elements. For bigger data sets, obviously this number would increase. Therefore the package `bdfm` will store posterior distributions for only one series of iterest, specified by setting the input `store_idx` to the index value of the series of interest. By default, `store_idx = NULL` and no posterior distributions of observalbes are stored. We can store the distribution of predicted scaled and centered industrial production (the first series in our data set) by re-esting the model as follows:
+```{r echo = FALSE}
+est <- dfm(data, factors = 1, lags = 3, store_idx = 1)
+median_parameters <- mean((est$values[,1] - data[,1])^2, na.rm = T)
+median_draw       <- mean((est$Ymedian[,1] - data[,1])^2, na.rm = T)
+cat("MSE for estimate using median parameters:", median_parameters, "\n")
+cat("MSE for estimate using median of draws for IP:", median_draw)
+```
+In this case the mean squared error for predicted values using the median value of draws for industrial production in our MCMC simulations is less than the value calculated by using the median values of parameters. We can look at the full distribution of predicted values for industrial production in a given period as follows:
+```{r echo = F}
+period = 321
+hist(est$Ystore[period,], breaks = 30)
+```
+
 ## Forecast Updates
 
+For every type of estimation including maximum likelihood, `method = "ml"`, and two step principal components, `method = 'pc`,`bdfm` will store the prediction error and Kalman gain at every period. This allows us to look at exactly how much each series contributes to forecast updates at any point in time. Continuing with our model estimated using scaled centered data from Fred, in period 320 each series contributed to factor updates as follows:
+```{r echo=FALSE}
+Update <- c(est$Kstore[[320]][1,]*est$PEstore[[320]])
+names(Update) <- colnames(data)
+print(Update)
+```
+The syntax here might be a little confusing at first. `est$Kstore[[320]]` is the Kalman gain at period 320. The stored Kalman gain is a list because its dimensions are not constant --- only observed series contribute to updates, thus if a series is not observed in period $t$ there will be no Kalman gain stored for that period. The same is true of the prediction error, `est$PEstore`. In period 321 only two series are observed: industrial prodcution and initial jobless claims. The we have
+```{r echo=FALSE}
+Update <- c(est$Kstore[[321]][1,]*est$PEstore[[321]])
+names(Update) <- colnames(data)[is.finite(data[321,])]
+print(Update)
+```
 
+A second issue is that we only use the first row of the Kalman gain. This is because we are only interested in the update to contemporaneous factors. The entire matrix of factors is stacked over the number of lags we specified in the model. Because we specified $p = 3$ lags and $m = 1$ factor, `est$Kstore` will have $m*p = 3$ rows. The second two rows specify updates to lagged factors (where are around zero) and are thus not very interesting. In a model with $p = 3$ lags and $m = 3$ factors, `est$Kstore` would have $m*p = 9$ rows of which the first three are of interest. The remaining rows are stored because they are used internally for distrurbance smoothing.  
 
 
 

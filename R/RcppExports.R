@@ -57,8 +57,8 @@ FSimUF <- function(B, q, H, R, Y) {
     .Call('_BDFM_FSimUF', PACKAGE = 'BDFM', B, q, H, R, Y)
 }
 
-EstDFM <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps = 1000L, burn = 500L, Loud = FALSE) {
-    .Call('_BDFM_EstDFM', PACKAGE = 'BDFM', B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn, Loud)
+EstDFM <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, store_Y = FALSE, store_idx = 0L, reps = 1000L, burn = 500L, Loud = FALSE) {
+    .Call('_BDFM_EstDFM', PACKAGE = 'BDFM', B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, store_Y, store_idx, reps, burn, Loud)
 }
 
 Ksmoother <- function(A, Q, HJ, R, Y) {
