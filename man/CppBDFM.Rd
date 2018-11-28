@@ -4,7 +4,8 @@
 \alias{CppBDFM}
 \title{MCMC Routine for Bayesian Dynamic Factor Models}
 \usage{
-CppBDFM(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn, Loud)
+CppBDFM(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, Ystore = FALSE,
+  store_idx = 0, reps = 1000, burn = 500, Loud = FALSE)
 }
 \arguments{
 \item{B}{initial guess for B in transition equation}
@@ -28,6 +29,10 @@ CppBDFM(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn, Loud)
 \item{nu_r}{prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r[j] shrinks the variance of shocks to series j towards zero)}
 
 \item{Y}{Input data. Data must be scaled and centered prior to estimation if desired.}
+
+\item{Ystore}{T/F, should the distribution of Y be stored}
+
+\item{store_idx, }{if Ystore is TRUE, index of which observed series to store. Note C++ uses zero indexing (i.e. subtract 1 from the R index value)}
 
 \item{reps}{number of repetitions for MCMC sampling}
 

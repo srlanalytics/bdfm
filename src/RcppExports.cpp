@@ -197,8 +197,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // EstDFM
-List EstDFM(arma::mat B, arma::mat Bp, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, arma::uword reps, arma::uword burn, bool Loud);
-RcppExport SEXP _BDFM_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP LoudSEXP) {
+List EstDFM(arma::mat B, arma::mat Bp, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, bool store_Y, arma::uword store_idx, arma::uword reps, arma::uword burn, bool Loud);
+RcppExport SEXP _BDFM_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP LoudSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -213,10 +213,12 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type R(RSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type nu_r(nu_rSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< bool >::type store_Y(store_YSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type store_idx(store_idxSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type reps(repsSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type burn(burnSEXP);
     Rcpp::traits::input_parameter< bool >::type Loud(LoudSEXP);
-    rcpp_result_gen = Rcpp::wrap(EstDFM(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, reps, burn, Loud));
+    rcpp_result_gen = Rcpp::wrap(EstDFM(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, store_Y, store_idx, reps, burn, Loud));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -285,7 +287,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BDFM_DSmooth", (DL_FUNC) &_BDFM_DSmooth, 5},
     {"_BDFM_DSUF", (DL_FUNC) &_BDFM_DSUF, 5},
     {"_BDFM_FSimUF", (DL_FUNC) &_BDFM_FSimUF, 5},
-    {"_BDFM_EstDFM", (DL_FUNC) &_BDFM_EstDFM, 14},
+    {"_BDFM_EstDFM", (DL_FUNC) &_BDFM_EstDFM, 16},
     {"_BDFM_Ksmoother", (DL_FUNC) &_BDFM_Ksmoother, 5},
     {"_BDFM_KestExact", (DL_FUNC) &_BDFM_KestExact, 8},
     {"_BDFM_KSeas", (DL_FUNC) &_BDFM_KSeas, 6},

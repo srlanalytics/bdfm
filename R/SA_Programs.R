@@ -1,4 +1,10 @@
-
+#' holiday data
+#'
+#' Data for holidays that do not land on the same date every year
+#'
+#' @name holiday
+#' @docType data
+NULL
 
 #--- creating matrix of predetermined variables ---
 # This example includes a few possiblities for predetermined variables.
@@ -664,30 +670,28 @@ Predetermined.m <- function(dates, predetermined) {
 #' @useDynLib BDFM
 SeasAdj_WE <- function(y, N, lags = 1, tol = 0.01, Loud = FALSE) {
   p <- lags #shorthand notation
-  r <- nrow(N) # number of observations (rows)
-  if(nrow(N)>nrow(y)){
-    nrow(y) <- c(y, rep(NA, nrow(N)-nrow(y)))
-  }
+  row_N <- nrow(N) # number of observations (rows)
   y <- as.matrix(y) # required for C++ stuff
+  if(row_N>nrow(y)){
+    y <- c(y, rep(NA, row_N-nrow(y)))
+  }
   m <- ncol(N) # number of seasonal factors (columns of N)
   B <- matrix(0, 1, p) # empty parameter matrix to be filled in (transition equation)
+  B[1,1] <- .1
   q <- var(y, na.rm = T) / 2 # arbitrary initial guess for q
   r <- q # arbitrary initial guess for r
   M <- t(QuickReg(N, y)) # abitrary initial guess for M (OLS using the C++ function QuickReg)
 
-  Lik0 <- 0
+  Lik0 <- -(1e10)
   count <- 0
   Conv <- 100
   while (Conv > tol | count < 6) { # loop until the likelihood function converges
-
     Est <- KSeas(B, q, M, r, y, N) # calculate estimates in C++
-
     B <- Est$B
     q <- Est$q
     r <- Est$r
     M <- Est$M
     Z0 <- Est$Z0
-
     Lik1 <- Est$Lik
     Conv <- 100 * (Lik1 - Lik0) / abs(Lik1 + Lik0)
     Lik0 <- Lik1
@@ -700,8 +704,6 @@ SeasAdj_WE <- function(y, N, lags = 1, tol = 0.01, Loud = FALSE) {
 
   y_SA <- y - N %*% t(M)
   sa <- N %*% t(M)
-
-  # ts.plot(cbind(y,y_SA), col = c("blue", "red"))
 
   return(list(
     y_SA = y_SA, # seasonally adjusted Y
