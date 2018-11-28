@@ -802,6 +802,8 @@ List EstDFM(      arma::mat B,     // transition matrix
                   arma::vec R,     // covariance matrix of shocks to observables; Y are observations
                   arma::vec nu_r,     //prior degrees of freedom for elements of R used to normalize
                   arma::mat Y,     // data
+                  bool store_Y = false, //Store distribution of Y?
+                  arma::uword store_idx = 0, // index to store distribution of predicted values
                   arma::uword reps = 1000, //repetitions
                   arma::uword burn = 500,
                   bool Loud = false){ //burn in periods
@@ -832,6 +834,12 @@ List EstDFM(      arma::mat B,     // transition matrix
   cube Hstore(k,m,reps);  //store draws for H
   cube Qstore(m,m,reps);  //store draws for Q
   mat  Rstore(k,reps);    //R is diagonal so only diagonals stored (hence matrix not cube)
+  mat  Ystore;
+  vec  Y_median;
+  if(store_Y){
+    Ystore = zeros<mat>(Y.n_rows, reps);
+    Y_median = zeros<vec>(Y.n_rows);
+  }
   List Out;
   field<mat> FSim;
 
@@ -967,6 +975,11 @@ List EstDFM(      arma::mat B,     // transition matrix
     // Smooth using Ys (i.e. Y^star)
     Zs    = DSUF(B, q, H, Rmat, Ys);
     Zsim  = Zs + Zd; // Draw for factors
+    
+    if(store_Y){
+      Ystore.col(rep) = Zsim.cols(0,m-1)*trans(H.row(store_idx));
+    }
+    
 
     Zsim.shed_rows(0,p-1);
 
@@ -1076,6 +1089,15 @@ List EstDFM(      arma::mat B,     // transition matrix
   for(uword rw=0;rw<k;rw++){
     R(rw) = median(Rstore.row(rw));
   }
+  //For Y
+  if(store_Y){
+    for(uword rw=0;rw<Y.n_rows;rw++){
+      Y_median(rw) = median(Ystore.row(rw));
+    }
+  }else{
+    Ystore = zeros<mat>(0,0);
+    Y_median = zeros<vec>(0);
+  }
 
   Out["B"]  = B;
   Out["H"]  = H;
@@ -1086,6 +1108,8 @@ List EstDFM(      arma::mat B,     // transition matrix
   Out["Qstore"]  = Qstore;
   Out["Rstore"]  = Rstore;
   Out["Zsim"]  = Zsim;
+  Out["Ystore"] = Ystore;
+  Out["Y_median"] = Y_median;
 
   return(Out);
 }
@@ -1157,13 +1181,13 @@ List Ksmoother(arma::sp_mat A,  // companion form of transition matrix
       P0str.slice(t) = P0;
       log_det(tmp,tmpp,S);
       Lik    = -.5*tmp-.5*trans(PE)*solve(S,PE)+Lik;
+    }
       //next period variables
       Zp               = A*trans(Z.row(t)); //prediction for Z(t+1)
       Z1.row(t+1)      = trans(Zp);
       P1               = A*P0*trans(A)+Q; //variance Z(t+1)|Y(1:t)
       P1               = (P1+trans(P1))/2;
       P1str.slice(t+1) = P1;
-    }
   }
 
   //Declairing additional variables
@@ -1192,6 +1216,7 @@ List Ksmoother(arma::sp_mat A,  // companion form of transition matrix
   Out["Kstr"] = Kstr;
   Out["PEstr"]= PEstr;
   Out["Ps"]   = Ps;
+  Out["P1str"] = P1str;
   return(Out);
 }
 
@@ -1380,6 +1405,12 @@ List KSeas(arma::mat B,
   // mat Y_hat = h*Z.col(0) + N*trans(M);
 
   List Out;
+  
+  // Out["A"] = A;
+  // Out["Q"] = Q;
+  // Out["R"] = R;
+  // Out["HJ"] = HJ;
+  // Out["Ydm"] = Ydm;
   Out["B"]    = B;
   Out["M"]    = M;
   Out["q"]    = q;
