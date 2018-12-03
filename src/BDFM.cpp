@@ -947,6 +947,9 @@ List EstDFM(      arma::mat B,     // transition matrix
       if(count_reps == 10000){
         Rcpp::Rcout << "Draws Non-Stationary" << endl;
       }
+      if(count_reps == 30000){
+        throw("Draws Non-Stationary"); //break program if still no stationary draws
+      }
       count_reps = count_reps+1;
     } while(ev>1);
   }
@@ -1050,6 +1053,9 @@ List EstDFM(      arma::mat B,     // transition matrix
       Rcpp::checkUserInterrupt();
       if(count_reps == 10000){
         Rcpp::Rcout << "Draws Non-Stationary" << endl;
+      }
+      if(count_reps == 30000){
+        throw("Draws Non-Stationary"); //break program if still no stationary draws
       }
       count_reps = count_reps+1;
     } while(ev>1);
