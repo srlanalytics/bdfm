@@ -40,13 +40,13 @@ BDFM <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
   # ----------- Format Priors ------------------
   #enter priors multiplicatively so that 0 is a weak prior and 1 is a strong prior (additive        priors are relative to the number of observations)
   lam_B <- r*lam_B + 1
-  nu_q  <- r*nu_q  + lam_B
+  nu_q  <- r*nu_q  + 1
   lam_H <- r*lam_H + 1
   if(is.null(nu_r)){
-    nu_r = rep(1,k)*lam_H
+    nu_r = rep(1,k)
   }else{
     if(length(nu_r) != k){stop("Length of nu_r must equal the number of observed series")}
-    nu_r = rep(1,k)*lam_H + r*nu_r
+    nu_r = r*nu_r + rep(1,k)
   }
   # ---------------------------------------------
 
