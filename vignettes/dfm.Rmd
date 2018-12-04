@@ -14,7 +14,7 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-`bdfm` is an R package for estimating dynamic factor models. The emphasis of the package is on fully Bayesian estimation using MCMC methods via Durbin and Koopman's (2012) disturbance smoother. However, maximum likelihood estimation via Watson and Engle's (1983) EM algorithm and two step estimation following Doz, Giannone, and Reichlin (2011) is also supported. This document begins with a non-technical overview of dynamic factor models including simple examples. The second section introduces more rigorous notation and technical details regarding estimation techniques. For even more detail the book *Practical Implementation of Factor Models* is available for free download at \url{srlquantitative.com}.
+`bdfm` is an R package for estimating dynamic factor models. The emphasis of the package is on fully Bayesian estimation using MCMC methods via Durbin and Koopman's (2012) disturbance smoother. However, maximum likelihood estimation via Watson and Engle's (1983) EM algorithm and two step estimation following Doz, Giannone, and Reichlin (2011) is also supported. This document begins with a non-technical overview of dynamic factor models including simple examples. The second section introduces more rigorous notation and technical details regarding estimation techniques. For even more detail the book *Practical Implementation of Factor Models* is available for free download at [SRLquantitative.com]{srlquantitative.com}.
 
 # Non-Technichal Overview
 
@@ -33,7 +33,7 @@ In economic and financial applications the greatest difficulty in implementing f
 ## Basic Estimation
 
 Input data, $y_t$ in the observation equation, is the only minimum requirement to estimate a DFM using the `bdfm` package. However, it is helpful to have an idea of where to start in terms of the number of lags in the transition equation and number of factors you would like to estimate. If you're using monthly data, 3 lags (one quarter) is a decent starting point. For daily data, 7 lags (one week, or 5 if data includes only business days) is probably a good guess. The defaults are (somewhat arbitrarily) one factor and two lags. Note that input data should be stationary. It can also be helpful to scale data and to ensure values are not too small; the Kalman filter requires inverting the covariance matrix for estimates of observations. If observed values are small the determinant of this matrix can get very small (close to machine precision) impacting the accuracy of the results. As a simple example, we can estimate a DFM using five series from the St. Louis Fed's Fred database. To begin with, we import the data and enforce stationary by taking logs and differences where needed.
-```{r echo = FALSE}
+```{r echo = T}
 library(BDFM)
 library(readr)
 library(tsbox)
@@ -48,20 +48,30 @@ data <- diff(data)
 dates <- fred$DATE[-1] #keep corresponding dates (the first is dropped due to differencing)
 ```
 As previously mentioned, small values can result in inaccurate estimations. It's therefore a good idea to scale up the data.
-```{r echo = FALSE}
+```{r echo = T}
 data <- 100*scale(data)
 ```
 We can then estimate our DFM. A model with one factor is a good way to create an index of the data, in this case a small index of monthly real activity in the U.S.
-```{r echo = FALSE}
+```{r echo = T}
 est <- dfm(data, factors = 1, lags = 3)
 ```
 And finally, we can look a this index against the observed series.
-```{r echo = FALSE}
+```{r echo = T}
 ts.plot(cbind(data, est$factors), col = c(rep("steelblue", 5), "red"), lwd = c(rep(1,5),2))
 ```
 
 ## Forecasts
 
+To generate forecasts using `bdfm` the user can specify the number of periods ahead to forecast using the `forecast` argument. Keep in mind that the last observation may not be the same for every series when dealing with "ragged edge" data; `forecast = n` will generate forecasts $n$ periods ahead of the latest observation of any series in our data set. Also, though we have been inputing data in matrix format above, it may be helpful to use a time series format when forecasting that will keep track of forecast dates. Sticking with our five variable monthly frequency example from FRED, we can generate forecasts for three months beyond our last observation of initial unemployment claims, which is in the case our last observation, as follows. 
+```{r echo = T}
+library(xts)
+data_xts <- xts(x = data, order.by = dates)
+est_fct <- dfm(data_xts, factors = 2, lags = 3, forecast = 3)
+fct <- predict(est_fct)[,"INDPRO"]
+print(tail(fct,4))
+
+```
+Note that the value for November 2018 is also a prediction before IP was observed; in this case it is a nowcast using initial jobless claims to update the one step ahead forecast. 
 
 
 # Working with Bayesian DFMs
@@ -92,19 +102,19 @@ Note that because Bayesian models are estimated by simulation, results will not 
 ## Including Informative Priors
 
 An important question with any dynamic factor model is how much each observed series contributes to factors. To answer this question we can look at the estimated parameters of the transition equation. Going back to the simple model we estimated above using 5 series from Fred, the loadings $H$ are stored as `est$H`, and are
-```{r echo = FALSE}
+```{r echo = T}
 print(est$H)
 ```
 
 Industrial production and new orders (the first two series) load negatively; inventory sales ratios and jobless claims load positively. Note that we could multiply $H$ and the factors by $-1$ and the model would be unchanged. Perhaps more importantly, the variances of shocks to the observation equation tell us how well the model fits each observed series. These are stored as `diag(est$R)` and are
-```{r echo = FALSE}
+```{r echo = T}
 print(diag(est$R))
 ```
 
 Since we have normalized the variance of each series to 10000, this gives us a good idea of how much each series contributes to factor updates. If the estimated variance of shocks to a series was near 10000, that series would contribute nothing or very little to our model. In this case, every series contributes to our updates, though initial jobless claims contributes the least. 
 
 A great advantage of fully Bayesian DFM estimation is that it allows us to incorporate prior beliefs into parameter estimates. Suppose, for example, that we wanted a model in which initial jobless claims played a bigger role. We can accomplish this by incorporating the prior belief that shocks to initial jobless claims in the transition equation are small. We can specify this prior using the "degrees of freedom" for the inverse gamma prior distribution for $R_{5,5}$, the variance of shocks to the observed series initial jobless claims. We can specify this prior using `nu_r = c(0,0,0,0,1)` and then estimate the model as
-```{r echo = FALSE}
+```{r echo = T}
 nu_r = c(0,0,0,0,1)
 estB <- dfm(data, factors = 1, lags = 3, nu_r = nu_r)
 print(diag(estB$R))
@@ -118,7 +128,7 @@ Parameters for Bayesian DFMs estimated using the `bdfm` package are median value
 est <- dfm(data, factors = 1, lags = 3)
 ```
 we can look at a few trace plots using the following: 
-```{r echo= FALSE}
+```{r echo= T}
 #Look at traces for a few of the parameters in our first estimation
 par(mfrow=c(2,2))
 saved_par <- par("mar") #this is just for knitting the document
@@ -135,7 +145,7 @@ While this is not a formal test, things here look pretty good, so there is proba
 ## Full Posterior Distributions of Predicted Values
 
 If we are using a dynamic factor model to predict a certain variable, such as a nowcast of industrial production, it is far better to use the full distribution of predicted values for our series of interest. The full posterior distribution is of course interesting in its own right, but it will also tend to be more accurate then predicted values estimated using posterior medians for parameters. This is due to the fact that the posterior median for predicted values of a series is more robust to non-stationary parameter draws and under identification. However, the full distribution of fitted or predicted values can be very large. In the current example with 5 observed series, 322 observations, and 1000 draws, storing the distribution of every series would require storing 1.6 million elements. For bigger data sets, obviously this number would increase. Therefore the package `bdfm` will store posterior distributions for only one series of interest, specified by setting the input `store_idx` to the index value of the series of interest. By default, `store_idx = NULL` and no posterior distributions of observables are stored. We can store the distribution of predicted scaled and centered industrial production (the first series in our data set) by re-estimating the model as follows:
-```{r echo = FALSE}
+```{r echo = T}
 est <- dfm(data, factors = 1, lags = 3, store_idx = 1)
 median_parameters <- mean((est$values[,1] - data[,1])^2, na.rm = T)
 median_draw       <- mean((est$Ymedian[,1] - data[,1])^2, na.rm = T)
@@ -143,7 +153,7 @@ cat("MSE for estimate using median parameters:", median_parameters, "\n")
 cat("MSE for estimate using median of draws for IP:", median_draw)
 ```
 In this case the mean squared error for predicted values using the median value of draws for industrial production in our MCMC simulations is less than the value calculated by using the median values of parameters. We can look at the full distribution of predicted values for industrial production in a given period as follows:
-```{r echo = F}
+```{r echo = T}
 period = 321
 hist(est$Ystore[period,], breaks = 30)
 ```
@@ -151,13 +161,13 @@ hist(est$Ystore[period,], breaks = 30)
 ## Forecast Updates
 
 For every type of estimation including maximum likelihood, `method = "ml"`, and two step principal components, `method = 'pc`,`bdfm` will store the prediction error and Kalman gain at every period. This allows us to look at exactly how much each series contributes to forecast updates at any point in time. Continuing with our model estimated using scaled centered data from Fred, in period 320 each series contributed to factor updates as follows:
-```{r echo=FALSE}
+```{r echo=T}
 Update <- c(est$Kstore[[320]][1,]*est$PEstore[[320]])
 names(Update) <- colnames(data)
 print(Update)
 ```
 The syntax here might be a little confusing at first. `est$Kstore[[320]]` is the Kalman gain at period 320. The stored Kalman gain is a list because its dimensions are not constant --- only observed series contribute to updates, thus if a series is not observed in period $t$ there will be no Kalman gain stored for that period. The same is true of the prediction error, `est$PEstore`. In period 321 only two series are observed: industrial production and initial jobless claims. The we have
-```{r echo=FALSE}
+```{r echo=T}
 Update <- c(est$Kstore[[321]][1,]*est$PEstore[[321]])
 names(Update) <- colnames(data)[is.finite(data[321,])]
 print(Update)
@@ -165,10 +175,33 @@ print(Update)
 
 A second issue is that we only use the first row of the Kalman gain. This is because we are only interested in the update to contemporaneous factors. The entire matrix of factors is stacked over the number of lags we specified in the model. Because we specified $p = 3$ lags and $m = 1$ factor, `est$Kstore` will have $m*p = 3$ rows. The second two rows specify updates to lagged factors (where are around zero) and are thus not very interesting. In a model with $p = 3$ lags and $m = 3$ factors, `est$Kstore` would have $m*p = 9$ rows of which the first three are of interest. The remaining rows are stored because they are used internally for disturbance smoothing.  
 
+# Other Estimation Methods
 
+The package `bdfm` also supports maximum likelihood estimation, specified by setting `method = 'ml'` and two step principal component based estimation, specified by setting `method = 'pc'`. Each is described briefly below.  
 
+## Maximum Likelihood
 
+One can estimate a dynamic factor model via maximum likelihood (ML) by simply plugging the likelihood function into a numerical solver such as optim() in R. However, this is computationally inefficient approach and will be very slow for large models. For this reason the option `method = 'ml'` uses Watson and Engle's (1983) EM algorithm to estimate models by ML. This will generally be faster than Bayesian estimation by simulation and model identification is less important as rotating the factors will not change the log likelihood. However, maximum likelihood estimation does not allow the incorporation of prior beliefs. To estimate our simple five variable model from the previous section by maximum likelihood we simply specify that method in the `dfm()` call. With ML we can also look at the improvement in the log likelihood at each iteration of the EM algorithm by specifying `loud = T`.\footnote{Note that the first value printed with `loud = T` is meaningless as the program arbitrarily assigns `-1e10` as the initial likelihood value.} 
+```{r echo=T}
+est_ml <- dfm(data, factors = 2, lags = 3, method = 'ml', loud = T)
+```
+Because factors are under-identified, ML factor estimates will be different than Bayesian factor estimates. However, fitted values should be similar. Forecasting using a model estimated by ML is identical to the Bayesian case.
+```{r echo = T}
+est_ml <- dfm(data_xts, factors = 2, lags = 3, forecast = 3, method = 'ml')
+fct <- predict(est_ml)[,"INDPRO"]
+print(tail(fct,4))
 
+```
 
+Again, data here is scaled up so that to get predictions in original units we need to unscale it. When using ML estimation any specification of priors for Bayesian estimation will be ignored. Users can set the tolerance for convergence of the EM algorithm using the input `EM_tolerance`. The default value is 0.01 which corresponds to the convergence criteria used in Doz, Giannone, and Reichlin (2012).
 
+## Two Step Estimation
+
+For very large models with few missing observation two step estimation following Doz, Giannone, and Reichlin (2009) is a final possibility by setting `method = 'pc'`. This approach estimates parameters of the model by treating principal components as factors, then re-estimates factors based on estimated parameters. Predictive power will typically be less than models estimated by Bayesian simulation or maximum likelihood, but the approach is very fast and can handle very large data sets. It is not suitable for data sets with many missing values however as there is no straightforward way of estimating principal components with missing observations. We can estimate the simple five variable model introduced above using two step estimation and forecast three periods ahead of the last observation as follows:
+```{r echo=T}
+est_pc <- dfm(data_xts, factors = 2, lags = 3, forecast = 3, method = 'pc')
+fct <- predict(est_pc)[,"INDPRO"]
+print(tail(fct,4))
+```
+As before, we will need to unscale the data to get it back into original units. 
 

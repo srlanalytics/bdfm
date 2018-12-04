@@ -51,6 +51,12 @@ ts.plot(est$Hstore[1,1,])
 ts.plot(est$Qstore[1,1,])
 ts.plot(est$Rstore[1,])
 
+#Forecast 3 periods ahead of last observation using xts time series format
+data_xts <- xts(data, order.by = dates)
+est_fct  <- dfm(data_xts,factors = 2, lags = 3, forecast = 3)
+fct <- predict(est_fct)[,"INDPRO"]
+print(tail(fct,4)) #note that the value for 2018-11-01 is a nowcast as IP is not observed but job claims are observed
+
 #Store the posterior distribution of predicted industrial production values
 est <- dfm(data, factors = 1, lags = 3, store_idx = 1)
 #How do predicted values compare to actual values?
@@ -65,6 +71,17 @@ hist(est$Ystore[period,], breaks = 30)
 Update <- c(est$Kstore[[320]][1,]*est$PEstore[[320]])
 names(Update) <- colnames(data)
 print(Update)
+
+#Estimation and forecasting by Maximum Likelihood
+est_ml <- dfm(data_xts, factors = 2, lags = 3, forecast = 3, method = 'ml')
+fct <- predict(est_ml)[,"INDPRO"]
+print(tail(fct,4))
+
+#Two step estimation and forecast
+est_pc <- dfm(data_xts, factors = 2, lags = 3, forecast = 3, method = 'pc')
+fct <- predict(est_pc)[,"INDPRO"]
+print(tail(fct,4))
+
 
 
 

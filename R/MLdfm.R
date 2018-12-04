@@ -38,7 +38,7 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, loud = FALSE) {
   }
 
   count <- 0
-  Lik0 <- -100000
+  Lik0 <- -1e10
   Conv <- 100
   while (Conv > tol | count < 5) {
     Est <- KestExact(A, Q, H, R, Y, itc, m, p)
