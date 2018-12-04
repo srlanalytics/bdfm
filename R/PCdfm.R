@@ -30,13 +30,13 @@ PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, n
   # ----------- Format Priors ------------------
   #enter priors multiplicatively so that 0 is a weak prior and 1 is a strong prior (additive        priors are relative to the number of observations)
   lam_B <- r*lam_B + 1
-  nu_q  <- r*nu_q  + lam_B
+  nu_q  <- r*nu_q  + 1
   lam_H <- r*lam_H + 1
   if(is.null(nu_r)){
-    nu_r = rep(1,k)*lam_H
+    nu_r = rep(1,k)
   }else{
     if(length(nu_r) != k){stop("Length of nu_r must equal the number of observed series")}
-    nu_r = rep(1,k)*lam_H + r*nu_r
+    nu_r = r*nu_r + rep(1,k)
   }
   if(is.null(Hp)){
     Hp <- matrix(0,k,m)
@@ -58,7 +58,7 @@ PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, n
   indZ <- which(apply(Z, MARGIN = 1, FUN = AnyNA))
   indX <- which(apply(xx, MARGIN = 1, FUN = AnyNA))
   ind  <- unique(c(indZ, indX)) #index of rows with missing values in Z and xx
-  Best <- BReg(Z, xx, Int = FALSE, Bp = Bp, lam = lam_B, nu = nu_q, reps = reps, burn = burn)
+  Best <- BReg(Z[-ind,,drop = FALSE], xx[-ind, , drop = FALSE], Int = FALSE, Bp = Bp, lam = lam_B, nu = nu_q, reps = reps, burn = burn)
   B    <- Best$B
   q    <- Best$q
 

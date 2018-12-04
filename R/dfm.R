@@ -68,6 +68,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
       ID = identification, ITC = intercept, store_idx = store_idx, reps = reps,
       burn = burn, loud = loud, tol = EM_tolerance
     )
+    colnames(ans$values) <- colnames(Y)
 
   } else {
 
@@ -94,7 +95,9 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     # make values a ts timeseries
     ans$values <- ts(ans$values, start = Y.tsp[1], frequency = Y.tsp[3])
     ans$factors <- ts(ans$factors, start = Y.tsp[1], frequency = Y.tsp[3])
-    ans$Ymedian <- ts(ans$Ymedian, start = Y.tsp[1], frequency = Y.tsp[3])
+    if(!is.null(store_idx)){
+      ans$Ymedian <- ts(ans$Ymedian, start = Y.tsp[1], frequency = Y.tsp[3]) 
+    }
     # apply column names from Y
     colnames(ans$values) <- colnames(Y)
 
@@ -102,7 +105,9 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     if (!inherits(Y, "ts")) {
       ans$values  <- tsbox::copy_class(ans$values, Y)
       ans$factors <- tsbox::copy_class(ans$factors, Y, preserve.mode = FALSE)
-      ans$Ymedian <- tsbox::copy_class(ans$Ymedian, Y)
+      if(!is.null(store_idx)){
+         ans$Ymedian <- tsbox::copy_class(ans$Ymedian, Y)
+      }
     }
   }
   class(ans) <- "dfm"
