@@ -46,8 +46,8 @@
 dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
                 method = c("bayesian", "ml", "pc"),
                 B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
-                nu_r = NULL, identification = "PC_full", intercept = TRUE, 
-                store_idx = NULL, reps = 1000, burn = 500, loud = FALSE, 
+                nu_r = NULL, identification = "PC_full", intercept = TRUE,
+                store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
                 EM_tolerance = 0.01) {
 
   method <- match.arg(method)  # checks and picks the first if unspecified
@@ -56,7 +56,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     "tbl_time", "tbl_df", "data.table", "data.frame", "dts")
 
   if (!requireNamespace("tsbox") & any(class(Y) %in% tsobjs)) {
-    stop('"tsbox" is needed for time series support. To install: \n\n  install.packages("tsbox")', call. = FALSE)
+    stop('"tsbox" is needed to support non ts-time-series. To install: \n\n  install.packages("tsbox")', call. = FALSE)
   }
 
   # non time series
@@ -96,7 +96,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     ans$values <- ts(ans$values, start = Y.tsp[1], frequency = Y.tsp[3])
     ans$factors <- ts(ans$factors, start = Y.tsp[1], frequency = Y.tsp[3])
     if(!is.null(store_idx)){
-      ans$Ymedian <- ts(ans$Ymedian, start = Y.tsp[1], frequency = Y.tsp[3]) 
+      ans$Ymedian <- ts(ans$Ymedian, start = Y.tsp[1], frequency = Y.tsp[3])
     }
     # apply column names from Y
     colnames(ans$values) <- colnames(Y)
