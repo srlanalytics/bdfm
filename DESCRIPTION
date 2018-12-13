@@ -1,9 +1,12 @@
 Package: BDFM
 Type: Package
 Title: Bayesain and Maximum Likelihood Estimation of Factor Models
-Version: 0.0.1
-Date: 2018-09-10
-Authors@R: person("Seth", "Leonard", email = "seth@srlanalytics.com", role = c("aut", "cre"))
+Version: 0.0.2
+Date: 2018-12-13
+Authors@R: c(
+  person("Seth", "Leonard", email = "seth@srlanalytics.com", role = c("aut", "cre")),
+  person("Christoph", "Sax", role = "aut")
+  )
 Description: Estimates dynamic factors models. Bayesian estimation is by simulation while ML estimation follows Watson and Engle 1983.
 BugReports: https://github.com/srlanalytics/BDFM
 License: MIT + file LICENSE
@@ -16,7 +19,8 @@ Suggests:
   testthat,
   tsbox,
   seasonal,
-  knitr
+  knitr,
+  rmarkdown
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.1
 LazyData: true
