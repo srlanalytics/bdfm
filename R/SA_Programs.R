@@ -33,7 +33,7 @@ sum_yearmonth <- function(yearmonth, daily_seq, x){
 #' @param predetermined seasonal adjustment factors to be generated, for example c('June', 'July')
 #' @export
 #' @importFrom Rcpp evalCpp
-#' @useDynLib BDFM
+#' @useDynLib bdfm
 Predetermined.d <- function(dates, predetermined) {
   mn <- length(predetermined)
   nn <- matrix(0, length(dates), mn)
@@ -411,7 +411,7 @@ Predetermined.d <- function(dates, predetermined) {
     indx <- indx + 1
   }
   if("Easter"%in%predetermined || "CNY"%in%predetermined || "Diwali"%in%predetermined){
-    load(system.file("data/Holiday.RData", package = "BDFM"))
+    load(system.file("data/Holiday.RData", package = "bdfm"))
   }
 
   if("CNY"%in%predetermined){ #Chinese New Year
@@ -492,7 +492,7 @@ Predetermined.d <- function(dates, predetermined) {
 #' @param predetermined seasonal adjustment factors to be generated, for example c('June', 'July')
 #' @export
 #' @import data.table
-#' @useDynLib BDFM
+#' @useDynLib bdfm
 Predetermined.m <- function(dates, predetermined) {
   mn <- length(predetermined)
   N <- matrix(0, length(dates), mn)
@@ -618,7 +618,7 @@ Predetermined.m <- function(dates, predetermined) {
     indx <- indx + 1
   }
   if("Easter"%in%predetermined || "CNY"%in%predetermined || "Diwali"%in%predetermined){
-    load(system.file("data/holiday.RData", package = "BDFM"))
+    load(system.file("data/holiday.RData", package = "bdfm"))
   }
   if("Easter"%in%predetermined){
     Month     <- format.Date(dates, "%Y-%m")
@@ -657,7 +657,7 @@ Predetermined.m <- function(dates, predetermined) {
 #' @param tol  tolerance for convergence of likelihood function (*100)
 #' @param Loud T/F whether to output convergence of iterations
 #' @export
-#' @useDynLib BDFM
+#' @useDynLib bdfm
 SeasAdj_WE <- function(y, N, lags = 1, tol = 0.01, Loud = FALSE) {
   p <- lags #shorthand notation
   row_N <- nrow(N) # number of observations (rows)

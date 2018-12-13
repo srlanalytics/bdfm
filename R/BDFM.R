@@ -1,4 +1,4 @@
-BDFM <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_idx, reps, burn, loud) {
+bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_idx, reps, burn, loud) {
 
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
@@ -87,7 +87,7 @@ BDFM <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
     if (ID %in% c("PC_sub", "PC_full")) {
       store_idx = store_idx + m - 1 # -1 due to zero indexing in C++
     }else{
-      store_idx = store_idx - 1 
+      store_idx = store_idx - 1
     }
   }
 
@@ -157,7 +157,7 @@ BDFM <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
 
 #' MCMC Routine for Bayesian Dynamic Factor Models
 #'
-#' \code{CppBDFM} is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (\url{http://arma.sourceforge.net/}) linear algebra library for C++ and the packages needed for interfacing with R (\code{\link{Rcpp}} and \code{\link{RcppArmadillo}}).
+#' \code{Cppbdfm} is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (\url{http://arma.sourceforge.net/}) linear algebra library for C++ and the packages needed for interfacing with R (\code{\link{Rcpp}} and \code{\link{RcppArmadillo}}).
 #'
 #' @param B  initial guess for B in transition equation
 #' @param Bp prior for B
@@ -177,8 +177,8 @@ BDFM <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
 #' @param Loud print status of function during evaluation.
 #' @export
 #' @importFrom Rcpp evalCpp
-#' @useDynLib BDFM
-CppBDFM <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, Loud = FALSE){
+#' @useDynLib bdfm
+Cppbdfm <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, Loud = FALSE){
   OUT <- EstDFM(B = B, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = R, nu_r = nu_r, Y = Y, reps = reps, burn = burn, Loud = Loud)
   return(OUT)
 }

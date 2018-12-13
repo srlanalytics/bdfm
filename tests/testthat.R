@@ -1,4 +1,4 @@
 library(testthat)
-library(BDFM)
+library(bdfm)
 
-test_check("BDFM")
+test_check("bdfm")
