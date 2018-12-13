@@ -61,7 +61,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">BDFM</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.2</span>
       </span>
     </div>
 
@@ -123,8 +123,8 @@
     <pre class="usage"><span class='fu'>dfm</span>(<span class='no'>Y</span>, <span class='kw'>factors</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>lags</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>forecast</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"bayesian"</span>,
   <span class='st'>"ml"</span>, <span class='st'>"pc"</span>), <span class='kw'>B_prior</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>lam_B</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>H_prior</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>lam_H</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>nu_q</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>nu_r</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>identification</span> <span class='kw'>=</span> <span class='st'>"PC_full"</span>,
-  <span class='kw'>intercept</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>reps</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>burn</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>loud</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>EM_tolerance</span> <span class='kw'>=</span> <span class='fl'>0.01</span>)</pre>
+  <span class='kw'>intercept</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>store_idx</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>reps</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>burn</span> <span class='kw'>=</span> <span class='fl'>500</span>,
+  <span class='kw'>loud</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>EM_tolerance</span> <span class='kw'>=</span> <span class='fl'>0.01</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -187,6 +187,10 @@ the number of observations for a square (no missing values) data set. Use
     <tr>
       <th>intercept</th>
       <td><p>logical, should an icept be included?</p></td>
+    </tr>
+    <tr>
+      <th>store_idx, </th>
+      <td><p>if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.</p></td>
     </tr>
     <tr>
       <th>reps</th>
@@ -307,7 +311,7 @@ the previous iteration.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Seth Leonard.</p>
+  <p>Developed by Seth Leonard, Christoph Sax.</p>
 </div>
 
 <div class="pkgdown">

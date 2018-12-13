@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">BDFM</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.2</span>
       </span>
     </div>
 
@@ -79,7 +79,7 @@
       <h1>Introduction to the DFM Package</h1>
                         <h4 class="author">Seth Leonard, Christoph Sax</h4>
             
-            <h4 class="date">2018-11-17</h4>
+            <h4 class="date">2018-12-13</h4>
       
       
       <div class="hidden name"><code>intro.Rmd</code></div>
@@ -104,18 +104,18 @@
 <h2 class="hasAnchor">
 <a href="#basic-use" class="anchor"></a>Basic Use</h2>
 <p>Estimate a model with two factors and two lags in the transition equation</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(BDFM)
-Est &lt;-<span class="st"> </span><span class="kw">bdfm</span>(<span class="dt">Y =</span> Data, <span class="dt">factors =</span> <span class="dv">2</span>, <span class="dt">lags =</span> <span class="dv">2</span>)</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">library</span>(BDFM)</a>
+<a class="sourceLine" id="cb2-2" title="2">Est &lt;-<span class="st"> </span><span class="kw">bdfm</span>(<span class="dt">Y =</span> Data, <span class="dt">factors =</span> <span class="dv">2</span>, <span class="dt">lags =</span> <span class="dv">2</span>)</a></code></pre></div>
 <p>Input data is any data type that can be coverted by <code>as.matrix()</code> and should index time in rows and series in columns. If the library <a href="https://github.com/christophsax/tsbox">tsbox</a> is present time seires attributes of input data are preserved for any <code>ts_boxable()</code> data format. In this case data need not be entered in tabular format for types such as <code>data.table</code> or <code>data.frame</code>.</p>
 <p>Quick time series plot estimated factors</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ts.plot</span>(Est<span class="op">$</span>factors)</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">ts.plot</span>(Est<span class="op">$</span>factors)</a></code></pre></div>
 <p>Quick time series plot of fitted values (including forecasts and nowcasts) for first series in input data</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ts.plot</span>(Est<span class="op">$</span>values[,<span class="dv">1</span>])</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">ts.plot</span>(Est<span class="op">$</span>values[,<span class="dv">1</span>])</a></code></pre></div>
 </div>
 <div id="full-input" class="section level2">
 <h2 class="hasAnchor">
 <a href="#full-input" class="anchor"></a>Full Input</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Est &lt;-<span class="st"> </span><span class="kw">bdfm</span>(Y, <span class="dt">factors =</span> <span class="dv">1</span>, <span class="dt">lags =</span> <span class="dv">2</span>, <span class="dt">forecast =</span> <span class="dv">0</span>, <span class="dt">B_prior =</span> <span class="ot">NULL</span>, <span class="dt">lam_B =</span> <span class="dv">0</span>, <span class="dt">H_prior =</span> <span class="ot">NULL</span>, <span class="dt">lam_H =</span> <span class="dv">0</span>, <span class="dt">nu_q =</span> <span class="dv">0</span>, <span class="dt">nu_r =</span> <span class="ot">NULL</span>, <span class="dt">ID =</span> <span class="st">'PC_full'</span>, <span class="dt">intercept =</span> <span class="ot">TRUE</span>, <span class="dt">reps =</span> <span class="dv">1000</span>, <span class="dt">burn =</span> <span class="dv">500</span>)</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">Est &lt;-<span class="st"> </span><span class="kw">bdfm</span>(Y, <span class="dt">factors =</span> <span class="dv">1</span>, <span class="dt">lags =</span> <span class="dv">2</span>, <span class="dt">forecast =</span> <span class="dv">0</span>, <span class="dt">B_prior =</span> <span class="ot">NULL</span>, <span class="dt">lam_B =</span> <span class="dv">0</span>, <span class="dt">H_prior =</span> <span class="ot">NULL</span>, <span class="dt">lam_H =</span> <span class="dv">0</span>, <span class="dt">nu_q =</span> <span class="dv">0</span>, <span class="dt">nu_r =</span> <span class="ot">NULL</span>, <span class="dt">ID =</span> <span class="st">'PC_full'</span>, <span class="dt">intercept =</span> <span class="ot">TRUE</span>, <span class="dt">reps =</span> <span class="dv">1000</span>, <span class="dt">burn =</span> <span class="dv">500</span>)</a></code></pre></div>
 <p><code>Y</code> Input data</p>
 <p><code>factors</code> Number of factors</p>
 <p><code>lags</code> Number of lags in transition equation</p>
@@ -155,9 +155,7 @@ Est &lt;-<span class="st"> </span><span class="kw">bdfm</span>(<span class="dt">
 <h2 class="hasAnchor">
 <a href="#examples" class="anchor"></a>Examples</h2>
 <p>Examples scripts are included in the <a href="https://github.com/srlanalytics/BDFM/tree/master/inst/Examples">Examples</a> file of this repository including code to run your own live nowcasts of US industrial production using the <a href="https://fred.stlouisfed.org/">Fred</a> API:</p>
-<div class="figure">
-<img src="https://github.com/srlanalytics/BDFM/blob/master/img/US_IP.png">
-</div>
+<p><img src="https://github.com/srlanalytics/BDFM/blob/master/img/US_IP.png"></p>
 </div>
   </div>
 
@@ -181,7 +179,7 @@ Est &lt;-<span class="st"> </span><span class="kw">bdfm</span>(<span class="dt">
 
 
       <footer><div class="copyright">
-  <p>Developed by Seth Leonard.</p>
+  <p>Developed by Seth Leonard, Christoph Sax.</p>
 </div>
 
 <div class="pkgdown">
