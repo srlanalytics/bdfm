@@ -15,6 +15,7 @@ Imports:
 Suggests:
   testthat,
   tsbox,
+  seasonal,
   knitr
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.1
