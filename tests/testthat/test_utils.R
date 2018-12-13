@@ -1,5 +1,5 @@
 library(testthat)
-library(BDFM)
+library(bdfm)
 
 context("helper functions")
 

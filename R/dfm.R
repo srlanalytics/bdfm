@@ -38,11 +38,11 @@
 #' fdeaths0[length(fdeaths0)] <- NA
 #' dta <- cbind(fdeaths0, mdeaths)
 #'
-#' library(BDFM)
+#' library(bdfm)
 #' m <- dfm(dta, forecast = 2)
 #' predict(m)
 #'
-#' @useDynLib BDFM
+#' @useDynLib bdfm
 dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
                 method = c("bayesian", "ml", "pc"),
                 B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
@@ -117,7 +117,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
 dfm_core <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC,
                      store_idx, reps, burn, tol, loud, method) {
   if (method == "bayesian") {
-    BDFM(
+    bdfm(
       Y = Y, m = m, p = p, FC = FC, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
       ID = ID, ITC = ITC, store_idx = store_idx, reps = reps, burn = burn,

@@ -6,7 +6,7 @@ template:
 reference:
 - title: Dynamic Factor Model
   desc: >
-    *BDFM* is an R package for estimating dynamic factor models. The emphasis of
+    *bdfm* is an R package for estimating dynamic factor models. The emphasis of
     the package is on fully Bayesian estimation using MCMC methods via Durbin
     and Koopman's (2012) disturbance smoother.
   contents:
@@ -34,4 +34,4 @@ navbar:
     href: news/index.html
   right:
   - icon: fa-github fa-lg
-    href: https://github.com/srlanalytics/BDFM
+    href: https://github.com/srlanalytics/bdfm

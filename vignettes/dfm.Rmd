@@ -34,9 +34,9 @@ In economic and financial applications the greatest difficulty in implementing f
 
 Input data, $y_t$ in the observation equation, is the only minimum requirement to estimate a DFM using the `bdfm` package. However, it is helpful to have an idea of where to start in terms of the number of lags in the transition equation and number of factors you would like to estimate. If you're using monthly data, 3 lags (one quarter) is a decent starting point. For daily data, 7 lags (one week, or 5 if data includes only business days) is probably a good guess. The defaults are (somewhat arbitrarily) one factor and two lags. Note that input data should be stationary. It can also be helpful to scale data and to ensure values are not too small; the Kalman filter requires inverting the covariance matrix for estimates of observations. If observed values are small the determinant of this matrix can get very small (close to machine precision) impacting the accuracy of the results. As a simple example, we can estimate a DFM using five series from the St. Louis Fed's Fred database. To begin with, we import the data and enforce stationary by taking logs and differences where needed.
 ```{r echo = T}
-library(BDFM)
+library(bdfm)
 library(tsbox)
-fred0 <- read.csv(system.file("Examples/freddata.csv", package = "BDFM"), stringsAsFactors = FALSE)
+fred0 <- read.csv(system.file("Examples/freddata.csv", package = "bdfm"), stringsAsFactors = FALSE)
 
 data <- ts_ts(ts_long(fred0))  # ts-time series
 
