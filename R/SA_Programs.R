@@ -493,11 +493,6 @@ Predetermined.d <- function(dates, predetermined) {
 #' @export
 #' @import data.table
 #' @useDynLib BDFM
-#' @examples
-#' library(BDFM)
-#' dates <- seq(as.Date("2000-01-01"), as.Date("2002-12-31"), by = "1 month")
-#' predetermined = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "Easter", "trading_days")
-#' N <- Predetermined.m(dates, predetermined)
 Predetermined.m <- function(dates, predetermined) {
   mn <- length(predetermined)
   N <- matrix(0, length(dates), mn)
