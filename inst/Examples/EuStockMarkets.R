@@ -1,5 +1,5 @@
 library(tsbox)
-library(BDFM)
+library(bdfm)
 
 # data(EuStockMarkets) #load data
 # Y     <- as.matrix(EuStockMarkets) #data in tabular (matrix) format

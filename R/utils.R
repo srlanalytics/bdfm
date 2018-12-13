@@ -46,7 +46,7 @@ Dates_to_R <- function(Dates_cpp){
 }
 
 #' End Next Month Date
-#' 
+#'
 #' Get date for the end of the next month
 #'
 #' @param last_date date in the month of interest
@@ -69,7 +69,7 @@ End_Next_Month <- function(last_date){
 #'
 #' @param last_date date in the month of interest
 #' @export
-#' @useDynLib BDFM
+#' @useDynLib bdfm
 End_This_Month <- function(last_date){
   end_this_month <- Dates_to_R(end_of_month(Dates_to_cpp(last_date)))
   return(end_this_month)
@@ -81,7 +81,7 @@ End_This_Month <- function(last_date){
 #'
 #' @param last_date date in the month of interest
 #' @export
-#' @useDynLib BDFM
+#' @useDynLib bdfm
 End_Last_Month <- function(last_date){
   r   <- length(last_date)
   ymd <- Dates_to_cpp(last_date) - matrix(1,r,1)%x%matrix(c(0,1,0),1,3)
@@ -101,7 +101,7 @@ End_Last_Month <- function(last_date){
 #' @param last_date date in the month of interest
 #' @param shift Months ahead (positive value) or behind (negative value)
 #' @export
-#' @useDynLib BDFM
+#' @useDynLib bdfm
 End_of_Month <- function(last_date, shift = 0){
   r   <- length(last_date)
   ymd <- Dates_to_cpp(last_date) + matrix(1,r,1)%x%matrix(c(0,shift,0),1,3)
@@ -121,7 +121,7 @@ End_of_Month <- function(last_date, shift = 0){
     ymd[indx,1] = ymd[indx,1]-yrs-1
     ymd[indx,2] = mths
   }
-  
+
   end_next_month <- Dates_to_R(end_of_month(ymd))
   return(end_next_month)
 }

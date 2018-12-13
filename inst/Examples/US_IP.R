@@ -1,17 +1,17 @@
 
-library(BDFM)
+library(bdfm)
 library(readr)
 library(tsbox)
 
 #Helper function
 
 unscale <- function(x, attrib){
-  x*(rep(1,nrow(attrib))%x%t(attr(attrib, "scaled:scale"))) + 
+  x*(rep(1,nrow(attrib))%x%t(attr(attrib, "scaled:scale"))) +
     rep(1,nrow(attrib))%x%t(attr(attrib, "scaled:center"))
 }
 
 #Import data: data is industrial production, manufacturer's new orders, wholsalers' inventory:sales ratio, manufacturers' inventory:sales ratio, initial jobles claims, all seasonally adjusted at a monthly frequency.
-fred <- read_csv(system.file("Examples/freddata.csv", package = "BDFM"),
+fred <- read_csv(system.file("Examples/freddata.csv", package = "bdfm"),
                   col_types = cols(DATE = col_date(format = "%Y-%m-%d"))
 )
 

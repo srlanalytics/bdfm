@@ -1,5 +1,5 @@
 library(testthat)
-library(BDFM)
+library(bdfm)
 
 context("interface functions")
 
@@ -9,7 +9,7 @@ test_that("dfm works on minimal example", {
   fdeaths0[length(fdeaths0)] <- NA
   dta <- cbind(fdeaths0, mdeaths)
 
-  library(BDFM)
+  library(bdfm)
   m <- dfm(dta, forecast = 2)
   expect_is(m, "dfm")
   a <- predict(m)

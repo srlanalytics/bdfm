@@ -1,14 +1,14 @@
 .Rproj.user
 *.Rproj
-BDFM.Rproj
+bdfm.Rproj
 .Rhistory
 .RData
 .Ruserdata
 src/*.o
 src/*.so
 src/*.dll
-src/BDFM.o
+src/bdfm.o
 src/RcppExports.o
-src/BDFM.dll
+src/bdfm.dll
 *.o
 plots.pdf

@@ -1,13 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-BDFM
+bdfm
 ====
 
 Bayesian dynamic factor model estimation in R.
 
-[![Build Status](https://travis-ci.org/christophsax/tsbox.svg?branch=master)](https://travis-ci.org/srlanalytics/BDFM) [![codecov](https://codecov.io/github/srlanalytics/BDFM/branch/master/graphs/badge.svg)](https://codecov.io/github/srlanalytics/BDFM)
+[![Build Status](https://travis-ci.org/christophsax/tsbox.svg?branch=master)](https://travis-ci.org/srlanalytics/bdfm) [![codecov](https://codecov.io/github/srlanalytics/bdfm/branch/master/graphs/badge.svg)](https://codecov.io/github/srlanalytics/bdfm)
 
-BDFM estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or "ragged edges" due to different start or end dates.
+bdfm estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or "ragged edges" due to different start or end dates.
 
 Installation
 ------------
@@ -15,7 +15,7 @@ Installation
 To install the development version:
 
 ``` r
-remotes::install_github("srlanalytics/BDFM")
+remotes::install_github("srlanalytics/bdfm")
 ```
 
 Basic Use
@@ -24,7 +24,7 @@ Basic Use
 Estimate a model with one factor and two lags in the transition equation:
 
 ``` r
-library(BDFM)
+library(bdfm)
 dta <- cbind(fdeaths, mdeaths)
 m <- dfm(dta, forecast = 2)
 ```

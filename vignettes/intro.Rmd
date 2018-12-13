@@ -15,24 +15,24 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 Bayesian dynamic factor model estimation in R.
 
-[![Build Status](https://travis-ci.org/christophsax/tsbox.svg?branch=master)](https://travis-ci.org/srlanalytics/BDFM)
-[![codecov](https://codecov.io/github/srlanalytics/BDFM/branch/master/graphs/badge.svg)](https://codecov.io/github/srlanalytics/BDFM)
+[![Build Status](https://travis-ci.org/christophsax/tsbox.svg?branch=master)](https://travis-ci.org/srlanalytics/bdfm)
+[![codecov](https://codecov.io/github/srlanalytics/bdfm/branch/master/graphs/badge.svg)](https://codecov.io/github/srlanalytics/bdfm)
 
 ## Description
 
-BDFM estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or "ragged edges" due to different start or end dates.
+bdfm estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or "ragged edges" due to different start or end dates.
 
 ## Installation
 
 ```t
-remotes::install_github("srlanalytics/BDFM")
+remotes::install_github("srlanalytics/bdfm")
 ```
 
 ## Basic Use
 
 Estimate a model with two factors and two lags in the transition equation
 ```r
-library(BDFM)
+library(bdfm)
 Est <- bdfm(Y = Data, factors = 2, lags = 2)
 ```
 Input data is any data type that can be coverted by ```as.matrix() ``` and should index time in rows and series in columns. If the library [tsbox](https://github.com/christophsax/tsbox) is present time seires attributes of input data are preserved for any `ts_boxable()` data format. In this case data need not be entered in tabular format for types such as `data.table` or `data.frame`.
@@ -110,8 +110,8 @@ You can find details on estimation routines and derivations in the short book *P
 
 ## Examples
 
-Examples scripts are included in the [Examples](https://github.com/srlanalytics/BDFM/tree/master/inst/Examples) file of this repository including code to run your own live nowcasts of US industrial production using the [Fred](https://fred.stlouisfed.org/) API:
+Examples scripts are included in the [Examples](https://github.com/srlanalytics/bdfm/tree/master/inst/Examples) file of this repository including code to run your own live nowcasts of US industrial production using the [Fred](https://fred.stlouisfed.org/) API:
 
-![](https://github.com/srlanalytics/BDFM/blob/master/img/US_IP.png)
+![](https://github.com/srlanalytics/bdfm/blob/master/img/US_IP.png)
 
 
