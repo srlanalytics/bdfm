@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>MCMC Routine for Bayesian Dynamic Factor Models — CppBDFM • BDFM</title>
+<title>MCMC Routine for Bayesian Dynamic Factor Models — Cppbdfm • bdfm</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="MCMC Routine for Bayesian Dynamic Factor Models — CppBDFM" />
+<meta property="og:title" content="MCMC Routine for Bayesian Dynamic Factor Models — Cppbdfm" />
 
-<meta property="og:description" content="CppBDFM is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (http://arma.sourceforge.net/) linear algebra library for C++ and the packages needed for interfacing with R (Rcpp and RcppArmadillo)." />
+<meta property="og:description" content="Cppbdfm is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (http://arma.sourceforge.net/) linear algebra library for C++ and the packages needed for interfacing with R (Rcpp and RcppArmadillo)." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -60,7 +60,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">BDFM</a>
+        <a class="navbar-link" href="../index.html">bdfm</a>
         <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.2</span>
       </span>
     </div>
@@ -92,7 +92,7 @@
       
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/srlanalytics/BDFM">
+  <a href="https://github.com/srlanalytics/bdfm">
     <span class="fa fa-github fa-lg"></span>
      
   </a>
@@ -111,16 +111,16 @@
     <div class="page-header">
     <h1>MCMC Routine for Bayesian Dynamic Factor Models</h1>
     
-    <div class="hidden name"><code>CppBDFM.Rd</code></div>
+    <div class="hidden name"><code>Cppbdfm.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p><code>CppBDFM</code> is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (<a href='http://arma.sourceforge.net/'>http://arma.sourceforge.net/</a>) linear algebra library for C++ and the packages needed for interfacing with R (<code>Rcpp</code> and <code>RcppArmadillo</code>).</p>
+    <p><code>Cppbdfm</code> is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (<a href='http://arma.sourceforge.net/'>http://arma.sourceforge.net/</a>) linear algebra library for C++ and the packages needed for interfacing with R (<code>Rcpp</code> and <code>RcppArmadillo</code>).</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>CppBDFM</span>(<span class='no'>B</span>, <span class='no'>Bp</span>, <span class='no'>lam_B</span>, <span class='no'>q</span>, <span class='no'>nu_q</span>, <span class='no'>H</span>, <span class='no'>Hp</span>, <span class='no'>lam_H</span>, <span class='no'>R</span>, <span class='no'>nu_r</span>, <span class='no'>Y</span>, <span class='kw'>Ystore</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+    <pre class="usage"><span class='fu'>Cppbdfm</span>(<span class='no'>B</span>, <span class='no'>Bp</span>, <span class='no'>lam_B</span>, <span class='no'>q</span>, <span class='no'>nu_q</span>, <span class='no'>H</span>, <span class='no'>Hp</span>, <span class='no'>lam_H</span>, <span class='no'>R</span>, <span class='no'>nu_r</span>, <span class='no'>Y</span>, <span class='kw'>Ystore</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>store_idx</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>reps</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>burn</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>Loud</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
