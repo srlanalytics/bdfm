@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Estimate dynamic factor model — dfm • BDFM</title>
+<title>Estimate dynamic factor model — dfm • bdfm</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -60,7 +60,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">BDFM</a>
+        <a class="navbar-link" href="../index.html">bdfm</a>
         <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.2</span>
       </span>
     </div>
@@ -92,7 +92,7 @@
       
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="https://github.com/srlanalytics/BDFM">
+  <a href="https://github.com/srlanalytics/bdfm">
     <span class="fa fa-github fa-lg"></span>
      
   </a>
@@ -220,7 +220,7 @@ the previous iteration.</p></td>
 <span class='no'>fdeaths0</span>[<span class='fu'>length</span>(<span class='no'>fdeaths0</span>)] <span class='kw'>&lt;-</span> <span class='fl'>NA</span>
 <span class='no'>dta</span> <span class='kw'>&lt;-</span> <span class='fu'>cbind</span>(<span class='no'>fdeaths0</span>, <span class='no'>mdeaths</span>)
 
-<span class='fu'>library</span>(<span class='no'>BDFM</span>)
+<span class='fu'>library</span>(<span class='no'>bdfm</span>)
 <span class='no'>m</span> <span class='kw'>&lt;-</span> <span class='fu'>dfm</span>(<span class='no'>dta</span>, <span class='kw'>forecast</span> <span class='kw'>=</span> <span class='fl'>2</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required namespace: tsbox</span></div><div class='input'><span class='fu'>predict</span>(<span class='no'>m</span>)</div><div class='output co'>#&gt;           fdeaths0   mdeaths
 #&gt; Jan 1974  820.0496 2136.9894
 #&gt; Feb 1974  709.1714 1863.1459
