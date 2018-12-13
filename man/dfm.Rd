@@ -66,7 +66,7 @@ fdeaths0 <- fdeaths
 fdeaths0[length(fdeaths0)] <- NA
 dta <- cbind(fdeaths0, mdeaths)
 
-library(BDFM)
+library(bdfm)
 m <- dfm(dta, forecast = 2)
 predict(m)
 

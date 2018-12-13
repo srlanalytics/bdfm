@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // QuickReg
 arma::mat QuickReg(arma::mat X, arma::mat Y);
-RcppExport SEXP _BDFM_QuickReg(SEXP XSEXP, SEXP YSEXP) {
+RcppExport SEXP _bdfm_QuickReg(SEXP XSEXP, SEXP YSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -20,7 +20,7 @@ END_RCPP
 }
 // MonthDays
 arma::uword MonthDays(double year, double month);
-RcppExport SEXP _BDFM_MonthDays(SEXP yearSEXP, SEXP monthSEXP) {
+RcppExport SEXP _bdfm_MonthDays(SEXP yearSEXP, SEXP monthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,7 +32,7 @@ END_RCPP
 }
 // end_of_month
 arma::mat end_of_month(arma::mat Dates);
-RcppExport SEXP _BDFM_end_of_month(SEXP DatesSEXP) {
+RcppExport SEXP _bdfm_end_of_month(SEXP DatesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -43,7 +43,7 @@ END_RCPP
 }
 // comp_form
 arma::mat comp_form(arma::mat B);
-RcppExport SEXP _BDFM_comp_form(SEXP BSEXP) {
+RcppExport SEXP _bdfm_comp_form(SEXP BSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -54,7 +54,7 @@ END_RCPP
 }
 // mvrnrm
 arma::mat mvrnrm(int n, arma::vec mu, arma::mat Sigma);
-RcppExport SEXP _BDFM_mvrnrm(SEXP nSEXP, SEXP muSEXP, SEXP SigmaSEXP) {
+RcppExport SEXP _bdfm_mvrnrm(SEXP nSEXP, SEXP muSEXP, SEXP SigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -67,7 +67,7 @@ END_RCPP
 }
 // rinvwish
 arma::cube rinvwish(int n, int v, arma::mat S);
-RcppExport SEXP _BDFM_rinvwish(SEXP nSEXP, SEXP vSEXP, SEXP SSEXP) {
+RcppExport SEXP _bdfm_rinvwish(SEXP nSEXP, SEXP vSEXP, SEXP SSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,7 +80,7 @@ END_RCPP
 }
 // invchisq
 double invchisq(double nu, double scale);
-RcppExport SEXP _BDFM_invchisq(SEXP nuSEXP, SEXP scaleSEXP) {
+RcppExport SEXP _bdfm_invchisq(SEXP nuSEXP, SEXP scaleSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -92,7 +92,7 @@ END_RCPP
 }
 // stack_obs
 arma:: mat stack_obs(arma::mat nn, arma::uword p, arma::uword r);
-RcppExport SEXP _BDFM_stack_obs(SEXP nnSEXP, SEXP pSEXP, SEXP rSEXP) {
+RcppExport SEXP _bdfm_stack_obs(SEXP nnSEXP, SEXP pSEXP, SEXP rSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -105,7 +105,7 @@ END_RCPP
 }
 // PrinComp
 List PrinComp(arma::mat Y, arma::uword m);
-RcppExport SEXP _BDFM_PrinComp(SEXP YSEXP, SEXP mSEXP) {
+RcppExport SEXP _bdfm_PrinComp(SEXP YSEXP, SEXP mSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -117,7 +117,7 @@ END_RCPP
 }
 // BReg
 List BReg(arma::mat X, arma::mat Y, bool Int, arma::mat Bp, double lam, double nu, arma::uword reps, arma::uword burn);
-RcppExport SEXP _BDFM_BReg(SEXP XSEXP, SEXP YSEXP, SEXP IntSEXP, SEXP BpSEXP, SEXP lamSEXP, SEXP nuSEXP, SEXP repsSEXP, SEXP burnSEXP) {
+RcppExport SEXP _bdfm_BReg(SEXP XSEXP, SEXP YSEXP, SEXP IntSEXP, SEXP BpSEXP, SEXP lamSEXP, SEXP nuSEXP, SEXP repsSEXP, SEXP burnSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -135,7 +135,7 @@ END_RCPP
 }
 // BReg_diag
 List BReg_diag(arma::mat X, arma::mat Y, bool Int, arma::mat Bp, double lam, arma::vec nu, arma::uword reps, arma::uword burn);
-RcppExport SEXP _BDFM_BReg_diag(SEXP XSEXP, SEXP YSEXP, SEXP IntSEXP, SEXP BpSEXP, SEXP lamSEXP, SEXP nuSEXP, SEXP repsSEXP, SEXP burnSEXP) {
+RcppExport SEXP _bdfm_BReg_diag(SEXP XSEXP, SEXP YSEXP, SEXP IntSEXP, SEXP BpSEXP, SEXP lamSEXP, SEXP nuSEXP, SEXP repsSEXP, SEXP burnSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -153,7 +153,7 @@ END_RCPP
 }
 // DSmooth
 List DSmooth(arma::mat B, arma::mat q, arma::mat H, arma::mat R, arma::mat Y);
-RcppExport SEXP _BDFM_DSmooth(SEXP BSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP) {
+RcppExport SEXP _bdfm_DSmooth(SEXP BSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -168,7 +168,7 @@ END_RCPP
 }
 // DSUF
 arma::mat DSUF(arma::mat B, arma::mat q, arma::mat H, arma::mat R, arma::mat Y);
-RcppExport SEXP _BDFM_DSUF(SEXP BSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP) {
+RcppExport SEXP _bdfm_DSUF(SEXP BSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -183,7 +183,7 @@ END_RCPP
 }
 // FSimUF
 arma::field<arma::mat> FSimUF(arma::mat B, arma::mat q, arma::mat H, arma::mat R, arma::mat Y);
-RcppExport SEXP _BDFM_FSimUF(SEXP BSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP) {
+RcppExport SEXP _bdfm_FSimUF(SEXP BSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -198,7 +198,7 @@ END_RCPP
 }
 // EstDFM
 List EstDFM(arma::mat B, arma::mat Bp, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, bool store_Y, arma::uword store_idx, arma::uword reps, arma::uword burn, bool Loud);
-RcppExport SEXP _BDFM_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP LoudSEXP) {
+RcppExport SEXP _bdfm_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP LoudSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -224,7 +224,7 @@ END_RCPP
 }
 // Ksmoother
 List Ksmoother(arma::sp_mat A, arma::sp_mat Q, arma::sp_mat HJ, arma::mat R, arma::mat Y);
-RcppExport SEXP _BDFM_Ksmoother(SEXP ASEXP, SEXP QSEXP, SEXP HJSEXP, SEXP RSEXP, SEXP YSEXP) {
+RcppExport SEXP _bdfm_Ksmoother(SEXP ASEXP, SEXP QSEXP, SEXP HJSEXP, SEXP RSEXP, SEXP YSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -239,7 +239,7 @@ END_RCPP
 }
 // KestExact
 List KestExact(arma::sp_mat A, arma::sp_mat Q, arma::mat H, arma::mat R, arma::mat Y, arma::vec itc, arma::uword m, arma::uword p);
-RcppExport SEXP _BDFM_KestExact(SEXP ASEXP, SEXP QSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP, SEXP itcSEXP, SEXP mSEXP, SEXP pSEXP) {
+RcppExport SEXP _bdfm_KestExact(SEXP ASEXP, SEXP QSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP, SEXP itcSEXP, SEXP mSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -257,7 +257,7 @@ END_RCPP
 }
 // KSeas
 List KSeas(arma::mat B, double q, arma::mat M, double r, arma::mat Y, arma::mat N);
-RcppExport SEXP _BDFM_KSeas(SEXP BSEXP, SEXP qSEXP, SEXP MSEXP, SEXP rSEXP, SEXP YSEXP, SEXP NSEXP) {
+RcppExport SEXP _bdfm_KSeas(SEXP BSEXP, SEXP qSEXP, SEXP MSEXP, SEXP rSEXP, SEXP YSEXP, SEXP NSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -273,28 +273,28 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_BDFM_QuickReg", (DL_FUNC) &_BDFM_QuickReg, 2},
-    {"_BDFM_MonthDays", (DL_FUNC) &_BDFM_MonthDays, 2},
-    {"_BDFM_end_of_month", (DL_FUNC) &_BDFM_end_of_month, 1},
-    {"_BDFM_comp_form", (DL_FUNC) &_BDFM_comp_form, 1},
-    {"_BDFM_mvrnrm", (DL_FUNC) &_BDFM_mvrnrm, 3},
-    {"_BDFM_rinvwish", (DL_FUNC) &_BDFM_rinvwish, 3},
-    {"_BDFM_invchisq", (DL_FUNC) &_BDFM_invchisq, 2},
-    {"_BDFM_stack_obs", (DL_FUNC) &_BDFM_stack_obs, 3},
-    {"_BDFM_PrinComp", (DL_FUNC) &_BDFM_PrinComp, 2},
-    {"_BDFM_BReg", (DL_FUNC) &_BDFM_BReg, 8},
-    {"_BDFM_BReg_diag", (DL_FUNC) &_BDFM_BReg_diag, 8},
-    {"_BDFM_DSmooth", (DL_FUNC) &_BDFM_DSmooth, 5},
-    {"_BDFM_DSUF", (DL_FUNC) &_BDFM_DSUF, 5},
-    {"_BDFM_FSimUF", (DL_FUNC) &_BDFM_FSimUF, 5},
-    {"_BDFM_EstDFM", (DL_FUNC) &_BDFM_EstDFM, 16},
-    {"_BDFM_Ksmoother", (DL_FUNC) &_BDFM_Ksmoother, 5},
-    {"_BDFM_KestExact", (DL_FUNC) &_BDFM_KestExact, 8},
-    {"_BDFM_KSeas", (DL_FUNC) &_BDFM_KSeas, 6},
+    {"_bdfm_QuickReg", (DL_FUNC) &_bdfm_QuickReg, 2},
+    {"_bdfm_MonthDays", (DL_FUNC) &_bdfm_MonthDays, 2},
+    {"_bdfm_end_of_month", (DL_FUNC) &_bdfm_end_of_month, 1},
+    {"_bdfm_comp_form", (DL_FUNC) &_bdfm_comp_form, 1},
+    {"_bdfm_mvrnrm", (DL_FUNC) &_bdfm_mvrnrm, 3},
+    {"_bdfm_rinvwish", (DL_FUNC) &_bdfm_rinvwish, 3},
+    {"_bdfm_invchisq", (DL_FUNC) &_bdfm_invchisq, 2},
+    {"_bdfm_stack_obs", (DL_FUNC) &_bdfm_stack_obs, 3},
+    {"_bdfm_PrinComp", (DL_FUNC) &_bdfm_PrinComp, 2},
+    {"_bdfm_BReg", (DL_FUNC) &_bdfm_BReg, 8},
+    {"_bdfm_BReg_diag", (DL_FUNC) &_bdfm_BReg_diag, 8},
+    {"_bdfm_DSmooth", (DL_FUNC) &_bdfm_DSmooth, 5},
+    {"_bdfm_DSUF", (DL_FUNC) &_bdfm_DSUF, 5},
+    {"_bdfm_FSimUF", (DL_FUNC) &_bdfm_FSimUF, 5},
+    {"_bdfm_EstDFM", (DL_FUNC) &_bdfm_EstDFM, 16},
+    {"_bdfm_Ksmoother", (DL_FUNC) &_bdfm_Ksmoother, 5},
+    {"_bdfm_KestExact", (DL_FUNC) &_bdfm_KestExact, 8},
+    {"_bdfm_KSeas", (DL_FUNC) &_bdfm_KSeas, 6},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_BDFM(DllInfo *dll) {
+RcppExport void R_init_bdfm(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

@@ -9,7 +9,7 @@
 #' @param verbose logical, whether to output convergence of iterations
 #' @return an object of class `"seas_we"`. Use `predict` to extract the seasonally adjusted values.
 #' @export
-#' @useDynLib BDFM
+#' @useDynLib bdfm
 #' @examples
 #' m <- seas_we(mdeaths)
 #' adj_we <- predict(m)
