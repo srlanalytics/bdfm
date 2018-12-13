@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">BDFM</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.2</span>
       </span>
     </div>
 
@@ -90,22 +90,22 @@
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>To install the development version:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">remotes<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/remotes/topics/install_github">install_github</a></span>(<span class="st">"srlanalytics/BDFM"</span>)</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1">remotes<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/remotes/topics/install_github">install_github</a></span>(<span class="st">"srlanalytics/BDFM"</span>)</a></code></pre></div>
 </div>
 <div id="basic-use" class="section level2">
 <h2 class="hasAnchor">
 <a href="#basic-use" class="anchor"></a>Basic Use</h2>
 <p>Estimate a model with one factor and two lags in the transition equation:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(BDFM)
-dta &lt;-<span class="st"> </span><span class="kw">cbind</span>(fdeaths, mdeaths)
-m &lt;-<span class="st"> </span><span class="kw"><a href="reference/dfm.html">dfm</a></span>(dta, <span class="dt">forecast =</span> <span class="dv">2</span>)
-<span class="co">#&gt; Loading required namespace: tsbox</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">library</span>(BDFM)</a>
+<a class="sourceLine" id="cb2-2" title="2">dta &lt;-<span class="st"> </span><span class="kw">cbind</span>(fdeaths, mdeaths)</a>
+<a class="sourceLine" id="cb2-3" title="3">m &lt;-<span class="st"> </span><span class="kw"><a href="reference/dfm.html">dfm</a></span>(dta, <span class="dt">forecast =</span> <span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="co">#&gt; Loading required namespace: tsbox</span></a></code></pre></div>
 <p>Input data should be an object of class <code>"ts"</code>. If the <a href="https://www.tsbox.help/">tsbox</a> package is installed, any ts-boxable time series objects can be supplied, such as <code>"xts"</code>, <code>"zoo"</code>, <code>"timeSeries"</code> or <code>"data.frame"</code>.</p>
 <p>Extract the resulting series, using <code>predict()</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">predict</span>(m))</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">plot</span>(<span class="kw">predict</span>(m))</a></code></pre></div>
 <p><img src="reference/figures/README-predict-1.png" width="700"></p>
 <p>Or have a look at the esimated factors, using <code><a href="reference/factors.html">factors()</a></code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw"><a href="reference/factors.html">factors</a></span>(m))</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">plot</span>(<span class="kw"><a href="reference/factors.html">factors</a></span>(m))</a></code></pre></div>
 <p><img src="reference/figures/README-factors-1.png" width="700"></p>
 </div>
 <div id="estimation-details" class="section level2">
@@ -136,6 +136,7 @@ m &lt;-<span class="st"> </span><span class="kw"><a href="reference/dfm.html">df
 <h2>Developers</h2>
 <ul class="list-unstyled">
 <li>Seth Leonard <br><small class="roles"> Author, maintainer </small>  </li>
+<li>Christoph Sax <br><small class="roles"> Author </small>  </li>
 </ul>
 </div>
 
@@ -145,7 +146,7 @@ m &lt;-<span class="st"> </span><span class="kw"><a href="reference/dfm.html">df
 
 
       <footer><div class="copyright">
-  <p>Developed by Seth Leonard.</p>
+  <p>Developed by Seth Leonard, Christoph Sax.</p>
 </div>
 
 <div class="pkgdown">
