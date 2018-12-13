@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>MCMC Routine for Bayesian Dynamic Factor Models — CppBDFM • BDFM</title>
+<title>Seasonal adujustment, usign Watson and Engle (1983) Algorithm — seas_we • BDFM</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="MCMC Routine for Bayesian Dynamic Factor Models — CppBDFM" />
+<meta property="og:title" content="Seasonal adujustment, usign Watson and Engle (1983) Algorithm — seas_we" />
 
-<meta property="og:description" content="CppBDFM is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (http://arma.sourceforge.net/) linear algebra library for C++ and the packages needed for interfacing with R (Rcpp and RcppArmadillo)." />
+<meta property="og:description" content="to produce maximum likelihood estimates of model parameters" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -109,96 +109,67 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>MCMC Routine for Bayesian Dynamic Factor Models</h1>
+    <h1>Seasonal adujustment, usign Watson and Engle (1983) Algorithm</h1>
     
-    <div class="hidden name"><code>CppBDFM.Rd</code></div>
+    <div class="hidden name"><code>seas_we.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p><code>CppBDFM</code> is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (<a href='http://arma.sourceforge.net/'>http://arma.sourceforge.net/</a>) linear algebra library for C++ and the packages needed for interfacing with R (<code>Rcpp</code> and <code>RcppArmadillo</code>).</p>
+    <p>to produce maximum likelihood estimates of model parameters</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>CppBDFM</span>(<span class='no'>B</span>, <span class='no'>Bp</span>, <span class='no'>lam_B</span>, <span class='no'>q</span>, <span class='no'>nu_q</span>, <span class='no'>H</span>, <span class='no'>Hp</span>, <span class='no'>lam_H</span>, <span class='no'>R</span>, <span class='no'>nu_r</span>, <span class='no'>Y</span>, <span class='kw'>Ystore</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>store_idx</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>reps</span> <span class='kw'>=</span> <span class='fl'>1000</span>, <span class='kw'>burn</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>Loud</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>seas_we</span>(<span class='no'>data</span>, <span class='kw'>lags</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>...</span>, <span class='kw'>tol</span> <span class='kw'>=</span> <span class='fl'>0.01</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>B</th>
-      <td><p>initial guess for B in transition equation</p></td>
+      <th>data</th>
+      <td><p>data</p></td>
     </tr>
     <tr>
-      <th>Bp</th>
-      <td><p>prior for B</p></td>
+      <th>lags</th>
+      <td><p>integer, number of lags in transition equation</p></td>
     </tr>
     <tr>
-      <th>lam_B</th>
-      <td><p>prior tightness for B (additive)</p></td>
+      <th>...</th>
+      <td><p>further arguments, passed to [seas_factors()]</p></td>
     </tr>
     <tr>
-      <th>q</th>
-      <td><p>initial guess for q in the transition equation</p></td>
+      <th>tol</th>
+      <td><p>numeric, tolerance for convergence of likelihood function (times 100)</p></td>
     </tr>
     <tr>
-      <th>nu_q</th>
-      <td><p>prior "degrees of freedom" for inverse-Whishart prior for q (additive, prior scale is fixed so that increasing nu_q shrinks the variance towards zero)</p></td>
-    </tr>
-    <tr>
-      <th>H</th>
-      <td><p>initial guess for H in the trasition equation</p></td>
-    </tr>
-    <tr>
-      <th>Hp</th>
-      <td><p>prior for H</p></td>
-    </tr>
-    <tr>
-      <th>lam_H</th>
-      <td><p>prior tightness for H (additive)</p></td>
-    </tr>
-    <tr>
-      <th>R</th>
-      <td><p>initial guess for diagonal elements of R in the transition equation, entered as a vector</p></td>
-    </tr>
-    <tr>
-      <th>nu_r</th>
-      <td><p>prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r[j] shrinks the variance of shocks to series j towards zero)</p></td>
-    </tr>
-    <tr>
-      <th>Y</th>
-      <td><p>Input data. Data must be scaled and centered prior to estimation if desired.</p></td>
-    </tr>
-    <tr>
-      <th>Ystore</th>
-      <td><p>T/F, should the distribution of Y be stored</p></td>
-    </tr>
-    <tr>
-      <th>store_idx, </th>
-      <td><p>if Ystore is TRUE, index of which observed series to store. Note C++ uses zero indexing (i.e. subtract 1 from the R index value)</p></td>
-    </tr>
-    <tr>
-      <th>reps</th>
-      <td><p>number of repetitions for MCMC sampling</p></td>
-    </tr>
-    <tr>
-      <th>burn</th>
-      <td><p>number of iterations to burn in MCMC sampling</p></td>
-    </tr>
-    <tr>
-      <th>Loud</th>
-      <td><p>print status of function during evaluation.</p></td>
+      <th>verbose</th>
+      <td><p>logical, whether to output convergence of iterations</p></td>
     </tr>
     </table>
     
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
+    <p>an object of class `"seas_we"`. Use `predict` to extract the seasonally adjusted values.</p>
+    
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='no'>m</span> <span class='kw'>&lt;-</span> <span class='fu'>seas_we</span>(<span class='no'>mdeaths</span>)
+<span class='no'>adj_we</span> <span class='kw'>&lt;-</span> <span class='fu'>predict</span>(<span class='no'>m</span>)
+<span class='fu'>library</span>(<span class='no'>seasonal</span>)</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>Attaching package: ‘seasonal’</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from ‘package:BDFM’:</span>
+#&gt; <span class='message'></span>
+#&gt; <span class='message'>    cny</span></div><div class='input'><span class='no'>adj_x13</span> <span class='kw'>&lt;-</span> <span class='fu'>predict</span>(<span class='fu'><a href='http://www.rdocumentation.org/packages/seasonal/topics/seas'>seas</a></span>(<span class='no'>mdeaths</span>))
+<span class='kw pkg'>tsbox</span><span class='kw ns'>::</span><span class='fu'><a href='http://www.rdocumentation.org/packages/tsbox/topics/ts_plot'>ts_plot</a></span>(<span class='no'>mdeaths</span>, <span class='no'>adj_x13</span>, <span class='no'>adj_we</span>)</div><div class='img'><img src='seas_we-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-                </ul>
+      
+      <li><a href="#value">Value</a></li>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>
