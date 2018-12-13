@@ -193,7 +193,7 @@ est_ml <- dfm(data, factors = 2, lags = 3, method = 'ml', loud = T)
 ```
 Because factors are under-identified, ML factor estimates will be different than Bayesian factor estimates. However, fitted values should be similar. Forecasting using a model estimated by ML is identical to the Bayesian case.
 ```{r echo = T}
-est_ml <- dfm(data_xts, factors = 2, lags = 3, forecast = 3, method = 'ml')
+est_ml <- dfm(data, factors = 2, lags = 3, forecast = 3, method = 'ml')
 fct <- predict(est_ml)[,"INDPRO"]
 print(tail(fct,4))
 
@@ -205,7 +205,7 @@ Again, data here is scaled up so that to get predictions in original units we ne
 
 For very large models with few missing observation two step estimation following Doz, Giannone, and Reichlin (2009) is a final possibility by setting `method = 'pc'`. This approach estimates parameters of the model by treating principal components as factors, then re-estimates factors based on estimated parameters. Predictive power will typically be less than models estimated by Bayesian simulation or maximum likelihood, but the approach is very fast and can handle very large data sets. It is not suitable for data sets with many missing values however as there is no straightforward way of estimating principal components with missing observations. We can estimate the simple five variable model introduced above using two step estimation and forecast three periods ahead of the last observation as follows:
 ```{r echo=T}
-est_pc <- dfm(data_xts, factors = 2, lags = 3, forecast = 3, method = 'pc')
+est_pc <- dfm(data, factors = 2, lags = 3, forecast = 3, method = 'pc')
 fct <- predict(est_pc)[,"INDPRO"]
 print(tail(fct,4))
 ```
