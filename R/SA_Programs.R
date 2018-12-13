@@ -493,16 +493,6 @@ Predetermined.d <- function(dates, predetermined) {
 #' @export
 #' @import data.table
 #' @useDynLib BDFM
-#' @examples
-#' library(BDFM)
-#' Spain <- read.csv(
-#'   system.file("Examples/Spain_IP.csv", package = "BDFM"),
-#'   stringsAsFactors = FALSE
-#' )
-#' y <- Spain$IP
-#' dates <- as.Date(Spain$date)
-#' predetermined = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "Easter", "trading_days")
-#' N <- Predetermined.m(dates, predetermined)
 Predetermined.m <- function(dates, predetermined) {
   mn <- length(predetermined)
   N <- matrix(0, length(dates), mn)

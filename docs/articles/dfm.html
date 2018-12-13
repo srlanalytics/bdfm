@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">BDFM</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.0.2</span>
       </span>
     </div>
 
@@ -79,7 +79,7 @@
       <h1>Bayesian Dynamic Factor Models</h1>
                         <h4 class="author">Seth Leonard, Christoph Sax</h4>
             
-            <h4 class="date">2018-11-17</h4>
+            <h4 class="date">2018-12-13</h4>
       
       
       <div class="hidden name"><code>dfm.Rmd</code></div>
@@ -88,16 +88,200 @@
 
     
     
-<p><code>BDFM</code> is an R package for estimating dynamic factor models. The emphasis of the package is on fully Bayesian estimation using MCMC methods via Durbin and Koopman’s (2012) disturbance smoother. However, maximum likelihood estimation via Watson and Engle’s (1983) EM algorithm and two step estimation following Doz, Giannone, and Reichlin (2011) is also supported. This document begins with a non-technical overview of dynamic factor models including simple examples. The second section introduces more rigorous notation and technical details regarding estimation techniques. For even more detail the book <em>Practical Implementation of Factor Models</em> is available for free download at .</p>
+<p><code>bdfm</code> is an R package for estimating dynamic factor models. The emphasis of the package is on fully Bayesian estimation using MCMC methods via Durbin and Koopman’s (2012) disturbance smoother. However, maximum likelihood estimation via Watson and Engle’s (1983) EM algorithm and two step estimation following Doz, Giannone, and Reichlin (2011) is also supported. This document begins with a non-technical overview of dynamic factor models including simple examples. The second section introduces more rigorous notation and technical details regarding estimation techniques. For even more detail the book <em>Practical Implementation of Factor Models</em> is available for free download at [SRLquantitative.com]{srlquantitative.com}.</p>
 <div id="non-technichal-overview" class="section level1">
 <h1 class="hasAnchor">
 <a href="#non-technichal-overview" class="anchor"></a>Non-Technichal Overview</h1>
 <p>Time series data for real world applications can be messy. Potential difficulties include inaccurate (noisy) observations, missing data, “ragged edge” data due to varying start and end dates for different series, and a potentially large number of parameters to estimate. Dynamic factor models (DFMs) or state space models provide a means of addressing these big data problems.</p>
-<p>We can describe dynamic factor modes in two parts. The first part is called the measurement or observation equation. Mathematically, we can write this equation as <span class="math display">\[ y_t = H x_t + \varepsilon_t \]</span> Conceptually, this step relates our meaningful information or factors, represented by the vector <span class="math inline">\(x_t\)</span>, to our large set of noisy data, represented by <span class="math inline">\(y_t\)</span>. The second part of the model is called the transition equation, which we can write mathematically as <span class="math display">\[ x_t = A x_{t-1} + \epsilon_t \]</span> This part of the model describes how our factors <span class="math inline">\(x_t\)</span>, the meaningful information in which we are interested, evolve over time. The Kalman filter, the work horse of the linear-Guassian model, operates by first predicting <span class="math inline">\(x_t\)</span> based on <span class="math inline">\(x_{t-1}\)</span> (the model here is written in terms of one lag but is easily extended to <span class="math inline">\(p\)</span> lags). Predictions for <span class="math inline">\(x_t\)</span> are then updated using data in <span class="math inline">\(y_t\)</span> as it becomes available. Data need not be realized at the same time; as soon as any additional information becomes available it can be incorporated into the model.</p>
-<p>In economic and financial applications the greatest difficulty in implementing factor models is parameter estimation (in many physical models parameters may be informed by theory and thus need not be estimated). The package <code>BDFM</code> supports three methods for esimtating these models. Bayesian estimation (<code>method = 'Bayesian'</code>) is the default; this approach is able to incorporate prior beliefs we have about the data — which series are more important for example — and thus may yield superior predictions. Maxiumim likelihood estimation (<code>method = 'ML'</code>) finds the parameters maximize the log likelihood of what we observe yeilding results that are nearly identical to Baysian estimation when we do not specify any prior beliefs about the model. Finally, “two step” estimation (<code>method = 'PC'</code>) is useful when we have very large data sets (hundreds or thousands of series) without too many missing observations. When the number of observed series gets very large Bayesian and maximum likelihood estimation can be slow. Two step estimation, however, remains quick and computationally light by estimating parameters using principal components as factors.</p>
-<div id="getting-started" class="section level2">
+<p>We can describe dynamic factor modes in two parts. The first part is called the measurement or observation equation. Mathematically, we can write this equation as <span class="math display">\[ y_t = H x_t + \varepsilon_t \]</span> Conceptually, this step relates our meaningful information or factors, represented by the vector <span class="math inline">\(x_t\)</span>, to our large set of noisy data, represented by <span class="math inline">\(y_t\)</span>. The second part of the model is called the transition equation, which we can write mathematically as <span class="math display">\[ x_t = A x_{t-1} + \epsilon_t \]</span> This part of the model describes how our factors <span class="math inline">\(x_t\)</span>, the meaningful information in which we are interested, evolve over time. The Kalman filter, the work horse of the linear-Gaussian model, operates by first predicting <span class="math inline">\(x_t\)</span> based on <span class="math inline">\(x_{t-1}\)</span> (the model here is written in terms of one lag but is easily extended to <span class="math inline">\(p\)</span> lags). Predictions for <span class="math inline">\(x_t\)</span> are then updated using data in <span class="math inline">\(y_t\)</span> as it becomes available. Data need not be realized at the same time; as soon as any additional information becomes available it can be incorporated into the model.</p>
+<p>In economic and financial applications the greatest difficulty in implementing factor models is parameter estimation (in many physical models parameters may be informed by theory and thus need not be estimated). The package <code>bdfm</code> supports three methods for estimating these models. Bayesian estimation (<code>method = 'Bayesian'</code>) is the default; this approach is able to incorporate prior beliefs we have about the data — which series are more important for example — and thus may yield superior predictions. Maximum likelihood estimation (<code>method = 'ML'</code>) finds the parameters maximize the log likelihood of what we observe yielding results that are nearly identical to Bayesian estimation when we do not specify any prior beliefs about the model. Finally, “two step” estimation (<code>method = 'PC'</code>) is useful when we have very large data sets (hundreds or thousands of series) without too many missing observations. When the number of observed series gets very large Bayesian and maximum likelihood estimation can be slow. Two step estimation, however, remains quick and computationally light by estimating parameters using principal components as factors.</p>
+</div>
+<div id="getting-started" class="section level1">
+<h1 class="hasAnchor">
+<a href="#getting-started" class="anchor"></a>Getting Started</h1>
+<div id="basic-estimation" class="section level2">
 <h2 class="hasAnchor">
-<a href="#getting-started" class="anchor"></a>Getting Started</h2>
+<a href="#basic-estimation" class="anchor"></a>Basic Estimation</h2>
+<p>Input data, <span class="math inline">\(y_t\)</span> in the observation equation, is the only minimum requirement to estimate a DFM using the <code>bdfm</code> package. However, it is helpful to have an idea of where to start in terms of the number of lags in the transition equation and number of factors you would like to estimate. If you’re using monthly data, 3 lags (one quarter) is a decent starting point. For daily data, 7 lags (one week, or 5 if data includes only business days) is probably a good guess. The defaults are (somewhat arbitrarily) one factor and two lags. Note that input data should be stationary. It can also be helpful to scale data and to ensure values are not too small; the Kalman filter requires inverting the covariance matrix for estimates of observations. If observed values are small the determinant of this matrix can get very small (close to machine precision) impacting the accuracy of the results. As a simple example, we can estimate a DFM using five series from the St. Louis Fed’s Fred database. To begin with, we import the data and enforce stationary by taking logs and differences where needed.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(BDFM)</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">library</span>(tsbox)</a>
+<a class="sourceLine" id="cb1-3" title="3">fred0 &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="kw">system.file</span>(<span class="st">"Examples/freddata.csv"</span>, <span class="dt">package =</span> <span class="st">"BDFM"</span>), <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb1-4" title="4"></a>
+<a class="sourceLine" id="cb1-5" title="5">data &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tsbox/topics/ts_ts">ts_ts</a></span>(<span class="kw"><a href="http://www.rdocumentation.org/packages/tsbox/topics/ts_long">ts_long</a></span>(fred0))  <span class="co"># ts-time series</span></a></code></pre></div>
+<pre><code>## [time]: 'DATE' 
+## [time]: 'DATE'</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="co">#Make the data stationary by taking log differences. Note that we do not take logs of inventory:sales ratios (indexes 3 and 4), but we do difference them as they are not stationary.</span></a>
+<a class="sourceLine" id="cb3-2" title="2"></a>
+<a class="sourceLine" id="cb3-3" title="3">data[,<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">5</span>)] &lt;-<span class="st"> </span><span class="kw">log</span>(data[,<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">5</span>)])</a>
+<a class="sourceLine" id="cb3-4" title="4">data &lt;-<span class="st"> </span><span class="kw">diff</span>(data)</a></code></pre></div>
+<p>As previously mentioned, small values can result in inaccurate estimations. It’s therefore a good idea to scale up the data.</p>
+<p>[TODO: The package should take care of technical stuff, not the user. If scaling is a good idea, we should do it by default, and unscale at the end. With an option to turn it of]</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">data &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/tsbox/topics/ts_scale">ts_scale</a></span>(data)</a></code></pre></div>
+<p>We can then estimate our DFM. A model with one factor is a good way to create an index of the data, in this case a small index of monthly real activity in the U.S.</p>
+<p>[TODO: heuristics for factors, lags?]</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">est &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dfm.html">dfm</a></span>(data, <span class="dt">factors =</span> <span class="dv">1</span>, <span class="dt">lags =</span> <span class="dv">3</span>)</a></code></pre></div>
+<p>And finally, we can look a this index against the observed series.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">ts.plot</span>(<span class="kw">cbind</span>(data, est<span class="op">$</span>factors), <span class="dt">col =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">"steelblue"</span>, <span class="dv">5</span>), <span class="st">"red"</span>), <span class="dt">lwd =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">1</span>,<span class="dv">5</span>),<span class="dv">2</span>))</a></code></pre></div>
+<p><img src="dfm_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+</div>
+<div id="forecasts" class="section level2">
+<h2 class="hasAnchor">
+<a href="#forecasts" class="anchor"></a>Forecasts</h2>
+<p>To generate forecasts using <code>bdfm</code> the user can specify the number of periods ahead to forecast using the <code>forecast</code> argument. Keep in mind that the last observation may not be the same for every series when dealing with “ragged edge” data; <code>forecast = n</code> will generate forecasts <span class="math inline">\(n\)</span> periods ahead of the latest observation of any series in our data set. Also, though we have been inputing data in matrix format above, it may be helpful to use a time series format when forecasting that will keep track of forecast dates. Sticking with our five variable monthly frequency example from FRED, we can generate forecasts for three months beyond our last observation of initial unemployment claims, which is in the case our last observation, as follows.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">est_fct &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dfm.html">dfm</a></span>(data, <span class="dt">factors =</span> <span class="dv">2</span>, <span class="dt">lags =</span> <span class="dv">3</span>, <span class="dt">forecast =</span> <span class="dv">3</span>)</a>
+<a class="sourceLine" id="cb7-2" title="2">fct &lt;-<span class="st"> </span><span class="kw">predict</span>(est_fct)[,<span class="st">"INDPRO"</span>]</a>
+<a class="sourceLine" id="cb7-3" title="3"><span class="kw">print</span>(<span class="kw">tail</span>(fct,<span class="dv">4</span>))</a></code></pre></div>
+<pre><code>## [1] -0.31498896  0.02286125 -0.08580187 -0.01756807</code></pre>
+<p>Note that the value for November 2018 is also a prediction before IP was observed; in this case it is a nowcast using initial jobless claims to update the one step ahead forecast.</p>
+</div>
+</div>
+<div id="working-with-bayesian-dfms" class="section level1">
+<h1 class="hasAnchor">
+<a href="#working-with-bayesian-dfms" class="anchor"></a>Working with Bayesian DFMs</h1>
+<p>Our dynamic factor model can be described by the observation equation <span class="math display">\[ y_t = H x_t + \varepsilon_t \]</span> the transition equation <span class="math display">\[ z_t = A z_{t-1} + \epsilon_t \]</span> where <span class="math inline">\(z_t = \begin{bmatrix} x_t &amp; x_{t-1} &amp; \ldots &amp; x_{t-p+1} \end{bmatrix}\)</span> and <span class="math inline">\(A\)</span> is the companion form of <span class="math inline">\(B\)</span> in the vector autoregression (VAR) <span class="math display">\[x_t = B \begin{bmatrix}
+x_{t-1} \\
+x_{t-2} \\
+\vdots \\
+x_{t-p}
+\end{bmatrix} + \epsilon_t \]</span> and the distribution of shocks <span class="math display">\[
+\begin{bmatrix}
+\epsilon_t\\
+\varepsilon_t
+\end{bmatrix}
+\sim \mathcal{N}\left( \begin{bmatrix} 0\\ 0 \end{bmatrix}, \begin{bmatrix} Q &amp; 0 \\ 0 &amp; R \end{bmatrix} \right)
+\]</span> Our goal is therefore to estimate the parameters <span class="math inline">\(B\)</span>, <span class="math inline">\(H\)</span>, <span class="math inline">\(Q\)</span>, and <span class="math inline">\(R\)</span>. The default Bayesian estimation routine does this by sequentially drawing factors given parameters using Durban and Koopman’s (2012) disturbance/simulation smoother and then drawing parameters given factors. We accept draws with probability 1, that is, <code>bdfm</code> performs these iterations via Gibbs sampling. The model is normalized by setting the top <span class="math inline">\(m \times m\)</span> submatrix of <span class="math inline">\(H\)</span> to the identity matrix where <span class="math inline">\(m\)</span> is the number of factors. This involves drawing the first <span class="math inline">\(m\)</span> rows of <span class="math inline">\(H\)</span> from the appropriate posterior distribution and then using this draw to rotate factors to meet our normalization criteria. By default, the model is normalized on the first <span class="math inline">\(m\)</span> principal components of the data; you can set <code>identification = "Name"</code> to normalize on the first <span class="math inline">\(m\)</span> observed series.</p>
+<p>Note that because Bayesian models are estimated by simulation, results will not always be identical. <code>bdfm</code> does not currently support setting the random number generator seed in the C++ functions, though this is a feature we are working on.</p>
+<div id="including-informative-priors" class="section level2">
+<h2 class="hasAnchor">
+<a href="#including-informative-priors" class="anchor"></a>Including Informative Priors</h2>
+<p>An important question with any dynamic factor model is how much each observed series contributes to factors. To answer this question we can look at the estimated parameters of the transition equation. Going back to the simple model we estimated above using 5 series from Fred, the loadings <span class="math inline">\(H\)</span> are stored as <code>est$H</code>, and are</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">print</span>(est<span class="op">$</span>H)</a></code></pre></div>
+<pre><code>##            [,1]
+## [1,] -0.4193140
+## [2,] -0.5118999
+## [3,]  0.4560990
+## [4,]  0.5319027
+## [5,]  0.2673007</code></pre>
+<p>Industrial production and new orders (the first two series) load negatively; inventory sales ratios and jobless claims load positively. Note that we could multiply <span class="math inline">\(H\)</span> and the factors by <span class="math inline">\(-1\)</span> and the model would be unchanged. Perhaps more importantly, the variances of shocks to the observation equation tell us how well the model fits each observed series. These are stored as <code>diag(est$R)</code> and are</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1"><span class="kw">print</span>(<span class="kw">diag</span>(est<span class="op">$</span>R))</a></code></pre></div>
+<pre><code>## [1] 0.6121933 0.4163360 0.5454893 0.3437043 0.8471460</code></pre>
+<p>Since we have normalized the variance of each series to 10000, this gives us a good idea of how much each series contributes to factor updates. If the estimated variance of shocks to a series was near 10000, that series would contribute nothing or very little to our model. In this case, every series contributes to our updates, though initial jobless claims contributes the least.</p>
+<p>A great advantage of fully Bayesian DFM estimation is that it allows us to incorporate prior beliefs into parameter estimates. Suppose, for example, that we wanted a model in which initial jobless claims played a bigger role. We can accomplish this by incorporating the prior belief that shocks to initial jobless claims in the transition equation are small. We can specify this prior using the “degrees of freedom” for the inverse gamma prior distribution for <span class="math inline">\(R_{5,5}\)</span>, the variance of shocks to the observed series initial jobless claims. We can specify this prior using <code>nu_r = c(0,0,0,0,1)</code> and then estimate the model as</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">nu_r =<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb13-2" title="2">estB &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dfm.html">dfm</a></span>(data, <span class="dt">factors =</span> <span class="dv">1</span>, <span class="dt">lags =</span> <span class="dv">3</span>, <span class="dt">nu_r =</span> nu_r)</a>
+<a class="sourceLine" id="cb13-3" title="3"><span class="kw">print</span>(<span class="kw">diag</span>(estB<span class="op">$</span>R))</a></code></pre></div>
+<pre><code>## [1] 0.6125790 0.4203156 0.5478774 0.3465777 0.4183921</code></pre>
+<p>Estimated shocks to the transition equation are now smaller implying jobless claims will play a bigger role in updating our factor.</p>
+</div>
+<div id="checking-convergence" class="section level2">
+<h2 class="hasAnchor">
+<a href="#checking-convergence" class="anchor"></a>Checking Convergence</h2>
+<p>Parameters for Bayesian DFMs estimated using the <code>bdfm</code> package are median values of the entire posterior distribution of draws. By default <code>bdfm</code> uses 500 burn in iterations and 1000 sampling iterations.  However, 500 burn in iterations may not be sufficient. The best way to evaluate whether our model has converged to a stationary distribution is to look at the trace for estimated parameters. Parameter posterior distributions are stored as <code>Bstore</code>, <code>Hstore</code>, <code>Qstore</code>, and <code>Rstore</code>. The first three are cubes. <code>Bstore</code>, for example, has dimensions <code>[m, m*p, reps]</code>. For the first model we estimated,</p>
+<pre><code>est &lt;- dfm(data, factors = 1, lags = 3)</code></pre>
+<p>we can look at a few trace plots using the following:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="co">#Look at traces for a few of the parameters in our first estimation</span></a>
+<a class="sourceLine" id="cb16-2" title="2"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">2</span>))</a>
+<a class="sourceLine" id="cb16-3" title="3">saved_par &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="st">"mar"</span>) <span class="co">#this is just for knitting the document</span></a>
+<a class="sourceLine" id="cb16-4" title="4"><span class="kw">par</span>(<span class="dt">mar =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">1</span>))   <span class="co">#this is just for knitting the document</span></a>
+<a class="sourceLine" id="cb16-5" title="5"><span class="kw">ts.plot</span>(est<span class="op">$</span>Bstore[<span class="dv">1</span>,<span class="dv">1</span>,])</a>
+<a class="sourceLine" id="cb16-6" title="6"><span class="kw">ts.plot</span>(est<span class="op">$</span>Hstore[<span class="dv">1</span>,<span class="dv">1</span>,])</a>
+<a class="sourceLine" id="cb16-7" title="7"><span class="kw">ts.plot</span>(est<span class="op">$</span>Qstore[<span class="dv">1</span>,<span class="dv">1</span>,])</a>
+<a class="sourceLine" id="cb16-8" title="8"><span class="kw">ts.plot</span>(est<span class="op">$</span>Rstore[<span class="dv">1</span>,])</a></code></pre></div>
+<p><img src="dfm_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="kw">par</span>(<span class="dt">mar =</span> saved_par)    <span class="co">#this is just for knitting the document</span></a></code></pre></div>
+<p>While this is not a formal test, things here look pretty good, so there is probably no need to change the defaults.</p>
+</div>
+<div id="full-posterior-distributions-of-predicted-values" class="section level2">
+<h2 class="hasAnchor">
+<a href="#full-posterior-distributions-of-predicted-values" class="anchor"></a>Full Posterior Distributions of Predicted Values</h2>
+<p>If we are using a dynamic factor model to predict a certain variable, such as a nowcast of industrial production, it is far better to use the full distribution of predicted values for our series of interest. The full posterior distribution is of course interesting in its own right, but it will also tend to be more accurate then predicted values estimated using posterior medians for parameters. This is due to the fact that the posterior median for predicted values of a series is more robust to non-stationary parameter draws and under identification. However, the full distribution of fitted or predicted values can be very large. In the current example with 5 observed series, 322 observations, and 1000 draws, storing the distribution of every series would require storing 1.6 million elements. For bigger data sets, obviously this number would increase. Therefore the package <code>bdfm</code> will store posterior distributions for only one series of interest, specified by setting the input <code>store_idx</code> to the index value of the series of interest. By default, <code>store_idx = NULL</code> and no posterior distributions of observables are stored. We can store the distribution of predicted scaled and centered industrial production (the first series in our data set) by re-estimating the model as follows:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">est &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dfm.html">dfm</a></span>(data, <span class="dt">factors =</span> <span class="dv">1</span>, <span class="dt">lags =</span> <span class="dv">3</span>, <span class="dt">store_idx =</span> <span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb18-2" title="2">median_parameters &lt;-<span class="st"> </span><span class="kw">mean</span>((est<span class="op">$</span>values[,<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>data[,<span class="dv">1</span>])<span class="op">^</span><span class="dv">2</span>, <span class="dt">na.rm =</span> T)</a>
+<a class="sourceLine" id="cb18-3" title="3">median_draw       &lt;-<span class="st"> </span><span class="kw">mean</span>((est<span class="op">$</span>Ymedian[,<span class="dv">1</span>] <span class="op">-</span><span class="st"> </span>data[,<span class="dv">1</span>])<span class="op">^</span><span class="dv">2</span>, <span class="dt">na.rm =</span> T)</a>
+<a class="sourceLine" id="cb18-4" title="4"><span class="kw">cat</span>(<span class="st">"MSE for estimate using median parameters:"</span>, median_parameters, <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</a></code></pre></div>
+<pre><code>## MSE for estimate using median parameters: 0.6711137</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1"><span class="kw">cat</span>(<span class="st">"MSE for estimate using median of draws for IP:"</span>, median_draw)</a></code></pre></div>
+<pre><code>## MSE for estimate using median of draws for IP: 0.5999534</code></pre>
+<p>In this case the mean squared error for predicted values using the median value of draws for industrial production in our MCMC simulations is less than the value calculated by using the median values of parameters. We can look at the full distribution of predicted values for industrial production in a given period as follows:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">period =<span class="st"> </span><span class="dv">321</span></a>
+<a class="sourceLine" id="cb22-2" title="2"><span class="kw">hist</span>(est<span class="op">$</span>Ystore[period,], <span class="dt">breaks =</span> <span class="dv">30</span>)</a></code></pre></div>
+<p><img src="dfm_files/figure-html/unnamed-chunk-11-1.png" width="700"></p>
+</div>
+<div id="forecast-updates" class="section level2">
+<h2 class="hasAnchor">
+<a href="#forecast-updates" class="anchor"></a>Forecast Updates</h2>
+<p>For every type of estimation including maximum likelihood, <code>method = "ml"</code>, and two step principal components, <code>method = 'pc</code>,<code>bdfm</code> will store the prediction error and Kalman gain at every period. This allows us to look at exactly how much each series contributes to forecast updates at any point in time. Continuing with our model estimated using scaled centered data from Fred, in period 320 each series contributed to factor updates as follows:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1">Update &lt;-<span class="st"> </span><span class="kw">c</span>(est<span class="op">$</span>Kstore[[<span class="dv">320</span>]][<span class="dv">1</span>,]<span class="op">*</span>est<span class="op">$</span>PEstore[[<span class="dv">320</span>]])</a>
+<a class="sourceLine" id="cb23-2" title="2"><span class="kw">names</span>(Update) &lt;-<span class="st"> </span><span class="kw">colnames</span>(data)</a>
+<a class="sourceLine" id="cb23-3" title="3"><span class="kw">print</span>(Update)</a></code></pre></div>
+<pre><code>##      INDPRO      AMTMNO  WHLSLRIRSA  MNFCTRIRSA        ICSA 
+##  0.01950558 -0.04416682  0.02169301 -0.22884575 -0.06670321</code></pre>
+<p>The syntax here might be a little confusing at first. <code>est$Kstore[[320]]</code> is the Kalman gain at period 320. The stored Kalman gain is a list because its dimensions are not constant — only observed series contribute to updates, thus if a series is not observed in period <span class="math inline">\(t\)</span> there will be no Kalman gain stored for that period. The same is true of the prediction error, <code>est$PEstore</code>. In period 321 only two series are observed: industrial production and initial jobless claims. The we have</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1">Update &lt;-<span class="st"> </span><span class="kw">c</span>(est<span class="op">$</span>Kstore[[<span class="dv">321</span>]][<span class="dv">1</span>,]<span class="op">*</span>est<span class="op">$</span>PEstore[[<span class="dv">321</span>]])</a>
+<a class="sourceLine" id="cb25-2" title="2"><span class="kw">names</span>(Update) &lt;-<span class="st"> </span><span class="kw">colnames</span>(data)[<span class="kw">is.finite</span>(data[<span class="dv">321</span>,])]</a>
+<a class="sourceLine" id="cb25-3" title="3"><span class="kw">print</span>(Update)</a></code></pre></div>
+<pre><code>##    INDPRO      ICSA 
+## 0.1093501 0.3201702</code></pre>
+<p>A second issue is that we only use the first row of the Kalman gain. This is because we are only interested in the update to contemporaneous factors. The entire matrix of factors is stacked over the number of lags we specified in the model. Because we specified <span class="math inline">\(p = 3\)</span> lags and <span class="math inline">\(m = 1\)</span> factor, <code>est$Kstore</code> will have <span class="math inline">\(m*p = 3\)</span> rows. The second two rows specify updates to lagged factors (where are around zero) and are thus not very interesting. In a model with <span class="math inline">\(p = 3\)</span> lags and <span class="math inline">\(m = 3\)</span> factors, <code>est$Kstore</code> would have <span class="math inline">\(m*p = 9\)</span> rows of which the first three are of interest. The remaining rows are stored because they are used internally for disturbance smoothing.</p>
+</div>
+</div>
+<div id="other-estimation-methods" class="section level1">
+<h1 class="hasAnchor">
+<a href="#other-estimation-methods" class="anchor"></a>Other Estimation Methods</h1>
+<p>The package <code>bdfm</code> also supports maximum likelihood estimation, specified by setting <code>method = 'ml'</code> and two step principal component based estimation, specified by setting <code>method = 'pc'</code>. Each is described briefly below.</p>
+<div id="maximum-likelihood" class="section level2">
+<h2 class="hasAnchor">
+<a href="#maximum-likelihood" class="anchor"></a>Maximum Likelihood</h2>
+<p>One can estimate a dynamic factor model via maximum likelihood (ML) by simply plugging the likelihood function into a numerical solver such as optim() in R. However, this is computationally inefficient approach and will be very slow for large models. For this reason the option <code>method = 'ml'</code> uses Watson and Engle’s (1983) EM algorithm to estimate models by ML. This will generally be faster than Bayesian estimation by simulation and model identification is less important as rotating the factors will not change the log likelihood. However, maximum likelihood estimation does not allow the incorporation of prior beliefs. To estimate our simple five variable model from the previous section by maximum likelihood we simply specify that method in the <code><a href="../reference/dfm.html">dfm()</a></code> call. With ML we can also look at the improvement in the log likelihood at each iteration of the EM algorithm by specifying <code>loud = T</code>.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1">est_ml &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dfm.html">dfm</a></span>(data, <span class="dt">factors =</span> <span class="dv">2</span>, <span class="dt">lags =</span> <span class="dv">3</span>, <span class="dt">method =</span> <span class="st">'ml'</span>, <span class="dt">loud =</span> T)</a></code></pre></div>
+<pre><code>##      [,1]
+## [1,]  200
+##          [,1]
+## [1,] 12.19736
+##          [,1]
+## [1,] 1.966578
+##           [,1]
+## [1,] 0.7136467
+##           [,1]
+## [1,] 0.3018777
+##           [,1]
+## [1,] 0.1520865
+##            [,1]
+## [1,] 0.08471649
+##            [,1]
+## [1,] 0.05140781
+##            [,1]
+## [1,] 0.03408839
+##            [,1]
+## [1,] 0.02460794
+##            [,1]
+## [1,] 0.01906437
+##            [,1]
+## [1,] 0.01557278
+##            [,1]
+## [1,] 0.01321803
+##            [,1]
+## [1,] 0.01154539
+##            [,1]
+## [1,] 0.01031731
+##             [,1]
+## [1,] 0.009400107</code></pre>
+<p>Because factors are under-identified, ML factor estimates will be different than Bayesian factor estimates. However, fitted values should be similar. Forecasting using a model estimated by ML is identical to the Bayesian case.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1">est_ml &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dfm.html">dfm</a></span>(data, <span class="dt">factors =</span> <span class="dv">2</span>, <span class="dt">lags =</span> <span class="dv">3</span>, <span class="dt">forecast =</span> <span class="dv">3</span>, <span class="dt">method =</span> <span class="st">'ml'</span>)</a>
+<a class="sourceLine" id="cb29-2" title="2">fct &lt;-<span class="st"> </span><span class="kw">predict</span>(est_ml)[,<span class="st">"INDPRO"</span>]</a>
+<a class="sourceLine" id="cb29-3" title="3"><span class="kw">print</span>(<span class="kw">tail</span>(fct,<span class="dv">4</span>))</a></code></pre></div>
+<pre><code>## [1] -0.247956192 -0.005940662 -0.006411894 -0.005943660</code></pre>
+<p>Again, data here is scaled up so that to get predictions in original units we need to unscale it. When using ML estimation any specification of priors for Bayesian estimation will be ignored. Users can set the tolerance for convergence of the EM algorithm using the input <code>EM_tolerance</code>. The default value is 0.01 which corresponds to the convergence criteria used in Doz, Giannone, and Reichlin (2012).</p>
+</div>
+<div id="two-step-estimation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#two-step-estimation" class="anchor"></a>Two Step Estimation</h2>
+<p>For very large models with few missing observation two step estimation following Doz, Giannone, and Reichlin (2009) is a final possibility by setting <code>method = 'pc'</code>. This approach estimates parameters of the model by treating principal components as factors, then re-estimates factors based on estimated parameters. Predictive power will typically be less than models estimated by Bayesian simulation or maximum likelihood, but the approach is very fast and can handle very large data sets. It is not suitable for data sets with many missing values however as there is no straightforward way of estimating principal components with missing observations. We can estimate the simple five variable model introduced above using two step estimation and forecast three periods ahead of the last observation as follows:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1">est_pc &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dfm.html">dfm</a></span>(data, <span class="dt">factors =</span> <span class="dv">2</span>, <span class="dt">lags =</span> <span class="dv">3</span>, <span class="dt">forecast =</span> <span class="dv">3</span>, <span class="dt">method =</span> <span class="st">'pc'</span>)</a>
+<a class="sourceLine" id="cb31-2" title="2">fct &lt;-<span class="st"> </span><span class="kw">predict</span>(est_pc)[,<span class="st">"INDPRO"</span>]</a>
+<a class="sourceLine" id="cb31-3" title="3"><span class="kw">print</span>(<span class="kw">tail</span>(fct,<span class="dv">4</span>))</a></code></pre></div>
+<pre><code>## [1] -0.33718357  0.03513168 -0.08444451 -0.02145703</code></pre>
+<p>As before, we will need to unscale the data to get it back into original units.</p>
 </div>
 </div>
   </div>
@@ -107,9 +291,25 @@
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li>
-<a href="#non-technichal-overview">Non-Technichal Overview</a><ul class="nav nav-pills nav-stacked">
-<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#non-technichal-overview">Non-Technichal Overview</a></li>
+      <li>
+<a href="#getting-started">Getting Started</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#basic-estimation">Basic Estimation</a></li>
+      <li><a href="#forecasts">Forecasts</a></li>
+      </ul>
+</li>
+      <li>
+<a href="#working-with-bayesian-dfms">Working with Bayesian DFMs</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#including-informative-priors">Including Informative Priors</a></li>
+      <li><a href="#checking-convergence">Checking Convergence</a></li>
+      <li><a href="#full-posterior-distributions-of-predicted-values">Full Posterior Distributions of Predicted Values</a></li>
+      <li><a href="#forecast-updates">Forecast Updates</a></li>
+      </ul>
+</li>
+      <li>
+<a href="#other-estimation-methods">Other Estimation Methods</a><ul class="nav nav-pills nav-stacked">
+<li><a href="#maximum-likelihood">Maximum Likelihood</a></li>
+      <li><a href="#two-step-estimation">Two Step Estimation</a></li>
       </ul>
 </li>
       </ul>
@@ -120,7 +320,7 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Seth Leonard.</p>
+  <p>Developed by Seth Leonard, Christoph Sax.</p>
 </div>
 
 <div class="pkgdown">
