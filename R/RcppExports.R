@@ -2,74 +2,74 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 QuickReg <- function(X, Y) {
-    .Call('_BDFM_QuickReg', PACKAGE = 'BDFM', X, Y)
+    .Call('_bdfm_QuickReg', PACKAGE = 'bdfm', X, Y)
 }
 
 MonthDays <- function(year, month) {
-    .Call('_BDFM_MonthDays', PACKAGE = 'BDFM', year, month)
+    .Call('_bdfm_MonthDays', PACKAGE = 'bdfm', year, month)
 }
 
 end_of_month <- function(Dates) {
-    .Call('_BDFM_end_of_month', PACKAGE = 'BDFM', Dates)
+    .Call('_bdfm_end_of_month', PACKAGE = 'bdfm', Dates)
 }
 
 comp_form <- function(B) {
-    .Call('_BDFM_comp_form', PACKAGE = 'BDFM', B)
+    .Call('_bdfm_comp_form', PACKAGE = 'bdfm', B)
 }
 
 mvrnrm <- function(n, mu, Sigma) {
-    .Call('_BDFM_mvrnrm', PACKAGE = 'BDFM', n, mu, Sigma)
+    .Call('_bdfm_mvrnrm', PACKAGE = 'bdfm', n, mu, Sigma)
 }
 
 rinvwish <- function(n, v, S) {
-    .Call('_BDFM_rinvwish', PACKAGE = 'BDFM', n, v, S)
+    .Call('_bdfm_rinvwish', PACKAGE = 'bdfm', n, v, S)
 }
 
 invchisq <- function(nu, scale) {
-    .Call('_BDFM_invchisq', PACKAGE = 'BDFM', nu, scale)
+    .Call('_bdfm_invchisq', PACKAGE = 'bdfm', nu, scale)
 }
 
 stack_obs <- function(nn, p, r = 0L) {
-    .Call('_BDFM_stack_obs', PACKAGE = 'BDFM', nn, p, r)
+    .Call('_bdfm_stack_obs', PACKAGE = 'bdfm', nn, p, r)
 }
 
 PrinComp <- function(Y, m) {
-    .Call('_BDFM_PrinComp', PACKAGE = 'BDFM', Y, m)
+    .Call('_bdfm_PrinComp', PACKAGE = 'bdfm', Y, m)
 }
 
 BReg <- function(X, Y, Int, Bp, lam, nu, reps = 1000L, burn = 1000L) {
-    .Call('_BDFM_BReg', PACKAGE = 'BDFM', X, Y, Int, Bp, lam, nu, reps, burn)
+    .Call('_bdfm_BReg', PACKAGE = 'bdfm', X, Y, Int, Bp, lam, nu, reps, burn)
 }
 
 BReg_diag <- function(X, Y, Int, Bp, lam, nu, reps = 1000L, burn = 1000L) {
-    .Call('_BDFM_BReg_diag', PACKAGE = 'BDFM', X, Y, Int, Bp, lam, nu, reps, burn)
+    .Call('_bdfm_BReg_diag', PACKAGE = 'bdfm', X, Y, Int, Bp, lam, nu, reps, burn)
 }
 
 DSmooth <- function(B, q, H, R, Y) {
-    .Call('_BDFM_DSmooth', PACKAGE = 'BDFM', B, q, H, R, Y)
+    .Call('_bdfm_DSmooth', PACKAGE = 'bdfm', B, q, H, R, Y)
 }
 
 DSUF <- function(B, q, H, R, Y) {
-    .Call('_BDFM_DSUF', PACKAGE = 'BDFM', B, q, H, R, Y)
+    .Call('_bdfm_DSUF', PACKAGE = 'bdfm', B, q, H, R, Y)
 }
 
 FSimUF <- function(B, q, H, R, Y) {
-    .Call('_BDFM_FSimUF', PACKAGE = 'BDFM', B, q, H, R, Y)
+    .Call('_bdfm_FSimUF', PACKAGE = 'bdfm', B, q, H, R, Y)
 }
 
 EstDFM <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, store_Y = FALSE, store_idx = 0L, reps = 1000L, burn = 500L, Loud = FALSE) {
-    .Call('_BDFM_EstDFM', PACKAGE = 'BDFM', B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, store_Y, store_idx, reps, burn, Loud)
+    .Call('_bdfm_EstDFM', PACKAGE = 'bdfm', B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, store_Y, store_idx, reps, burn, Loud)
 }
 
 Ksmoother <- function(A, Q, HJ, R, Y) {
-    .Call('_BDFM_Ksmoother', PACKAGE = 'BDFM', A, Q, HJ, R, Y)
+    .Call('_bdfm_Ksmoother', PACKAGE = 'bdfm', A, Q, HJ, R, Y)
 }
 
 KestExact <- function(A, Q, H, R, Y, itc, m, p) {
-    .Call('_BDFM_KestExact', PACKAGE = 'BDFM', A, Q, H, R, Y, itc, m, p)
+    .Call('_bdfm_KestExact', PACKAGE = 'bdfm', A, Q, H, R, Y, itc, m, p)
 }
 
 KSeas <- function(B, q, M, r, Y, N) {
-    .Call('_BDFM_KSeas', PACKAGE = 'BDFM', B, q, M, r, Y, N)
+    .Call('_bdfm_KSeas', PACKAGE = 'bdfm', B, q, M, r, Y, N)
 }
 
