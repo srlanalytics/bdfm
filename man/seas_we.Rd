@@ -4,7 +4,8 @@
 \alias{seas_we}
 \title{Seasonal adujustment, usign Watson and Engle (1983) Algorithm}
 \usage{
-seas_we(data, lags = 1, ..., tol = 0.01, verbose = FALSE)
+seas_we(data, lags = 1, ..., ahead = 0, transformation = "auto",
+  span = 0.5, tol = 0.01, verbose = FALSE)
 }
 \arguments{
 \item{data}{data}
@@ -12,6 +13,12 @@ seas_we(data, lags = 1, ..., tol = 0.01, verbose = FALSE)
 \item{lags}{integer, number of lags in transition equation}
 
 \item{...}{further arguments, passed to [seas_factors()]}
+
+\item{ahead}{number of periods ahead to produce adjustments and forecasts}
+
+\item{transformation}{string, transform data before calculating seasonality ("auto", "log", or "none")}
+
+\item{span}{numeric, span for loess() reg used to detrend non-stationary series. NULL implies do not detrend.}
 
 \item{tol}{numeric, tolerance for convergence of likelihood function (times 100)}
 
