@@ -25,8 +25,14 @@ seas_we <- function(data, lags = 1, ..., tol = 0.01, verbose = FALSE) {
   data.orig <- data
 
   if (requireNamespace("tsbox")) {
+
     data <- tsbox::ts_ts(data)
-    dates <- tsbox::ts_regular(tsbox::ts_df(data))$time
+
+    # Problem here is that the time column can have a different name than
+    # 'time'. New version of tsbox will get a helper function to standaradize
+    # column names, so we don't need to go for the position anymore.
+
+    dates <- tsbox::ts_regular(tsbox::ts_df(data.orig))[, 1]
   }
 
   if (NCOL(data) != 1) stop("applicable to single time series only")
