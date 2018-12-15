@@ -26,7 +26,7 @@ seas_we <- function(data, lags = 1, ..., tol = 0.01, verbose = FALSE) {
 
   if (requireNamespace("tsbox")) {
     data <- tsbox::ts_ts(data)
-    dates <- tsbox::ts_df(data)$time
+    dates <- tsbox::ts_regular(tsbox::ts_df(ap))$time
   }
 
   if (NCOL(data) != 1) stop("applicable to single time series only")
