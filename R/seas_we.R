@@ -28,8 +28,15 @@ seas_we <- function(data, lags = 1, ..., ahead = 0, transformation = "auto", spa
   data.orig <- data
   
   if (requireNamespace("tsbox")) {
+
     data <- tsbox::ts_ts(data)
-    dates <- tsbox::ts_df(data)$time #this drops NA values
+    
+    # Problem here is that the time column can have a different name than
+    # 'time'. New version of tsbox will get a helper function to standaradize
+    # column names, so we don't need to go for the position anymore.
+
+    dates <- tsbox::ts_regular(tsbox::ts_df(data.orig))[, 1]
+    
     if(ahead>0){
       days <- unique(diff(dates))
       if(length(days)==1){
