@@ -159,8 +159,50 @@ for(j in ind_SA){
   dt[dt$date%in%tmp_dt$time, j+1] <- tmp_dt$value
 }
 
+# Work with matrices from now on to make life easier
+Y <- as.matrix(dt[,-1])
+
+# -------- Aggregate monthly data for a correctly specified mixed frequency model ----------------
+
+# The first two series are quarterly, everything else is monthly, so omit them in our aggregations
+Y[, 3:24] <- moving_ave(Y[, 3:24], 3)
+k <- ncol(Y) #number of series 
+
+# --------- Take logs where necessary ------------------------------------------------------------
+#Specify which variables we should not take logs of
+ind_log    <- 1:k
+no_log     <- c("A191RL1Q225SBEA","USSLIND", "UMCSENT", "UNRATE", "FRGSHPUSM649NCIS", "CAPUTLG2211S", "MNFCTRIRSA", "RETAILIRSA", "WHLSLRIRSA", "TWEXB", "T10Y3M")
+ind_log    <- ind_log[!ind_log%in%unlist(sapply(no_log, FUN = grep, colnames(Y)))]
+Y[,ind_log] <- log(Y[,ind_log])
+
+# ----Take differences where necessary, again ensuring correct mixed frequency specification---------
+ind_diff   <- 1:k
+no_diff    <- c("A191RL1Q225SBEA", "USSLIND")
+ind_diff   <- ind_diff[!ind_diff%in%unlist(sapply(no_diff, FUN = grep, colnames(Y)))]
+Y[-(1:3), ind_diff] <- diff(Y[,ind_diff], lag = 3)
+
+# ----- Drop outliers (optional but gets rid of some wierd stuff) ------------------------
+for(j in 1:k){
+  itc <- mean(Y[,j],na.rm = TRUE)
+  SD  <- sqrt(mean((Y[,j]-itc)^2,na.rm = TRUE))
+  Err <- abs(Y[,j]- itc)/SD #eliminate observations for which shocks are greater than 5 s.d
+  Y[Err>4,j] <- NA #drop obs more than 4 s.d. from mean
+}
+
+# ------- Scale the Data (optional but usually a good idea) --------------------------------
+Y <- 100*scale(Y)
+
+# ------- Estimate a DFM and target GDP ----------------------------------------------------
+nu_r = rep(0,k)
+nu_r[1] <- 1 #target GDP using our prior deg. of freedom on shocks to obs. of GDP
+#(GDP is the first series, hence the index 1)
+est <- dfm(Y, factors = 2, lags = 3, nu_r = nu_r, reps = 1000, burn = 500, loud = TRUE)
 
 
+ts.plot(Y)
+max(Y, na.rm = T)
+
+which(Y == max(Y))
 
 #Make the data stationary by taking log differences. Note that we do not take logs of inventory:sales ratios (indexes 3 and 4), but we do difference them as they are not stationary.
 data <- as.matrix(fred[,-1])
