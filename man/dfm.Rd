@@ -5,10 +5,11 @@
 \title{Estimate dynamic factor model}
 \usage{
 dfm(Y, factors = 1, lags = 2, forecast = 0, method = c("bayesian",
-  "ml", "pc"), B_prior = NULL, lam_B = 0, H_prior = NULL,
-  lam_H = 0, nu_q = 0, nu_r = NULL, identification = "PC_full",
-  intercept = TRUE, store_idx = NULL, reps = 1000, burn = 500,
-  loud = FALSE, EM_tolerance = 0.01)
+  "ml", "pc"), frequency_mix = NULL, differences = NULL,
+  B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
+  nu_r = NULL, identification = "PC_full", intercept = TRUE,
+  store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
+  EM_tolerance = 0.01)
 }
 \arguments{
 \item{Y}{data in matrix format with time in rows}
@@ -20,6 +21,10 @@ dfm(Y, factors = 1, lags = 2, forecast = 0, method = c("bayesian",
 \item{forecast}{number of periods ahead to forecast}
 
 \item{method}{character, method to be used}
+
+\item{frequency_mix}{numeric, number of high frequency periods in observation if data is mixed frequency}
+
+\item{differences, }{numeric, 0 for levels, 1 for first differences, only specified for mixed frequency models}
 
 \item{B_prior}{prior matrix for B in the transition equation. Default is
 zeros.}

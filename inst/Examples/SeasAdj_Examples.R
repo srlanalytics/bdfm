@@ -43,14 +43,37 @@ ts.plot(tail(sa$factor,100))
 
 #----- Example 3: Weekday Adjustments for Non-Stationary Daily Data ----
 
-#Does not work
+library(readr)
+library(tsbox)
 
-# wil5000 <- read_csv(system.file("Examples/Wil5000.csv", package = "bdfm"),
-#                         col_types = cols(Date = col_date(format = "%Y-%m-%d"))
-# )
-# 
-# wil5000 <- data.frame(wil5000)
-# y <- ts_ts(wil5000)
-# sa <-seas_we(y, effect = "weekdays", holiday = NULL, transformation = "log", verbose = T)
+wil5000 <- read_csv(system.file("Examples/Wil5000.csv", package = "bdfm"),
+                        col_types = cols(Date = col_date(format = "%Y-%m-%d"))
+)
+
+wil5000 <- data.frame(wil5000)
+y <- ts_ts(wil5000)
+test <- ts_data.frame(y)
+
+sa <-seas_we(y, effect = "weekdays", holiday = NULL, transformation = "log", verbose = T)
+
 
 #------------------------------------------------------------------------
+library(reprex)
+reprex()
+
+library(readr)
+library(bdfm)
+
+wil5000 <- read_csv(system.file("Examples/Wil5000.csv", package = "bdfm"),
+                    col_types = cols(Date = col_date(format = "%Y-%m-%d"))
+)
+sa <- seas_we(wil5000, effect = "weekdays", holiday = NULL, transformation = "log", verbose = T)
+#> Loading required namespace: tsbox
+#> [time]: 'Date' [value]: 'Value' 
+#> [time]: 'Date' [value]: 'Value' 
+#> [time]: 'Date' [value]: 'Value'
+
+tsbox::ts_plot(wil5000, predict(sa))
+#> [time]: 'Date' [value]: 'Value' 
+#> [time]: 'Date' [value]: 'Value' 
+#> [time]: 'Date' [value]: 'Value'
