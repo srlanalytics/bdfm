@@ -4,8 +4,9 @@
 \alias{Cppbdfm}
 \title{MCMC Routine for Bayesian Dynamic Factor Models}
 \usage{
-Cppbdfm(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, Ystore = FALSE,
-  store_idx = 0, reps = 1000, burn = 500, Loud = FALSE)
+Cppbdfm(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD,
+  Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500,
+  Loud = FALSE)
 }
 \arguments{
 \item{B}{initial guess for B in transition equation}

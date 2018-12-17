@@ -5,6 +5,8 @@
 #' @param lags number of lags in transition equation
 #' @param forecast number of periods ahead to forecast
 #' @param method character, method to be used
+#' @param frequency_mix numeric, number of high frequency periods in observation if data is mixed frequency
+#' @param differences, numeric, 0 for levels, 1 for first differences, only specified for mixed frequency models
 #' @param B_prior prior matrix for B in the transition equation. Default is
 #'   zeros.
 #' @param lam_B prior tightness on B
@@ -45,12 +47,17 @@
 #' @useDynLib bdfm
 dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
                 method = c("bayesian", "ml", "pc"),
+                frequency_mix = NULL, differences = NULL,
                 B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
                 nu_r = NULL, identification = "PC_full", intercept = TRUE,
                 store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
                 EM_tolerance = 0.01) {
-
+  
   method <- match.arg(method)  # checks and picks the first if unspecified
+  
+  if(!is.null(frequency_mix) && method != "bayesian"){
+    stop("Mixed freqeuncy models are only supported for Bayesian estimation")
+  }
 
   tsobjs <- c("zoo", "xts", "tslist", "tbl_ts", "timeSeries",
     "tbl_time", "tbl_df", "data.table", "data.frame", "dts")
@@ -63,7 +70,8 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
   if (!any(class(Y) %in% c(tsobjs, "ts", "mts")) && is.matrix(Y)) {
 
     ans <- dfm_core(
-      Y = Y, m = factors, p = lags, FC = forecast, method = method, Bp = B_prior,
+      Y = Y, m = factors, p = lags, FC = forecast, method = method,
+      freq = frequency_mix, LD = differences, Bp = B_prior,
       lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
       ID = identification, ITC = intercept, store_idx = store_idx, reps = reps,
       burn = burn, loud = loud, tol = EM_tolerance
@@ -86,7 +94,8 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     Y.tsp <- attr(Y.uc, "tsp")
     attr(Y.uc, "tsp") <- NULL
     ans <- dfm_core(
-      Y = Y.uc, m = factors, p = lags, FC = forecast, method = method, Bp = B_prior,
+      Y = Y.uc, m = factors, p = lags, FC = forecast, method = method, 
+      freq = frequency_mix, LD = differenced, Bp = B_prior,
       lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
       ID = identification, ITC = intercept, store_idx = store_idx, reps = reps,
       burn = burn, loud = loud, tol = EM_tolerance
@@ -115,13 +124,13 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
 }
 
 dfm_core <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC,
-                     store_idx, reps, burn, tol, loud, method) {
+                     store_idx, reps, burn, tol, loud, method, freq, LD) {
   if (method == "bayesian") {
     bdfm(
       Y = Y, m = m, p = p, FC = FC, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-      ID = ID, ITC = ITC, store_idx = store_idx, reps = reps, burn = burn,
-      loud = loud
+      ID = ID, ITC = ITC, store_idx = store_idx, freq = freq, LD = LD, reps = reps,
+      burn = burn, loud = loud
     )
   } else if (method == "ml") {
     MLdfm(

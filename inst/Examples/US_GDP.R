@@ -8,12 +8,6 @@ your_key = "9c39f8a4fbcc38c22475bc7f26988367"
 
 # ------------------- Helper functions ------------------------------------------------------
 
-# Unscale a set of data
-unscale <- function(x, attrib){
-  x*(rep(1,nrow(attrib))%x%t(attr(attrib, "scaled:scale"))) +
-    rep(1,nrow(attrib))%x%t(attr(attrib, "scaled:center"))
-}
-
 # A handy little utility to call data from the FRED API. 
 get_fred_lite <- function(series_id, series_name = NULL, observation_start = "1776-07-04", observation_end = "9999-12-31",frequency = NULL){
   fred_call <- paste0("https://api.stlouisfed.org/fred/series/observations?series_id=",
@@ -142,6 +136,11 @@ Data    <- rbindlist(RawData)
 dt      <- call_data(unique_names, dt = Data, series_id = "series_name") #mixed frequency format
 dt      <- setcolorder(dt, c("date", unique_names))
 
+
+#Quarterly data MUST be indexed at the end of the quarter, not the first month of the quarter!
+dt[, A191RL1Q225SBEA := shift(A191RL1Q225SBEA, n = 2, type = "lag")]
+dt[, W068RCQ027SBEA := shift(W068RCQ027SBEA, n = 2, type = "lag")]
+
 #It's worth looking at dt. This panel is far from square and includes quarterly and monthly data.
 #This is, there are loads of missing observations. For our DFM, that's no problem!
 
@@ -181,6 +180,11 @@ no_diff    <- c("A191RL1Q225SBEA", "USSLIND")
 ind_diff   <- ind_diff[!ind_diff%in%unlist(sapply(no_diff, FUN = grep, colnames(Y)))]
 Y[-(1:3), ind_diff] <- diff(Y[,ind_diff], lag = 3)
 
+#Drop first two quarters due to aggregation and differencing 
+
+Y  <- Y[-(1:6), ]
+dt <- dt[-(1:6), ] #keep dimensions the same everywhere
+
 # ----- Drop outliers (optional but gets rid of some wierd stuff) ------------------------
 for(j in 1:k){
   itc <- mean(Y[,j],na.rm = TRUE)
@@ -196,80 +200,39 @@ Y <- 100*scale(Y)
 nu_r = rep(0,k)
 nu_r[1] <- 1 #target GDP using our prior deg. of freedom on shocks to obs. of GDP
 #(GDP is the first series, hence the index 1)
-est <- dfm(Y, factors = 2, lags = 3, nu_r = nu_r, reps = 1000, burn = 500, loud = TRUE)
+est <- dfm(Y, factors = 3, lags = 3, nu_r = nu_r, store_idx = 1, reps = 1000, burn = 500, loud = TRUE)
+
+# #mixed frequency call
+# frequency_mix <- rep(1,ncol(Y)) #1 indicates high frequency data --- 1 period per observation
+# frequency_mix[1:2] <- 3 #4 for quarterly data in this case --- 3 months in a quarter
+# 
+# differences <- rep(0,ncol(Y))
+# differences[1:2] <- 1 # the first two low frequency series are (log) differenced
+# 
+# est <- dfm(Y, factors = 3, lags = 3, frequency_mix = frequency_mix, differences = differences,
+#            nu_r = nu_r, store_idx = 1, reps = 1000, burn = 500, loud = TRUE)
 
 
-ts.plot(Y)
-max(Y, na.rm = T)
+#Are we drawing from a stationary distribution?
+ts.plot(est$Qstore[1,1,]) 
+ts.plot(est$Hstore[1,1,]) 
 
-which(Y == max(Y))
+# -------- Convert results back to original units -------------------------------------
 
-#Make the data stationary by taking log differences. Note that we do not take logs of inventory:sales ratios (indexes 3 and 4), but we do difference them as they are not stationary.
-data <- as.matrix(fred[,-1])
-data[,c(1,2,5)] <- log(data[,c(1,2,5)])
-data <- diff(data)
-dates <- fred$DATE[-1] #keep corresponding dates (the first is dropped due to differencing)
+Ymedian <- attr(Y, "scaled:scale")[1]*est$Ymedian/100 + attr(Y, "scaled:center")[1]
 
-#Scale and center data
-data <- 100*scale(data)
+# Looking at results at high frequency (monthly)
 
-#Estimate a Bayesian DFM
-est <- dfm(data, factors = 1, lags = 3)
+plot(dt$date, Ymedian, type = 'l', col = 'red', xlab = "year", ylab = "GDP")
+points(dt$date, dt$A191RL1Q225SBEA, col = 'steelblue')
 
-#Look at the estimated factor
-ts.plot(cbind(data, est$factors), col = c(rep("steelblue", 5), "red"), lwd = c(rep(1,5),2))
+# Looking at results at low frequency (quarterly)
+Qind <- format(dt$date, "%m")%in%c('03','06','09','12')
+plot(dt$date[Qind], dt$A191RL1Q225SBEA[Qind], type = 'l', col = 'steelblue', xlab = 'year', ylab = 'GDP')
+lines(dt$date[Qind], Ymedian[Qind], col = 'red', lty = 2)
+# Our prediction for the next GDP release is three periods ahead of the last release
 
-#Get fitted values
-predicted <- predict(est)
-
-#Convert back to original (differenced) units
-predicted <- unscale(predicted/100, data)
-
-#How much does each observed series contribute to the factor?
-diag(est$R)
-
-#Use priors to update more aggressively on initial jobless claims
-nu_r <- c(0,0,0,0,1)
-est2  <- dfm(data, factors = 1, lags = 3, nu_r = nu_r)
-diag(est2$R)
-
-#Look at traces for a few of the parameters in our first estimation
-par(mfrow=c(2,2))
-ts.plot(est$Bstore[1,1,])
-ts.plot(est$Hstore[1,1,])
-ts.plot(est$Qstore[1,1,])
-ts.plot(est$Rstore[1,])
-
-#Forecast 3 periods ahead of last observation using xts time series format
-data_xts <- xts(data, order.by = dates)
-est_fct  <- dfm(data_xts,factors = 2, lags = 3, forecast = 3)
-fct <- predict(est_fct)[,"INDPRO"]
-print(tail(fct,4)) #note that the value for 2018-11-01 is a nowcast as IP is not observed but job claims are observed
-
-#Store the posterior distribution of predicted industrial production values
-est <- dfm(data, factors = 1, lags = 3, store_idx = 1)
-#How do predicted values compare to actual values?
-median_parameters <- mean((est$values[,1] - data[,1])^2, na.rm = T)
-median_draw       <- mean((est$Ymedian[,1] - data[,1])^2, na.rm = T)
-
-#What does the distribution of predicted values look like in period 321 (the second to last period)?
-period = 321
-hist(est$Ystore[period,], breaks = 30)
-
-#How much did each series contribute to forecast updates in period 320?
-Update <- c(est$Kstore[[320]][1,]*est$PEstore[[320]])
-names(Update) <- colnames(data)
-print(Update)
-
-#Estimation and forecasting by Maximum Likelihood
-est_ml <- dfm(data_xts, factors = 2, lags = 3, forecast = 3, method = 'ml')
-fct <- predict(est_ml)[,"INDPRO"]
-print(tail(fct,4))
-
-#Two step estimation and forecast
-est_pc <- dfm(data_xts, factors = 2, lags = 3, forecast = 3, method = 'pc')
-fct <- predict(est_pc)[,"INDPRO"]
-print(tail(fct,4))
+prediction <- Ymedian[max(which(is.finite(Y[,1])))+3]
 
 
 
