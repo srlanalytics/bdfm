@@ -95,7 +95,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     attr(Y.uc, "tsp") <- NULL
     ans <- dfm_core(
       Y = Y.uc, m = factors, p = lags, FC = forecast, method = method, 
-      freq = frequency_mix, LD = differenced, Bp = B_prior,
+      freq = frequency_mix, LD = differences, Bp = B_prior,
       lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
       ID = identification, ITC = intercept, store_idx = store_idx, reps = reps,
       burn = burn, loud = loud, tol = EM_tolerance
