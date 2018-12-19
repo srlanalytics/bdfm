@@ -137,6 +137,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
       q = q,
       H = H,
       R = R,
+      Jb = Jb,
       itc = itc,
       values  = Est$Ys + matrix(1, r, 1) %x% t(itc),
       factors = Est$Z[,1:m],
@@ -166,6 +167,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
       q = q,
       H = H,
       R = R,
+      Jb = Jb,
       values  = Est$Ys + matrix(1, r, 1) %x% t(itc),
       factors = Est$Z[,1:m],
       Qstore  = Parms$Qstore, # lets us look at full distribution
