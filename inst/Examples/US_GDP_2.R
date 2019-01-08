@@ -1,9 +1,8 @@
-#First approach to mixed frequency data:
+#Second approach to mixed frequncy data:
 
-# This script aggregates monthly observations over the current and previous two months
-# (i.e. one quarter) and then takes differences at 3 lags so that we can estimate our mixed 
-# frequency model just as we would a uniform frequency model.  
-
+# This script takes differences at three lags of monthly data so that we can treat
+# all data as level data (i.e. differences = 0) for the puropose of forming the 
+# helper matrix J. 
 
 library(bdfm) #estimation routines
 library(tsbox) #used to format time series
@@ -53,7 +52,7 @@ Get_Data <- function(series_name){
 
 # Go from long to mixed frequency wide format. We can also use as_of for backtesting. 
 # This function requires data.table
-call_data <- function(..., dt = Data, as_of = NULL, date = "date", series_id = "series_id", value = "value", pub_date = NULL){
+call_data <- function(series_names, dt = Data, as_of = NULL, date = "date", series_id = "series_id", value = "value", pub_date = NULL){
   
   dt <- data.table(dt)
 
@@ -61,23 +60,13 @@ call_data <- function(..., dt = Data, as_of = NULL, date = "date", series_id = "
   colnames(dt)[colnames(dt)==series_id]   <- "series_id"
   colnames(dt)[colnames(dt)==value]       <- "value"
   if(is.null(pub_date)){
-    dt[,pub_date := as.Date(date)]
+    dt[,pub_date := as.Date(NA)]
   }else{
     colnames(dt)[colnames(dt)==pub_date]    <- "pub_date"
   }
   
-  setkey(dt, series_id, date)
-  
-  # for convenience, so we can write call_data("dfsd", "dsfsdf")
-  l <- list(...)
-  is.char <- (sapply(l, class) == "character")
-  if (any(!is.char)){
-    stop("some elements are not character vectors")
-  }
-  oi <- do.call("c", l) #of interest
-  
-  unique_names <- unique(dt[,series_id])
-  missing_series <- oi[!oi%in%unique_names]
+  unique_names <- unique(dt$series_id)
+  missing_series <- series_names[!series_names%in%unique_names]
   
   if(length(missing_series)>0){
     warning(paste("The following series are missing:", paste(missing_series, collapse = ", ")))
@@ -85,27 +74,27 @@ call_data <- function(..., dt = Data, as_of = NULL, date = "date", series_id = "
   
   if(is.null(as_of)) as_of <- Sys.time() #Model from current time (default) or set as_of for backtesting
   
-  Out <- dcast(dt[series_id%in%oi & (pub_date <= as.Date(as_of) | (is.na(pub_date) & as.Date(date) <= as.Date(as_of)) ) ], date ~ series_id,    value.var = "value")
+  Out <- dcast(dt[series_id%in%series_names & (pub_date <= as.Date(as_of) | (is.na(pub_date) & as.Date(date) <= as.Date(as_of)) ) ], date ~ series_id,    value.var = "value")
   
   return(Out)
 }
 
 #Aggregate monthly data allowing us to correctly specify our factor model with bdfm
 #Just use a simple moving average for monthly data
-moving_ave <- function(Y,n){filter(Y, filter = rep(1/n,n), method = "convolution", sides = 1)}
+#moving_ave <- function(Y,n){filter(Y, filter = rep(1/n,n), method = "convolution", sides = 1)}
 
-diffMQ <- function(dt){
-  
-  #get frequency of each series. In this example 3 is quarterly (3 high frequency observations
-  #per low frequency observation) and 1 is monthly. 
-  freq <- rep(0,ncol(dt)-1)
-  for(j in 2:ncol(dt)){
-    freq[j-1] <- median(diff(which(is.finite(unlist(dt[,j,with = F]))))) 
-  }
-  
-  
-  
-}
+# diffMQ <- function(dt){
+#   
+#   #get frequency of each series. In this example 3 is quarterly (3 high frequency observations
+#   #per low frequency observation) and 1 is monthly. 
+#   freq <- rep(0,ncol(dt)-1)
+#   for(j in 2:ncol(dt)){
+#     freq[j-1] <- median(diff(which(is.finite(unlist(dt[,j,with = F]))))) 
+#   }
+#   
+#   
+#   
+# }
 
 # -----------------------------------------------------------------------------------
 
@@ -166,11 +155,6 @@ for(j in ind_SA){
 
 # Work with matrices from now on to make life easier
 Y <- as.matrix(dt[,-1])
-
-# -------- Aggregate monthly data for a correctly specified mixed frequency model ----------------
-
-# The first two series are quarterly, everything else is monthly, so omit them in our aggregations
-Y[, 3:24] <- moving_ave(Y[, 3:24], 3)
 k <- ncol(Y) #number of series 
 
 # --------- Take logs where necessary ------------------------------------------------------------
@@ -186,7 +170,7 @@ no_diff    <- c("A191RL1Q225SBEA", "USSLIND")
 ind_diff   <- ind_diff[!ind_diff%in%unlist(sapply(no_diff, FUN = grep, colnames(Y)))]
 Y[-(1:3), ind_diff] <- diff(Y[,ind_diff], lag = 3)
 
-#Drop first two quarters due to aggregation and differencing 
+#Drop first two quarters for consistency 
 
 Y  <- Y[-(1:6), ]
 dt <- dt[-(1:6), ] #keep dimensions the same everywhere
@@ -200,24 +184,20 @@ for(j in 1:k){
 }
 
 # ------- Scale the Data (optional but usually a good idea) --------------------------------
-Y <- 100*scale(Y)
+Y <- scale(Y) #note that this is bdfm::scale() so values are stored for unscaling
 
 # ------- Estimate a DFM and target GDP ----------------------------------------------------
+#Specify frequencies
+freq <- rep(3,k) #All but the first 2 series are monthly --- 3 months in a quarter
+freq[1:2] <- 1 #Specifying which are quarterly (the first two)
+
+# Target GDP using our prior deg. of freedom on shocks to obs. of GDP 
+# (GDP is the first series, hence the index 1)
 nu_r = rep(0,k)
-nu_r[1] <- 1 #target GDP using our prior deg. of freedom on shocks to obs. of GDP
-#(GDP is the first series, hence the index 1)
-est <- dfm(Y, factors = 3, lags = 3, nu_r = nu_r, identification = "PC_full", store_idx = 1, reps = 1000, burn = 500, loud = TRUE)
-
-# #mixed frequency call
-# frequency_mix <- rep(1,ncol(Y)) #1 indicates high frequency data --- 1 period per observation
-# frequency_mix[1:2] <- 3 #4 for quarterly data in this case --- 3 months in a quarter
-# 
-# differences <- rep(0,ncol(Y))
-# differences[1:2] <- 1 # the first two low frequency series are (log) differenced
-# 
-# est <- dfm(Y, factors = 3, lags = 3, frequency_mix = frequency_mix, differences = differences,
-#            nu_r = nu_r, store_idx = 1, reps = 1000, burn = 500, loud = TRUE)
-
+nu_r[1] <- 1 
+#Estimate the mixed frequency dfm
+est <- dfm(Y, factors = 3, lags = 3, frequency_mix = freq, nu_r = nu_r, 
+           identification = "PC_full", store_idx = 1, reps = 1000, burn = 500, loud = TRUE)
 
 #Are we drawing from a stationary distribution?
 ts.plot(est$Qstore[1,1,]) 
@@ -225,7 +205,7 @@ ts.plot(est$Hstore[1,1,])
 
 # -------- Convert results back to original units -------------------------------------
 
-Ymedian <- attr(Y, "scaled:scale")[1]*est$Ymedian/100 + attr(Y, "scaled:center")[1]
+Ymedian  <- unscale(est$Ymedian, idx = "A191RL1Q225SBEA")
 
 # Looking at results at high frequency (monthly)
 
@@ -237,7 +217,6 @@ Qind <- format(dt$date, "%m")%in%c('03','06','09','12')
 plot(dt$date[Qind], dt$A191RL1Q225SBEA[Qind], type = 'l', col = 'steelblue', xlab = 'year', ylab = 'GDP')
 lines(dt$date[Qind], Ymedian[Qind], col = 'red', lty = 2)
 # Our prediction for the next GDP release is three periods ahead of the last release
-
 prediction <- Ymedian[max(which(is.finite(Y[,1])))+3]
 
 

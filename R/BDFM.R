@@ -50,7 +50,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
       nu_r <- c(rep(0,m), nu_r)
     }
     freq <- c(rep(1,m), freq)
-    LD   <- c(rep(0,m), freq)
+    LD   <- c(rep(0,m), LD)
   } else if (ID == "PC_full") {
     PC <- PrinComp(Y, m)
     Y <- cbind(PC$components, Y)
@@ -59,7 +59,21 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
       nu_r <- c(rep(0,m), nu_r)
     }
     freq <- c(rep(1,m), freq)
-    LD   <- c(rep(0,m), freq)
+    LD   <- c(rep(0,m), LD)
+    if (!any(!is.na(PC$components))) {
+      stop("Every period contains missing data. Try setting ID to PC_sub.")
+    }
+  }else if(ID != "Name"){
+    warning(paste(ID, "not a valid identification string, defaulting to PC_full"))
+    ID <- "PC_full"
+    PC <- PrinComp(Y, m)
+    Y <- cbind(PC$components, Y)
+    k <- k + m
+    if(!is.null(nu_r)){
+      nu_r <- c(rep(0,m), nu_r)
+    }
+    freq <- c(rep(1,m), freq)
+    LD   <- c(rep(0,m), LD)
     if (!any(!is.na(PC$components))) {
       stop("Every period contains missing data. Try setting ID to PC_sub.")
     }
