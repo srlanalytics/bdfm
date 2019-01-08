@@ -13,6 +13,8 @@ Cppbdfm(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD,
 
 \item{Bp}{prior for B}
 
+\item{Jb}{Helper matrix for transition equation, identity matrix if uniform frequency}
+
 \item{lam_B}{prior tightness for B (additive)}
 
 \item{q}{initial guess for q in the transition equation}
@@ -30,6 +32,10 @@ Cppbdfm(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD,
 \item{nu_r}{prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r[j] shrinks the variance of shocks to series j towards zero)}
 
 \item{Y}{Input data. Data must be scaled and centered prior to estimation if desired.}
+
+\item{freq}{vector, number of high frequency periods in an observation}
+
+\item{LD}{vector, 0 for level data and 1 for differenced data}
 
 \item{Ystore}{T/F, should the distribution of Y be stored}
 

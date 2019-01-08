@@ -206,6 +206,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
 #'
 #' @param B  initial guess for B in transition equation
 #' @param Bp prior for B
+#' @param Jb Helper matrix for transition equation, identity matrix if uniform frequency
 #' @param lam_B prior tightness for B (additive)
 #' @param q initial guess for q in the transition equation
 #' @param nu_q prior "degrees of freedom" for inverse-Whishart prior for q (additive, prior scale is fixed so that increasing nu_q shrinks the variance towards zero)
@@ -215,6 +216,8 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
 #' @param R initial guess for diagonal elements of R in the transition equation, entered as a vector
 #' @param nu_r prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r[j] shrinks the variance of shocks to series j towards zero)
 #' @param Y Input data. Data must be scaled and centered prior to estimation if desired.
+#' @param freq vector, number of high frequency periods in an observation
+#' @param LD vector, 0 for level data and 1 for differenced data
 #' @param Ystore T/F, should the distribution of Y be stored
 #' @param store_idx, if Ystore is TRUE, index of which observed series to store. Note C++ uses zero indexing (i.e. subtract 1 from the R index value)
 #' @param reps number of repetitions for MCMC sampling
