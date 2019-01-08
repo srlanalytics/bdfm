@@ -30,6 +30,60 @@ Y_sub <- function(Y) {
   return(list(Ysub = Ysub, ind = !ind))
 }
 
+#' scale
+#'
+#' Scale data for factor model estimation and store scaling values
+#'
+#' @param x a numeric matrix(like object)
+#' @param center either a logical value or a numeric vector of length equal to the number of columns of x
+#' @param scale either a logical value or a numeric vector of length equal to the number of columns of x
+#' @export
+#' @useDynLib bdfm
+scale <- function(x, center = TRUE, scale = TRUE){
+  x <- 100*(base::scale(x, center = center, scale = scale))
+  options(scaled_scale = attr(x,"scaled:scale"))
+  options(scaled_center = attr(x, "scaled:center"))
+  return(x)
+}
+
+#' unscale
+#'
+#' Unscale data using values from bdfm::scale
+#'
+#' @param x a numeric matrix(like object)
+#' @param idx An index of which elements of scaled_center and scaled_scale to use
+#' @export
+#' @useDynLib bdfm
+unscale <- function(x, idx = NULL){
+  scaled_center <- getOption("scaled_center")
+  scaled_scale <- getOption("scaled_scale")
+  if(is.null(idx)){
+    idx = 1:ncol(x)
+  }
+  if(is.null(dim(x))){
+    if(length(idx)!=1){
+      stop("Index values idx must have the same length as the number of columns of x")
+    }
+    if(!is.null(scaled_scale)){
+      x <-  scaled_scale[idx]*x/100
+    }
+    if(!is.null(scaled_center)){
+      x <- x + scaled_center[idx]
+    }
+  }else{
+    if(length(idx)!=ncol(x)){
+      stop("Index values idx must have the same length as the number of columns of x")
+    }
+    if(!is.null(scaled_scale)){
+      x <-  (matrix(1,nrow(x),1)%x%t(scaled_scale[idx]))*(x/100) 
+    }
+    if(!is.null(scaled_center)){
+      x <- x + (matrix(1,nrow(x),1)%x%t(scaled_center[idx]))
+    }
+  }
+  return(x)
+}
+
 Dates_to_cpp <- function(dates){
   Dates_cpp <- matrix(0,length(dates),3)
   Dates_cpp[,1] <- as.numeric(format(dates, "%Y"))

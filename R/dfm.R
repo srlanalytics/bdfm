@@ -77,6 +77,7 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
       burn = burn, loud = loud, tol = EM_tolerance
     )
     colnames(ans$values) <- colnames(Y)
+    ans$dates <- NULL
 
   } else {
 
@@ -109,6 +110,9 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
     }
     # apply column names from Y
     colnames(ans$values) <- colnames(Y)
+    
+    #return a date vector
+    ans$dates <- tsbox::ts_regular(tsbox::ts_df(ans$values))[, 1]
 
     # put values back into original class
     if (!inherits(Y, "ts")) {

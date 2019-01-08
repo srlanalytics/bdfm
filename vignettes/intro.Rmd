@@ -33,7 +33,7 @@ remotes::install_github("srlanalytics/bdfm")
 Estimate a model with two factors and two lags in the transition equation
 ```r
 library(bdfm)
-Est <- bdfm(Y = Data, factors = 2, lags = 2)
+Est <- dfm(Y = data, factors = 2, lags = 2)
 ```
 Input data is any data type that can be coverted by ```as.matrix() ``` and should index time in rows and series in columns. If the library [tsbox](https://github.com/christophsax/tsbox) is present time seires attributes of input data are preserved for any `ts_boxable()` data format. In this case data need not be entered in tabular format for types such as `data.table` or `data.frame`.
 
@@ -49,7 +49,7 @@ ts.plot(Est$values[,1])
 ## Full Input
 
 ```r
-Est <- bdfm(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = 'PC_full', intercept = TRUE, reps = 1000, burn = 500)
+Est <- dfm(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = 'PC_full', intercept = TRUE, reps = 1000, burn = 500)
 ```
 
 ```Y```           Input data
@@ -104,14 +104,16 @@ Est <- bdfm(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B = 0, H
 
 ```UDstore``` Forecast updates (prediction error times gain) at each period
 
+```dates```   If input is `ts_boxable()`, dates corresponding to indexes of data
+
 ## Estimation Details
 
 You can find details on estimation routines and derivations in the short book *Practical Implementation of Factor Models*. [Free Download](http://srlquantitative.com)
 
 ## Examples
 
-Examples scripts are included in the [Examples](https://github.com/srlanalytics/bdfm/tree/master/inst/Examples) file of this repository including code to run your own live nowcasts of US industrial production using the [Fred](https://fred.stlouisfed.org/) API:
+Examples scripts are included in the [Examples](https://github.com/srlanalytics/bdfm/tree/master/inst/Examples) file of this repository including code to run your own live nowcasts of US GDP using the [Fred](https://fred.stlouisfed.org/) API:
 
-![](https://github.com/srlanalytics/bdfm/blob/master/img/US_IP.png)
+![](https://github.com/srlanalytics/bdfm/blob/master/img/US_GDP.png)
 
 
