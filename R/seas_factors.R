@@ -15,10 +15,10 @@
 #' dates.d <- seq(from, to, by = "day")
 #' dates.m <- seq(from, to, by = "month")
 #' dates.q <- seq(from, to, by = "quarter")
-#' seas_factors(dates.d)
-#' seas_factors(dates.m)
-#' seas_factors(dates.q)
-#' seas_factors(dates.d, dist_fun = dist_norm)
+#' daily <- seas_factors(dates.d)
+#' monthly <- seas_factors(dates.m)
+#' quarterly <- seas_factors(dates.q)
+#' normal_shape <- seas_factors(dates.d, dist_fun = dist_norm)
 seas_factors <- function(dates,
                          effect = c("months", "workdays"),
                          holiday = easter,
