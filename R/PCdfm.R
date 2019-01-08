@@ -67,8 +67,11 @@ PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, n
     Y   <- rbind(Y, tmp)
     r   <- r + FC
   }
+  
+    Jb <- Matrix::Diagonal(m*p)
 
-    Est <- DSmooth(B, q, H, R, Y)
+    Est <- DSmooth(B = B, Jb = Jb, q = q, H = H, R = R, 
+            Y = Y, freq = rep(1,k), LD = rep(0,k))
 
     BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
 

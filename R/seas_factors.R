@@ -38,7 +38,8 @@ seas_factors <- function(dates,
     stop("cannot use 'weekdays' and 'workdays' simultanously", call. = FALSE)
   }
 
-  stopifnot(inherits(dates, "Date"))
+  # stopifnot(inherits(dates, "Date"))
+  dates <- as.Date(dates)
 
   # z <- as.matrix(rep(1, length(dates)))
   # colnames(z) <- "(intercept)"

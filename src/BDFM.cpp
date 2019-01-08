@@ -218,6 +218,32 @@ arma:: mat stack_obs(arma::mat nn, arma::uword p, arma::uword r = 0){
   return(N);
 }
 
+//Return the appropriate mixed frequency helper matrix
+// [[Rcpp::export]]
+arma::sp_mat J_MF(arma::uword days, //number of high frequency periods in the low frequency period
+                  arma::uword m,    //number of factors
+                  arma::uword ld,   //type --- either level or difference
+                  arma::uword sA){  //total number of columns (i.e. number of factors or size of A matrix)
+  mat jm;
+  if(days == 1){
+    jm = eye<mat>(m,m);
+  }else{
+    if(ld == 0){
+      mat weight = ones(1,days)/days;
+      jm     = kron(weight,eye<mat>(m,m));
+    }
+    else if(ld == 1){
+      mat weight(1,2*days-1);
+      weight.cols(0,days-1) = trans(regspace(1,days))/days;
+      weight.cols(days,2*days-2) = trans(regspace(days-1,1))/days;
+      jm   = kron(weight,eye<mat>(m,m));
+    }
+  }
+  sp_mat Jm(m,sA);
+  Jm(span(0,m-1),span(0,jm.n_cols-1)) =  MakeSparse(jm);
+  return(Jm);
+}
+
 //Principal Components
 // [[Rcpp::export]]
 List PrinComp(arma::mat Y,     // Observations Y
@@ -490,27 +516,35 @@ List BReg_diag(arma::mat X,   // RHS variables
 // Uniform frequency disturbance smoother. Output is a list.
 // [[Rcpp::export]]
 List DSmooth(      arma::mat B,     // companion form of transition matrix
+                   arma::sp_mat Jb, // helper matrix for transition equation
                    arma::mat q,     // covariance matrix of shocks to states
                    arma::mat H,     // measurement equation
                    arma::mat R,     // covariance matrix of shocks to observables; Y are observations
-                   arma::mat Y){     //predetermined variables (intercept, seasonal stuff)
+                   arma::mat Y,     //data
+                   arma::uvec freq,  // frequency of each series (# low freq. periods in one obs)
+                   arma::uvec LD){   // 0 if level, 1 if one diff.   
 
 
   // preliminaries
   uword T  = Y.n_rows; //number of time peridos
   uword m  = B.n_rows; //number of factors
-  //uword mn = M.n_cols; // number of predetermined variables
-  uword p  = B.n_cols/m; //number of lags (must agree with lev/diff structure of data)
+  uword p  = Jb.n_cols/m; //number of lags (must agree with lev/diff structure of data)
   uword k  = H.n_rows; //number of observables
   uword sA = m*p; //size of companion matrix A
 
   // For frequencies that do not change rows of HJ will be fixed.
-  mat hj = join_horiz(H,zeros(k,m*(p-1)));
-  sp_mat HJ(hj);//this seems a little akward with one lag but it seems difficult to make HJ sparse conditional on p>1
+  sp_mat HJ(k,sA);
+  mat    hj;
+  for(uword j = 0; j<k; j++){
+    hj  = H(j,span::all)*J_MF(freq(j), m, LD(j), sA);
+    HJ  = sprow(HJ,hj,j); //replace row j of HJ with vector hj
+  }
 
   //Making the A matrix
-  mat aa = join_vert(B, join_horiz(eye<mat>(m*(p-1),m*(p-1)), zeros<mat>(m*(p-1),m) ));
-  sp_mat A(aa);
+  sp_mat BJb    = MakeSparse(B*Jb);
+  sp_mat tmp_sp(sA-m,m);
+  tmp_sp = join_horiz(speye<sp_mat>(sA-m,sA-m), tmp_sp);
+  sp_mat A      = join_vert(BJb, tmp_sp);
 
   //Making the Q matrix
   mat qq(sA,sA,fill::zeros);
@@ -598,7 +632,7 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
     Zs.row(t+1)   = Zs.row(t)*trans(A) + r.row(t+1)*Q; //smoothed values of Z
   }
 
-  mat Ys = Zs.cols(0,m-1)*trans(H); //fitted values of Y
+  mat Ys = Zs*trans(HJ); //fitted values of Y
 
   List Out;
   Out["Ys"]   = Ys;
@@ -614,27 +648,36 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
 
 //Disturbance smoothing for uniform frequency models --- output is only smoothed factors for simulations
 // [[Rcpp::export]]
-arma::mat DSUF(           arma::mat B,     // companion form of transition matrix
+arma::mat DSMF(           arma::mat B,     // companion form of transition matrix
+                          arma::sp_mat Jb, // helper matrix for transition equation
                           arma::mat q,     // covariance matrix of shocks to states
                           arma::mat H,     // measurement equation
                           arma::mat R,     // covariance matrix of shocks to observables; Y are observations
-                          arma::mat Y){     // data
+                          arma::mat Y,     // data
+                          arma::uvec freq, //frequency of each seres
+                          arma::uvec LD){  // 0 for levels, 1 for first difference   
                          
 
   // preliminaries
   uword T  = Y.n_rows; //number of time peridos
   uword m  = B.n_rows; //number of factors
-  uword p  = B.n_cols/m; //number of lags (must agree with lev/diff structure of data)
+  uword p  = Jb.n_cols/m; //number of lags (must agree with lev/diff structure of data)
   uword k  = H.n_rows; //number of observables
   uword sA = m*p; //size of companion matrix A
 
   // For frequencies that do not change rows of HJ will be fixed.
-  mat hj = join_horiz(H,zeros<mat>(k,m*(p-1)));
-  sp_mat HJ(hj);//this seems a little akward with one lag but it seems difficult to make HJ sparse conditional on p>1
-
+  sp_mat HJ(k,sA);
+  mat    hj;
+  for(uword j = 0; j<k; j++){
+    hj  = H(j,span::all)*J_MF(freq(j), m, LD(j), sA);
+    HJ  = sprow(HJ,hj,j); //replace row j of HJ with vector hj
+  }
+  
   //Making the A matrix
-  mat aa = join_vert(B, join_horiz(eye<mat>(m*(p-1),m*(p-1)), zeros<mat>(m*(p-1),m) ));
-  sp_mat A(aa);
+  sp_mat BJb    = MakeSparse(B*Jb);
+  sp_mat tmp_sp(sA-m,m);
+  tmp_sp = join_horiz(speye<sp_mat>(sA-m,sA-m), tmp_sp);
+  sp_mat A      = join_vert(BJb, tmp_sp);
 
   //Making the Q matrix
   mat qq(sA,sA,fill::zeros);
@@ -728,24 +771,31 @@ arma::mat DSUF(           arma::mat B,     // companion form of transition matri
 
 //Forward recursion using draws for eps and e
 // [[Rcpp::export]]
-arma::field<arma::mat> FSimUF(    arma::mat B,     // companion form of transition matrix
+arma::field<arma::mat> FSimMF(    arma::mat B,     // companion form of transition matrix
+                                  arma::sp_mat Jb, // helper matrix for transition equation
                                   arma::mat q,     // covariance matrix of shocks to states
                                   arma::mat H,     // measurement equation
                                   arma::mat R,     // covariance matrix of shocks to observables; Y are observations
-                                  arma::mat Y){     // data
+                                  arma::mat Y,     // data
+                                  arma::uvec freq, // frequency
+                                  arma::uvec LD){  // level 0, or diff 1    
  
 
   // preliminaries
   uword T  = Y.n_rows; //number of time peridos
   uword m  = B.n_rows; //number of factors
-  uword p  = B.n_cols/m; //number of lags
-  uword sA = m*p; //size of companion matrix A
+  uword sA = Jb.n_cols; //size of companion matrix A
+  uword p  = sA/m; //number of lags
   uword k  = H.n_rows; //number of observables
 
   // For frequencies that do not change rows of HJ will be fixed.
-  mat hj = join_horiz(H,zeros<mat>(k,m*(p-1)));
-  sp_mat HJ(hj);//this seems a little akward with one lag but it seems difficult to make HJ sparse conditional on p>1
-
+  sp_mat HJ(k,sA);
+  mat    hj;
+  for(uword j = 0; j<k; j++){
+    hj  = H(j,span::all)*J_MF(freq(j), m, LD(j), sA);
+    HJ  = sprow(HJ,hj,j); //replace row j of HJ with vector hj
+  }
+  
   //Draw Eps (for observations) and E (for factors)
   vec mu_Eps(k,fill::zeros);
   vec mu_E(m,fill::zeros);
@@ -773,7 +823,7 @@ arma::field<arma::mat> FSimUF(    arma::mat B,     // companion form of transiti
     yd(ind)   = Hn*trans(Z.row(t)) + eps(ind);
     Yd.row(t) = trans(yd);
     //next period factors
-    x      = B*trans(Z.row(t)) + trans(E.row(t)); //prediction for Z(t+1) 
+    x      = B*Jb*trans(Z.row(t)) + trans(E.row(t)); //prediction for Z(t+1) 
     Z(t+1,span(0,m-1))  = trans(x);
     if(p>1){
       Z(t+1,span(m,sA-1)) = Z(t,span(0,sA-m-1));
@@ -793,6 +843,7 @@ arma::field<arma::mat> FSimUF(    arma::mat B,     // companion form of transiti
 // [[Rcpp::export]]
 List EstDFM(      arma::mat B,     // transition matrix
                   arma::mat Bp,    // prior for B
+                  arma::sp_mat Jb, // aggrigations for transition matrix
                   double lam_B,    // prior tightness on transition matrix
                   arma::mat q,     // covariance matrix of shocks to states
                   double nu_q,     // prior deg. of freedom for variance of shocks in trans. eq.
@@ -802,6 +853,8 @@ List EstDFM(      arma::mat B,     // transition matrix
                   arma::vec R,     // covariance matrix of shocks to observables; Y are observations
                   arma::vec nu_r,     //prior degrees of freedom for elements of R used to normalize
                   arma::mat Y,     // data
+                  arma::uvec freq, // frequency denoted as number of high frequency periods in a low frequency period
+                  arma::uvec LD,  // 0 for level data and 1 for first difference
                   bool store_Y = false, //Store distribution of Y?
                   arma::uword store_idx = 0, // index to store distribution of predicted values
                   arma::uword reps = 1000, //repetitions
@@ -810,12 +863,14 @@ List EstDFM(      arma::mat B,     // transition matrix
 
   // preliminaries
 
+  // preliminaries
   uword m  = B.n_rows;
-  uword p  = B.n_cols/m;
+  uword p  = Jb.n_cols/m;
   uword T  = Y.n_rows - p;
   uword k  = H.n_rows;
   uword sA    = m*p; // size A matrix
-  mat Lam_B   = lam_B*eye<mat>(sA,sA);
+  uword sB    = B.n_cols; // columns of transition matrix B
+  mat Lam_B   = lam_B*eye<mat>(sB,sB);
   mat Lam_H   = lam_H*eye<mat>(m,m);
 
   // ----- Priors -------
@@ -825,12 +880,13 @@ List EstDFM(      arma::mat B,     // transition matrix
   // Initialize variables
   mat v_1, V_1, mu, Mu, Beta, scale, xx, yy, Zd, Zs, Zsim, Yd, Ys, Rmat;
   mat Ht(m,m,fill::zeros), aa;
+  sp_mat Jh;
   vec Yt;
   uvec ind;
   uword count_reps;
   double scl;
   double ev = 2;
-  cube Bstore(m,sA,reps); //store draws for B
+  cube Bstore(m,sB,reps); //store draws for B
   cube Hstore(k,m,reps);  //store draws for H
   cube Qstore(m,m,reps);  //store draws for Q
   mat  Rstore(k,reps);    //R is diagonal so only diagonals stored (hence matrix not cube)
@@ -847,11 +903,7 @@ List EstDFM(      arma::mat B,     // transition matrix
   mat eigvec;
   cx_vec eigval_cx;
   cx_mat eigvec_cx;
-
-  //Helper matrix
-  sp_mat tmp_jh(m,m*(p-1));
-  sp_mat Jh = join_horiz(speye<sp_mat>(m,m), tmp_jh); //"homogeneous" factor model meaning observations load only on current factors
-
+  
   mat Ytmp = Y;
   Ytmp.shed_rows(0,p-1); //shed initial values to match Z
 
@@ -869,12 +921,12 @@ List EstDFM(      arma::mat B,     // transition matrix
 
     Rmat  = diagmat(R); // Make a matrix out of R to plug in to DSimMF
     // Draw observations Y^star and Z^star
-    FSim  = FSimUF(B, q, H, Rmat, Y);
+    FSim  = FSimMF(B, Jb, q, H, Rmat, Y, freq, LD); 
     Zd    = FSim(0); //draw for Z
     Yd    = FSim(1); //draw for Y
     Ys    = Y-Yd;
     // Smooth using Ys (i.e. Y^star)
-    Zs    = DSUF(B, q, H, Rmat, Ys);
+    Zs    = DSMF(B, Jb, q, H, Rmat, Ys, freq, LD);
     Zsim  = Zs + Zd; // Draw for factors
 
     Zsim.shed_rows(0,p-1); //shed initial values (not essential)
@@ -888,7 +940,8 @@ List EstDFM(      arma::mat B,     // transition matrix
       Yt   = Ytmp.col(j);
       ind  = find_finite(Yt);   //find non-missing values
       yy   = Yt(ind);         //LHS variable
-      xx   = Zsim.rows(ind)*trans(Jh);
+      Jh = J_MF(freq(j), m, LD(j), sA);
+      xx = Zsim.rows(ind)*trans(Jh);
       V_1   = trans(xx)*xx+Lam_H;
       V_1   = (trans(V_1)+V_1)/2;
       V_1   = inv_sympd(V_1);
@@ -908,7 +961,8 @@ List EstDFM(      arma::mat B,     // transition matrix
       Yt   = Ytmp.col(j);
       ind  = find_finite(Yt);   //find non-missing values
       yy   = Yt(ind);         //LHS variable
-      xx   = Zsim.rows(ind)*trans(Jh);
+      Jh = J_MF(freq(j), m, LD(j), sA);
+      xx = Zsim.rows(ind)*trans(Jh);
       V_1   = trans(xx)*xx+Lam_H;
       V_1   = (trans(V_1)+V_1)/2;
       V_1   = inv_sympd(V_1);
@@ -923,7 +977,7 @@ List EstDFM(      arma::mat B,     // transition matrix
 
     yy    = Zsim.cols(0,m-1);
     yy.shed_row(0);
-    xx    = Zsim;
+    xx    = Zsim*trans(Jb);
     xx.shed_row(T-1);
     v_1   = trans(xx)*xx+Lam_B;
     v_1   = (trans(v_1)+v_1)/2;
@@ -938,7 +992,7 @@ List EstDFM(      arma::mat B,     // transition matrix
     count_reps = 1;
     do{ //this loop ensures the fraw for B is stationary --- non stationary draws are rejected
       Beta  = mvrnrm(1,mu,V_1); //Draw for B
-      B     = reshape(Beta,m,sA); //recovering original dimensions
+      B     = reshape(Beta,m,sB); //recovering original dimensions
       // Check wheter B is stationary and reject if not
       aa      = comp_form(B); //
       eig_gen(eigval_cx, eigvec_cx, aa);
@@ -971,16 +1025,18 @@ List EstDFM(      arma::mat B,     // transition matrix
 
     Rmat  = diagmat(R); // Make a matrix out of R to plug in to DSimMF
     // Draw observations Y^star and Z^star
-    FSim  = FSimUF(B, q, H, Rmat, Y);
+    FSim  = FSimMF(B, Jb, q, H, Rmat, Y, freq, LD);
     Zd    = FSim(0); //draw for Z
     Yd    = FSim(1); //draw for Y
     Ys    = Y-Yd;
     // Smooth using Ys (i.e. Y^star)
-    Zs    = DSUF(B, q, H, Rmat, Ys);
+    Zs    = DSMF(B, Jb, q, H, Rmat, Ys, freq, LD);
     Zsim  = Zs + Zd; // Draw for factors
     
     if(store_Y){
-      Ystore.col(rep) = Zsim.cols(0,m-1)*trans(H.row(store_idx));
+      Jh        = J_MF(freq(store_idx), m, LD(store_idx), sA);
+      //Ystore(t,rep) =  as_scalar(Zsim.row(t)*trans(Jh)*trans(H.row(0)));
+      Ystore.col(rep) = Zsim*trans(Jh)*trans(H.row(store_idx));
     }
     
 
@@ -995,7 +1051,8 @@ List EstDFM(      arma::mat B,     // transition matrix
       Yt   = Ytmp.col(j);
       ind  = find_finite(Yt);   //find non-missing values
       yy   = Yt(ind);         //LHS variable
-      xx   = Zsim.rows(ind)*trans(Jh);
+      Jh = J_MF(freq(j), m, LD(j), sA);
+      xx = Zsim.rows(ind)*trans(Jh);
       V_1   = trans(xx)*xx+Lam_H;
       V_1   = (trans(V_1)+V_1)/2;
       V_1   = inv_sympd(V_1);
@@ -1015,7 +1072,8 @@ List EstDFM(      arma::mat B,     // transition matrix
       Yt   = Ytmp.col(j);
       ind  = find_finite(Yt);   //find non-missing values
       yy   = Yt(ind);         //LHS variable
-      xx   = Zsim.rows(ind)*trans(Jh);
+      Jh = J_MF(freq(j), m, LD(j), sA);
+      xx = Zsim.rows(ind)*trans(Jh);
       V_1   = trans(xx)*xx+Lam_H;
       V_1   = (trans(V_1)+V_1)/2;
       V_1   = inv_sympd(V_1);
@@ -1030,7 +1088,7 @@ List EstDFM(      arma::mat B,     // transition matrix
     
     yy    = Zsim.cols(0,m-1);
     yy.shed_row(0);
-    xx    = Zsim;
+    xx    = Zsim*trans(Jb);
     xx.shed_row(T-1);
     v_1   = trans(xx)*xx+Lam_B;
     v_1   = (trans(v_1)+v_1)/2;
@@ -1045,7 +1103,7 @@ List EstDFM(      arma::mat B,     // transition matrix
     count_reps = 1;
     do{ //this loop ensures the fraw for B is stationary --- non stationary draws are rejected
       Beta  = mvrnrm(1,mu,V_1); //Draw for B
-      B     = reshape(Beta,m,sA); //recovering original dimensions
+      B     = reshape(Beta,m,sB); //recovering original dimensions
       // Check wheter B is stationary and reject if not
       aa    = comp_form(B); //
       eig_gen(eigval_cx, eigvec_cx, aa);
@@ -1075,7 +1133,7 @@ List EstDFM(      arma::mat B,     // transition matrix
 
   //For B
   for(uword rw=0;rw<m;rw++){
-    for(uword cl=0;cl<sA;cl++){
+    for(uword cl=0;cl<sB;cl++){
       B(rw,cl) = as_scalar(median(vectorise(Bstore.tube(rw,cl))));
     }
   }

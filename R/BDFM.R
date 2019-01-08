@@ -1,4 +1,4 @@
-bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_idx, reps, burn, loud) {
+bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_idx, freq, LD, reps, burn, loud) {
 
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
@@ -11,7 +11,31 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
   } else {
     itc <- rep(0, k)
   }
-
+  
+  if(is.null(freq)){ #uniform frequency
+    freq <- rep(1,k)
+  }
+  if(is.null(LD)){ #don't worry about aggregating differenced low freq. data
+    LD <- rep(0,k)
+  }
+  
+  #If data is mixed frequency number of lags needed may be bigger than p 
+  nlags <- rep(0,k)
+  for(j in 1:k){
+    if(LD[j] == 0){
+      nlags[j] <- freq[j]
+    }else if(LD[j] == 1){
+      nlags[j] <- 2*freq[j]-1
+    }else{
+      stop("Invalid diffs argument. Values must be 0 for level data or 1 for differenced data. Second differences not supported.")
+    }
+  }
+  pp <- max(c(nlags, p))
+  
+  Jb <- Diagonal(m*p)
+  if(pp>p){
+    Jb <- cbind(Jb, Matrix(0, m*p, m*(pp-p)))
+  }
 
   # Identification is based on the first m variables so the initial guess just uses these variables as factors.
 
@@ -25,6 +49,8 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
     if(!is.null(nu_r)){
       nu_r <- c(rep(0,m), nu_r)
     }
+    freq <- c(rep(1,m), freq)
+    LD   <- c(rep(0,m), LD)
   } else if (ID == "PC_full") {
     PC <- PrinComp(Y, m)
     Y <- cbind(PC$components, Y)
@@ -32,6 +58,22 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
     if(!is.null(nu_r)){
       nu_r <- c(rep(0,m), nu_r)
     }
+    freq <- c(rep(1,m), freq)
+    LD   <- c(rep(0,m), LD)
+    if (!any(!is.na(PC$components))) {
+      stop("Every period contains missing data. Try setting ID to PC_sub.")
+    }
+  }else if(ID != "Name"){
+    warning(paste(ID, "not a valid identification string, defaulting to PC_full"))
+    ID <- "PC_full"
+    PC <- PrinComp(Y, m)
+    Y <- cbind(PC$components, Y)
+    k <- k + m
+    if(!is.null(nu_r)){
+      nu_r <- c(rep(0,m), nu_r)
+    }
+    freq <- c(rep(1,m), freq)
+    LD   <- c(rep(0,m), LD)
     if (!any(!is.na(PC$components))) {
       stop("Every period contains missing data. Try setting ID to PC_sub.")
     }
@@ -91,7 +133,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
     }
   }
 
-  Parms <- EstDFM(B = B_in, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, store_Y = store_Y, store_idx = store_idx, reps = reps, burn = burn, Loud = loud)
+  Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, freq = freq, LD = LD, store_Y = store_Y, store_idx = store_idx, reps = reps, burn = burn, Loud = loud)
 
   if (ID %in% c("PC_sub", "PC_full")) {
     B <- Parms$B
@@ -99,7 +141,8 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
     H <- as.matrix(Parms$H[-(1:m), ])
     R <- diag(c(Parms$R[-(1:m)]))
 
-    Est <- DSmooth(B, q, H, R, Y[, -(1:m), drop = FALSE])
+    Est <- DSmooth(B = B, Jb = Jb, q = q, H = H, R = R, 
+                   Y = Y[, -(1:m), drop = FALSE], freq = freq[-(1:m)], LD = LD[-(1:m)])
 
     BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
 
@@ -108,6 +151,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
       q = q,
       H = H,
       R = R,
+      Jb = Jb,
       itc = itc,
       values  = Est$Ys + matrix(1, r, 1) %x% t(itc),
       factors = Est$Z[,1:m],
@@ -128,7 +172,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
     H <- Parms$H
     R <- diag(c(Parms$R), k, k)
 
-    Est <- DSmooth(B, q, H, R, Y)
+    Est <- DSmooth(B = B, Jb = Jb, q = q, H = H, R = R, Y = Y, freq = freq, LD = LD)
 
     BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
 
@@ -137,6 +181,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
       q = q,
       H = H,
       R = R,
+      Jb = Jb,
       values  = Est$Ys + matrix(1, r, 1) %x% t(itc),
       factors = Est$Z[,1:m],
       Qstore  = Parms$Qstore, # lets us look at full distribution
@@ -178,7 +223,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @useDynLib bdfm
-Cppbdfm <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, Loud = FALSE){
-  OUT <- EstDFM(B = B, Bp = Bp, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = R, nu_r = nu_r, Y = Y, reps = reps, burn = burn, Loud = Loud)
+Cppbdfm <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, Loud = FALSE){
+  OUT <- EstDFM(B = B, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = R, nu_r = nu_r, Y = Y, freq = freq, LD = LD, reps = reps, burn = burn, Loud = Loud)
   return(OUT)
 }

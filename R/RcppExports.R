@@ -33,6 +33,10 @@ stack_obs <- function(nn, p, r = 0L) {
     .Call('_bdfm_stack_obs', PACKAGE = 'bdfm', nn, p, r)
 }
 
+J_MF <- function(days, m, ld, sA) {
+    .Call('_bdfm_J_MF', PACKAGE = 'bdfm', days, m, ld, sA)
+}
+
 PrinComp <- function(Y, m) {
     .Call('_bdfm_PrinComp', PACKAGE = 'bdfm', Y, m)
 }
@@ -45,20 +49,20 @@ BReg_diag <- function(X, Y, Int, Bp, lam, nu, reps = 1000L, burn = 1000L) {
     .Call('_bdfm_BReg_diag', PACKAGE = 'bdfm', X, Y, Int, Bp, lam, nu, reps, burn)
 }
 
-DSmooth <- function(B, q, H, R, Y) {
-    .Call('_bdfm_DSmooth', PACKAGE = 'bdfm', B, q, H, R, Y)
+DSmooth <- function(B, Jb, q, H, R, Y, freq, LD) {
+    .Call('_bdfm_DSmooth', PACKAGE = 'bdfm', B, Jb, q, H, R, Y, freq, LD)
 }
 
-DSUF <- function(B, q, H, R, Y) {
-    .Call('_bdfm_DSUF', PACKAGE = 'bdfm', B, q, H, R, Y)
+DSMF <- function(B, Jb, q, H, R, Y, freq, LD) {
+    .Call('_bdfm_DSMF', PACKAGE = 'bdfm', B, Jb, q, H, R, Y, freq, LD)
 }
 
-FSimUF <- function(B, q, H, R, Y) {
-    .Call('_bdfm_FSimUF', PACKAGE = 'bdfm', B, q, H, R, Y)
+FSimMF <- function(B, Jb, q, H, R, Y, freq, LD) {
+    .Call('_bdfm_FSimMF', PACKAGE = 'bdfm', B, Jb, q, H, R, Y, freq, LD)
 }
 
-EstDFM <- function(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, store_Y = FALSE, store_idx = 0L, reps = 1000L, burn = 500L, Loud = FALSE) {
-    .Call('_bdfm_EstDFM', PACKAGE = 'bdfm', B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, store_Y, store_idx, reps, burn, Loud)
+EstDFM <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y = FALSE, store_idx = 0L, reps = 1000L, burn = 500L, Loud = FALSE) {
+    .Call('_bdfm_EstDFM', PACKAGE = 'bdfm', B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y, store_idx, reps, burn, Loud)
 }
 
 Ksmoother <- function(A, Q, HJ, R, Y) {

@@ -103,6 +103,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// J_MF
+arma::sp_mat J_MF(arma::uword days, arma::uword m, arma::uword ld, arma::uword sA);
+RcppExport SEXP _bdfm_J_MF(SEXP daysSEXP, SEXP mSEXP, SEXP ldSEXP, SEXP sASEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::uword >::type days(daysSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type m(mSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type ld(ldSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type sA(sASEXP);
+    rcpp_result_gen = Rcpp::wrap(J_MF(days, m, ld, sA));
+    return rcpp_result_gen;
+END_RCPP
+}
 // PrinComp
 List PrinComp(arma::mat Y, arma::uword m);
 RcppExport SEXP _bdfm_PrinComp(SEXP YSEXP, SEXP mSEXP) {
@@ -152,58 +166,68 @@ BEGIN_RCPP
 END_RCPP
 }
 // DSmooth
-List DSmooth(arma::mat B, arma::mat q, arma::mat H, arma::mat R, arma::mat Y);
-RcppExport SEXP _bdfm_DSmooth(SEXP BSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP) {
+List DSmooth(arma::mat B, arma::sp_mat Jb, arma::mat q, arma::mat H, arma::mat R, arma::mat Y, arma::uvec freq, arma::uvec LD);
+RcppExport SEXP _bdfm_DSmooth(SEXP BSEXP, SEXP JbSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP, SEXP freqSEXP, SEXP LDSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type B(BSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type Jb(JbSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type q(qSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type H(HSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type R(RSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
-    rcpp_result_gen = Rcpp::wrap(DSmooth(B, q, H, R, Y));
+    Rcpp::traits::input_parameter< arma::uvec >::type freq(freqSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type LD(LDSEXP);
+    rcpp_result_gen = Rcpp::wrap(DSmooth(B, Jb, q, H, R, Y, freq, LD));
     return rcpp_result_gen;
 END_RCPP
 }
-// DSUF
-arma::mat DSUF(arma::mat B, arma::mat q, arma::mat H, arma::mat R, arma::mat Y);
-RcppExport SEXP _bdfm_DSUF(SEXP BSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP) {
+// DSMF
+arma::mat DSMF(arma::mat B, arma::sp_mat Jb, arma::mat q, arma::mat H, arma::mat R, arma::mat Y, arma::uvec freq, arma::uvec LD);
+RcppExport SEXP _bdfm_DSMF(SEXP BSEXP, SEXP JbSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP, SEXP freqSEXP, SEXP LDSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type B(BSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type Jb(JbSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type q(qSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type H(HSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type R(RSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
-    rcpp_result_gen = Rcpp::wrap(DSUF(B, q, H, R, Y));
+    Rcpp::traits::input_parameter< arma::uvec >::type freq(freqSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type LD(LDSEXP);
+    rcpp_result_gen = Rcpp::wrap(DSMF(B, Jb, q, H, R, Y, freq, LD));
     return rcpp_result_gen;
 END_RCPP
 }
-// FSimUF
-arma::field<arma::mat> FSimUF(arma::mat B, arma::mat q, arma::mat H, arma::mat R, arma::mat Y);
-RcppExport SEXP _bdfm_FSimUF(SEXP BSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP) {
+// FSimMF
+arma::field<arma::mat> FSimMF(arma::mat B, arma::sp_mat Jb, arma::mat q, arma::mat H, arma::mat R, arma::mat Y, arma::uvec freq, arma::uvec LD);
+RcppExport SEXP _bdfm_FSimMF(SEXP BSEXP, SEXP JbSEXP, SEXP qSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP, SEXP freqSEXP, SEXP LDSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type B(BSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type Jb(JbSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type q(qSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type H(HSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type R(RSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
-    rcpp_result_gen = Rcpp::wrap(FSimUF(B, q, H, R, Y));
+    Rcpp::traits::input_parameter< arma::uvec >::type freq(freqSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type LD(LDSEXP);
+    rcpp_result_gen = Rcpp::wrap(FSimMF(B, Jb, q, H, R, Y, freq, LD));
     return rcpp_result_gen;
 END_RCPP
 }
 // EstDFM
-List EstDFM(arma::mat B, arma::mat Bp, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, bool store_Y, arma::uword store_idx, arma::uword reps, arma::uword burn, bool Loud);
-RcppExport SEXP _bdfm_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP LoudSEXP) {
+List EstDFM(arma::mat B, arma::mat Bp, arma::sp_mat Jb, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, arma::uvec freq, arma::uvec LD, bool store_Y, arma::uword store_idx, arma::uword reps, arma::uword burn, bool Loud);
+RcppExport SEXP _bdfm_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP JbSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP freqSEXP, SEXP LDSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP LoudSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type B(BSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Bp(BpSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type Jb(JbSEXP);
     Rcpp::traits::input_parameter< double >::type lam_B(lam_BSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type q(qSEXP);
     Rcpp::traits::input_parameter< double >::type nu_q(nu_qSEXP);
@@ -213,12 +237,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type R(RSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type nu_r(nu_rSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type freq(freqSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type LD(LDSEXP);
     Rcpp::traits::input_parameter< bool >::type store_Y(store_YSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type store_idx(store_idxSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type reps(repsSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type burn(burnSEXP);
     Rcpp::traits::input_parameter< bool >::type Loud(LoudSEXP);
-    rcpp_result_gen = Rcpp::wrap(EstDFM(B, Bp, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, store_Y, store_idx, reps, burn, Loud));
+    rcpp_result_gen = Rcpp::wrap(EstDFM(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y, store_idx, reps, burn, Loud));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -281,13 +307,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bdfm_rinvwish", (DL_FUNC) &_bdfm_rinvwish, 3},
     {"_bdfm_invchisq", (DL_FUNC) &_bdfm_invchisq, 2},
     {"_bdfm_stack_obs", (DL_FUNC) &_bdfm_stack_obs, 3},
+    {"_bdfm_J_MF", (DL_FUNC) &_bdfm_J_MF, 4},
     {"_bdfm_PrinComp", (DL_FUNC) &_bdfm_PrinComp, 2},
     {"_bdfm_BReg", (DL_FUNC) &_bdfm_BReg, 8},
     {"_bdfm_BReg_diag", (DL_FUNC) &_bdfm_BReg_diag, 8},
-    {"_bdfm_DSmooth", (DL_FUNC) &_bdfm_DSmooth, 5},
-    {"_bdfm_DSUF", (DL_FUNC) &_bdfm_DSUF, 5},
-    {"_bdfm_FSimUF", (DL_FUNC) &_bdfm_FSimUF, 5},
-    {"_bdfm_EstDFM", (DL_FUNC) &_bdfm_EstDFM, 16},
+    {"_bdfm_DSmooth", (DL_FUNC) &_bdfm_DSmooth, 8},
+    {"_bdfm_DSMF", (DL_FUNC) &_bdfm_DSMF, 8},
+    {"_bdfm_FSimMF", (DL_FUNC) &_bdfm_FSimMF, 8},
+    {"_bdfm_EstDFM", (DL_FUNC) &_bdfm_EstDFM, 19},
     {"_bdfm_Ksmoother", (DL_FUNC) &_bdfm_Ksmoother, 5},
     {"_bdfm_KestExact", (DL_FUNC) &_bdfm_KestExact, 8},
     {"_bdfm_KSeas", (DL_FUNC) &_bdfm_KSeas, 6},

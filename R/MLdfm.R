@@ -8,10 +8,10 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, loud = FALSE) {
   Ytmp <- na.omit(Y)
   sA <- m * (p + 1) # number of factors and size of A matrix
 
-  Ytmp <- scale(Ytmp) # scale before taking principle components
+  Ytmp <- base::scale(Ytmp) # scale before taking principle components
   scl  <- attr(Ytmp, "scaled:scale")
   # loadings on principle components and initial guess for H
-  PC   <- PrinComp(Ytmp, m)
+  PC   <- PrinComp(Y, m)
   H    <- PC$loadings
 
   if (sum(sign(H[, 1])) < 0) {
