@@ -20,7 +20,7 @@ Bayesian dynamic factor model estimation in R.
 
 ## Description
 
-bdfm estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or "ragged edges" due to different start or end dates.
+bdfm estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) and "2-step" estimation via principal components is also supported. Input data may be mixed frequency, noisy, have missing values, or "ragged edges" due to different start or end dates.
 
 ## Installation
 
@@ -49,36 +49,56 @@ ts.plot(Est$values[,1])
 ## Full Input
 
 ```r
-Est <- dfm(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = 'PC_full', intercept = TRUE, reps = 1000, burn = 500)
+Est <- dfm(Y, factors = 1, lags = 2, forecast = 0,
+                method = c("bayesian", "ml", "pc"),
+                frequency_mix = NULL, differences = NULL,
+                B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
+                nu_r = NULL, identification = "PC_full", intercept = TRUE,
+                store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
+                EM_tolerance = 0.01)
 ```
 
-```Y```           Input data
+`Y`           Input data
 
-```factors```     Number of factors
+`factors`     Number of factors
 
-```lags```        Number of lags in transition equation
+`lags`        Number of lags in transition equation
 
-```forecast```    Number of periods ahead to forecast
+`forecast`    Number of periods ahead to forecast
 
-```B_prior```     Prior on transtion equation (default is to shrink values towards zero)
+`method`      One of `'bayesian'`, `'ml'`, or `'pc'`
 
-```lam_B```       Prior tightness on transition equation
+`frequency_mix` If mixed frequency, vector containing the number of high frequency periods in each series
 
-```H_prior```    Prior on loadings/observation equation (default is zero)
+`differences`    If mixed frequency, vector with 0 for level data or 1 for differenced data. 
 
-```lam_H```      Prior tightness on loadings, scalar
+`B_prior`     Prior on transtion equation (default is to shrink values towards zero)
 
- ```nu_q```      Prior "degrees of freedom" for transition equation (i.e. shrink covariance of shocks towards zero), scalar
+`lam_B`       Prior tightness on transition equation
 
-```nu_r```       Prior "degrees of freedom" for observation equation (i.e. shrink covariance of shocks towards zero), vector with elements equaling number of observed series
+`H_prior`    Prior on loadings/observation equation (default is zero)
 
-```ID```        Model identification technique. 'PC_full' identifies on principal components using all series. 'PC-sub' identifies on principal components using a subset of the data that maximizes the number of observations when many observations are missing.
+`lam_H`      Prior tightness on loadings, scalar
 
-```intercept``` T/F estimate intercept term
+ `nu_q`      Prior "degrees of freedom" for transition equation (i.e. shrink covariance of shocks towards zero), scalar
 
-```reps```      Number of MCMC draws
+`nu_r`       Vector, prior "degrees of freedom" for observation equation (i.e. shrink covariance of shocks towards zero)
 
-## Full Output
+```identification```        Model identification technique. 
+
+`intercept` logical, estimate intercept term
+
+`store_idx` Index value if posterior distribution of a series is desired
+
+`reps`      If estimation is Bayesian, number of MCMC draws
+
+`burn`      Number of iterations to burn in MCMC draws
+
+`loud`     logical, print status of estimation
+
+`EM_tollerance` If estimation is ML, tollerance for converstion of EM algorithm
+
+## Full Output (Bayesian Estimation)
 
 ```B```       Estimated transition matrix (posterior median)
 
@@ -87,6 +107,8 @@ Est <- dfm(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B = 0, H_
 ```H```       Estimated loadings (posterior median)
 
 ```R```       Estimated covariance of shocks to observation equation (poserior median, diagonal matrix)
+
+```Jb```      Transition equation helper matrix
 
 ```itc```     Intercept terms for observables
 
@@ -102,9 +124,17 @@ Est <- dfm(Y, factors = 1, lags = 2, forecast = 0, B_prior = NULL, lam_B = 0, H_
 
 ```Rstore```  Full posterior distribution for ```R```
 
-```UDstore``` Forecast updates (prediction error times gain) at each period
+```Kstore```  Kalman gain at each period
 
-```dates```   If input is `ts_boxable()`, dates corresponding to indexes of data
+```PEstore``` Prediction error at each period
+
+```Lik```     Likelihood (for posterior median)
+
+```BIC```     Bayesian information criterion
+
+```Ystore```  Full distribution of fitted values (optional)
+
+```Ymedian``` Median of fitted values (optional)
 
 ## Estimation Details
 
@@ -112,8 +142,6 @@ You can find details on estimation routines and derivations in the short book *P
 
 ## Examples
 
-Examples scripts are included in the [Examples](https://github.com/srlanalytics/bdfm/tree/master/inst/Examples) file of this repository including code to run your own live nowcasts of US GDP using the [Fred](https://fred.stlouisfed.org/) API:
-
-![](https://github.com/srlanalytics/bdfm/blob/master/img/US_GDP.png)
+Example scripts are included in the [Examples](https://github.com/srlanalytics/bdfm/tree/master/inst/Examples) file of this repository including code to run your own live nowcasts of US GDP using the [Fred](https://fred.stlouisfed.org/) API
 
 

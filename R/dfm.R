@@ -42,7 +42,7 @@
 #'
 #' library(bdfm)
 #' m <- dfm(dta, forecast = 2)
-#' predict(m)
+#' summary(m)
 #'
 #' @useDynLib bdfm
 dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
