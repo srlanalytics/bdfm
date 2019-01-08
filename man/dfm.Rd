@@ -73,6 +73,6 @@ dta <- cbind(fdeaths0, mdeaths)
 
 library(bdfm)
 m <- dfm(dta, forecast = 2)
-predict(m)
+summary(m)
 
 }
