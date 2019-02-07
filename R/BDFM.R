@@ -11,43 +11,43 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
   # } else {
   #   itc <- rep(0, k)
   # }
-  
-  if(is.null(freq)){ #uniform frequency
-    freq <- rep(1,k)
+
+  if (is.null(freq)) { # uniform frequency
+    freq <- rep(1, k)
   }
-  if(is.null(LD)){ #don't worry about aggregating differenced low freq. data
-    LD <- rep(0,k)
+  if (is.null(LD)) { # don't worry about aggregating differenced low freq. data
+    LD <- rep(0, k)
   }
-  
-  #If data is mixed frequency number of lags needed may be bigger than p 
-  nlags <- rep(0,k)
-  for(j in 1:k){
-    if(LD[j] == 0){
+
+  # If data is mixed frequency number of lags needed may be bigger than p
+  nlags <- rep(0, k)
+  for (j in 1:k) {
+    if (LD[j] == 0) {
       nlags[j] <- freq[j]
-    }else if(LD[j] == 1){
-      nlags[j] <- 2*freq[j]-1
-    }else{
+    } else if (LD[j] == 1) {
+      nlags[j] <- 2 * freq[j] - 1
+    } else {
       stop("Invalid diffs argument. Values must be 0 for level data or 1 for differenced data. Second differences not supported.")
     }
   }
   pp <- max(c(nlags, p))
-  
-  Jb <- Diagonal(m*p)
-  if(pp>p){
-    Jb <- cbind(Jb, Matrix(0, m*p, m*(pp-p)))
+
+  Jb <- Diagonal(m * p)
+  if (pp > p) {
+    Jb <- cbind(Jb, Matrix(0, m * p, m * (pp - p)))
   }
 
   # Identification is based on the first m variables so the initial guess just uses these variables as factors.
-  
-  if(is.numeric(ID)){
-    PC <- PrinComp(Y[,ID], m)
+
+  if (is.numeric(ID)) {
+    PC <- PrinComp(Y[, ID], m)
     Y <- cbind(PC$components, Y)
     k <- k + m
-    if(!is.null(nu_r)){
-      nu_r <- c(rep(0,m), nu_r)
+    if (!is.null(nu_r)) {
+      nu_r <- c(rep(0, m), nu_r)
     }
-    freq <- c(rep(1,m), freq)
-    LD   <- c(rep(0,m), LD)
+    freq <- c(rep(1, m), freq)
+    LD <- c(rep(0, m), LD)
   }
   else if (ID == "pc_sub") {
     Ysub <- Y_sub(Y) # submatrix of Y with complete data, i.e. no missing values
@@ -56,49 +56,51 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
     tmp[Ysub$ind, ] <- PC$components
     Y <- cbind(tmp, Y)
     k <- k + m
-    if(!is.null(nu_r)){
-      nu_r <- c(rep(0,m), nu_r)
+    if (!is.null(nu_r)) {
+      nu_r <- c(rep(0, m), nu_r)
     }
-    freq <- c(rep(1,m), freq)
-    LD   <- c(rep(0,m), LD)
+    freq <- c(rep(1, m), freq)
+    LD <- c(rep(0, m), LD)
   } else if (ID == "pc_full") {
     PC <- PrinComp(Y, m)
     Y <- cbind(PC$components, Y)
     k <- k + m
-    if(!is.null(nu_r)){
-      nu_r <- c(rep(0,m), nu_r)
+    if (!is.null(nu_r)) {
+      nu_r <- c(rep(0, m), nu_r)
     }
-    freq <- c(rep(1,m), freq)
-    LD   <- c(rep(0,m), LD)
+    freq <- c(rep(1, m), freq)
+    LD <- c(rep(0, m), LD)
     if (!any(!is.na(PC$components))) {
       stop("Every period contains missing data. Try setting ID to pc_sub.")
     }
-  }else if(ID != "Name"){
+  } else if (ID != "Name") {
     warning(paste(ID, "not a valid identification string or index vector, defaulting to pc_full"))
     ID <- "pc_full"
     PC <- PrinComp(Y, m)
     Y <- cbind(PC$components, Y)
     k <- k + m
-    if(!is.null(nu_r)){
-      nu_r <- c(rep(0,m), nu_r)
+    if (!is.null(nu_r)) {
+      nu_r <- c(rep(0, m), nu_r)
     }
-    freq <- c(rep(1,m), freq)
-    LD   <- c(rep(0,m), LD)
+    freq <- c(rep(1, m), freq)
+    LD <- c(rep(0, m), LD)
     if (!any(!is.na(PC$components))) {
       stop("Every period contains missing data. Try setting ID to pc_sub.")
     }
   }
 
   # ----------- Format Priors ------------------
-  #enter priors multiplicatively so that 0 is a weak prior and 1 is a strong prior (additive        priors are relative to the number of observations)
-  lam_B <- r*lam_B + 1
-  nu_q  <- r*nu_q  + 1
-  lam_H <- r*lam_H + 1
-  if(is.null(nu_r)){
-    nu_r = rep(1,k)
-  }else{
-    if(length(nu_r) != k){stop("Length of nu_r must equal the number of observed series")}
-    nu_r = r*nu_r + rep(1,k)
+  # enter priors multiplicatively so that 0 is a weak prior and 1 is a strong prior (additive        priors are relative to the number of observations)
+  lam_B <- r * lam_B + 1
+  nu_q <- r * nu_q + 1
+  lam_H <- r * lam_H + 1
+  if (is.null(nu_r)) {
+    nu_r <- rep(1, k)
+  } else {
+    if (length(nu_r) != k) {
+      stop("Length of nu_r must equal the number of observed series")
+    }
+    nu_r <- r * nu_r + rep(1, k)
   }
   # ---------------------------------------------
 
@@ -126,20 +128,20 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
   if (is.null(Hp)) {
     Hp <- matrix(0, k, m)
   }
-  if(FC>0){
-    tmp <- matrix(NA,FC,k)
-    Y   <- rbind(Y, tmp)
-    r   <- r + FC
+  if (FC > 0) {
+    tmp <- matrix(NA, FC, k)
+    Y <- rbind(Y, tmp)
+    r <- r + FC
   }
-  if(is.null(store_idx)){
-    store_idx = 0
-    store_Y   = FALSE
-  }else{
-    store_Y = TRUE
+  if (is.null(store_idx)) {
+    store_idx <- 0
+    store_Y <- FALSE
+  } else {
+    store_Y <- TRUE
     if (ID %in% c("PC_sub", "PC_full")) {
-      store_idx = store_idx + m - 1 # -1 due to zero indexing in C++
-    }else{
-      store_idx = store_idx - 1
+      store_idx <- store_idx + m - 1 # -1 due to zero indexing in C++
+    } else {
+      store_idx <- store_idx - 1
     }
   }
 
@@ -151,10 +153,12 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
     H <- as.matrix(Parms$H[-(1:m), ])
     R <- diag(c(Parms$R[-(1:m)]))
 
-    Est <- DSmooth(B = B, Jb = Jb, q = q, H = H, R = R, 
-                   Y = Y[, -(1:m), drop = FALSE], freq = freq[-(1:m)], LD = LD[-(1:m)])
+    Est <- DSmooth(
+      B = B, Jb = Jb, q = q, H = H, R = R,
+      Y = Y[, -(1:m), drop = FALSE], freq = freq[-(1:m)], LD = LD[-(1:m)]
+    )
 
-    BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
+    BIC <- log(n_obs) * (m * p + m^2 + k * m + k) - 2 * Est$Lik
 
     Out <- list(
       B = B,
@@ -162,17 +166,17 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
       H = H,
       R = R,
       Jb = Jb,
-      values  = Est$Ys, # + matrix(1, r, 1) %x% t(itc),
-      factors = Est$Z[,1:m],
-      Qstore  = Parms$Qstore,
-      Bstore  = Parms$Bstore,
-      Hstore  = Parms$Hstore[-(1:m), , ,drop=FALSE],
-      Rstore  = Parms$Rstore[-(1:m), ,drop=FALSE],
-      Kstore  = Est$Kstr,
+      values = Est$Ys, # + matrix(1, r, 1) %x% t(itc),
+      factors = Est$Z[, 1:m],
+      Qstore = Parms$Qstore,
+      Bstore = Parms$Bstore,
+      Hstore = Parms$Hstore[-(1:m), , , drop = FALSE],
+      Rstore = Parms$Rstore[-(1:m), , drop = FALSE],
+      Kstore = Est$Kstr,
       PEstore = Est$PEstr,
-      Lik     = Est$Lik,
-      BIC     = BIC,
-      Ystore  = Parms$Ystore,
+      Lik = Est$Lik,
+      BIC = BIC,
+      Ystore = Parms$Ystore,
       Ymedian = Parms$Y_median
     )
   } else {
@@ -183,7 +187,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
 
     Est <- DSmooth(B = B, Jb = Jb, q = q, H = H, R = R, Y = Y, freq = freq, LD = LD)
 
-    BIC <- log(n_obs)*(m*p + m^2 + k*m + k) - 2*Est$Lik
+    BIC <- log(n_obs) * (m * p + m^2 + k * m + k) - 2 * Est$Lik
 
     Out <- list(
       B = B,
@@ -191,17 +195,17 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
       H = H,
       R = R,
       Jb = Jb,
-      values  = Est$Ys, # + matrix(1, r, 1) %x% t(itc),
-      factors = Est$Z[,1:m],
-      Qstore  = Parms$Qstore, # lets us look at full distribution
-      Bstore  = Parms$Bstore,
-      Hstore  = Parms$Hstore,
-      Rstore  = Parms$Rstore,
-      Kstore  = Est$Kstr,
+      values = Est$Ys, # + matrix(1, r, 1) %x% t(itc),
+      factors = Est$Z[, 1:m],
+      Qstore = Parms$Qstore, # lets us look at full distribution
+      Bstore = Parms$Bstore,
+      Hstore = Parms$Hstore,
+      Rstore = Parms$Rstore,
+      Kstore = Est$Kstr,
       PEstore = Est$PEstr,
-      Lik     = Est$Lik,
-      BIC     = BIC,
-      Ystore  = Parms$Ystore,
+      Lik = Est$Lik,
+      BIC = BIC,
+      Ystore = Parms$Ystore,
       Ymedian = Parms$Y_median
     )
   }
@@ -235,7 +239,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @useDynLib bdfm
-Cppbdfm <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, Loud = FALSE){
+Cppbdfm <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, Loud = FALSE) {
   OUT <- EstDFM(B = B, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = R, nu_r = nu_r, Y = Y, freq = freq, LD = LD, reps = reps, burn = burn, Loud = Loud)
   return(OUT)
 }

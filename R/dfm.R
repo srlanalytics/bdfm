@@ -39,11 +39,10 @@
 #' fdeaths0 <- fdeaths
 #' fdeaths0[length(fdeaths0)] <- NA
 #' dta <- cbind(fdeaths0, mdeaths)
-#'
+#' 
 #' library(bdfm)
 #' m <- dfm(dta, forecast = 2)
 #' summary(m)
-#'
 #' @useDynLib bdfm
 dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
                 method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
@@ -52,15 +51,16 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
                 obs_df = NULL, identification = "PC_full",
                 store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
                 EM_tolerance = 0.01) {
-  
-  method <- match.arg(method)  # checks and picks the first if unspecified
-  
-  if(!is.null(frequency_mix) && method != "bayesian"){
+  method <- match.arg(method) # checks and picks the first if unspecified
+
+  if (!is.null(frequency_mix) && method != "bayesian") {
     stop("Mixed freqeuncy models are only supported for Bayesian estimation")
   }
 
-  tsobjs <- c("zoo", "xts", "tslist", "tbl_ts", "timeSeries",
-    "tbl_time", "tbl_df", "data.table", "data.frame", "dts")
+  tsobjs <- c(
+    "zoo", "xts", "tslist", "tbl_ts", "timeSeries",
+    "tbl_time", "tbl_df", "data.table", "data.frame", "dts"
+  )
 
   if (!requireNamespace("tsbox") & any(class(Y) %in% tsobjs)) {
     stop('"tsbox" is needed to support non ts-time-series. To install: \n\n  install.packages("tsbox")', call. = FALSE)
@@ -68,10 +68,9 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
 
   # non time series
   if (!any(class(data) %in% c(tsobjs, "ts", "mts")) && is.matrix(data)) {
-
     ans <- dfm_core(
       Y = data, m = factors, p = lags, FC = forecast, method = method,
-      scale = scale, logs = logs, diffs = diffs, freq = frequency_mix, 
+      scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
       asD = as_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
@@ -79,25 +78,24 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
     )
     colnames(ans$values) <- colnames(data)
     ans$dates <- NULL
-
   } else {
 
     # no need for tsbox if Y is ts or mts
     if (inherits(data, "ts")) {
-      Y.uc  <- unclass(data)
+      Y.uc <- unclass(data)
     } else {
       stopifnot(requireNamespace("tsbox"))
       # time series
       stopifnot(tsbox::ts_boxable(data))
       # convert to mts
-      Y.uc  <- unclass(tsbox::ts_ts(data))
+      Y.uc <- unclass(tsbox::ts_ts(data))
     }
 
     Y.tsp <- attr(Y.uc, "tsp")
     attr(Y.uc, "tsp") <- NULL
     ans <- dfm_core(
       Y = Y.uc, m = factors, p = lags, FC = forecast, method = method,
-      scale = scale, logs = logs, diffs = diffs, freq = frequency_mix, 
+      scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
       asD = as_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
@@ -107,21 +105,21 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
     # make values a ts timeseries
     ans$values <- ts(ans$values, start = Y.tsp[1], frequency = Y.tsp[3])
     ans$factors <- ts(ans$factors, start = Y.tsp[1], frequency = Y.tsp[3])
-    if(!is.null(store_idx)){
+    if (!is.null(store_idx)) {
       ans$Ymedian <- ts(ans$Ymedian, start = Y.tsp[1], frequency = Y.tsp[3])
     }
     # apply column names from Y
     colnames(ans$values) <- colnames(data)
-    
-    #return a date vector
+
+    # return a date vector
     ans$dates <- tsbox::ts_regular(tsbox::ts_df(ans$values))[, 1]
 
     # put values back into original class
     if (!inherits(Y, "ts")) {
-      ans$values  <- tsbox::copy_class(ans$values, data)
+      ans$values <- tsbox::copy_class(ans$values, data)
       ans$factors <- tsbox::copy_class(ans$factors, data, preserve.mode = FALSE)
-      if(!is.null(store_idx)){
-         ans$Ymedian <- tsbox::copy_class(ans$Ymedian, data)
+      if (!is.null(store_idx)) {
+        ans$Ymedian <- tsbox::copy_class(ans$Ymedian, data)
       }
     }
   }
@@ -132,55 +130,55 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
 dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, asD,
                      Bp, lam_B, nu_q, Hp, lam_H, nu_r, ID,
                      store_idx, reps, burn, loud, tol) {
-  
+
   #-------Data processing-------------------------
-  
-  #frequency
-  if(freq == "auto"){
+
+  # frequency
+  if (freq == "auto") {
     freq <- apply(Y, MARGIN = 2, FUN = get_freq)
-  }else if(!is.integer(freq) || length(freq) != ncol(Y)){
+  } else if (!is.integer(freq) || length(freq) != ncol(Y)) {
     stop("Argument 'freq' must be 'auto' or integer valued with 
          length equal to the number data series")
   }
-  
-  #logs
-  if(!is.null(logs)){
-    if(is.character(logs)){
+
+  # logs
+  if (!is.null(logs)) {
+    if (is.character(logs)) {
       logs <- unlist(sapply(logs, FUN = grep, colnames(Y)))
-    }else if(!is.numeric(logs)){
+    } else if (!is.numeric(logs)) {
       stop("Argument 'logs' must be either a character (string) vector or numeric index values")
     }
-    Y[,logs] <- log(Y[,logs])
+    Y[, logs] <- log(Y[, logs])
   }
-  
-  #differences
-  if(!is.null(diffs)){
+
+  # differences
+  if (!is.null(diffs)) {
     Y_lev <- Y
-    if(is.character(diffs)){
+    if (is.character(diffs)) {
       diffs <- unlist(sapply(diffs, FUN = grep, colnames(Y)))
-    }else if(!is.numeric(diffs)){
+    } else if (!is.numeric(diffs)) {
       stop("Argument 'diffs' must be either a character (string) vector or numeric index values")
     }
-    Y[,diffs] <-  sapply(diffs, mf_diff, fq=freq, Y=Y)
+    Y[, diffs] <- sapply(diffs, mf_diff, fq = freq, Y = Y)
   }
-  
-  #specify which series are differenced for mixed frequency estimation
+
+  # specify which series are differenced for mixed frequency estimation
   LD <- rep(0, ncol(Y))
-  if(!is.null(asD)){
-    if(is.character(asD)){
+  if (!is.null(asD)) {
+    if (is.character(asD)) {
       preD <- unlist(sapply(asD, FUN = grep, colnames(Y)))
-    }else if(!is.numeric(asD)){
+    } else if (!is.numeric(asD)) {
       stop("Argument 'asD' must be either a character (string) vector or numeric index values")
     }
-  }else{
-    LD[diffs] <- 1 #in bdfm 1 indicates differenced data, 0 level data
+  } else {
+    LD[diffs] <- 1 # in bdfm 1 indicates differenced data, 0 level data
   }
-  
-  
-  if(scale){
+
+
+  if (scale) {
     Y <- bdfm::scale(Y)
   }
-  
+
   if (method == "bayesian") {
     est <- bdfm(
       Y = Y, m = m, p = p, FC = FC, Bp = Bp,
@@ -195,7 +193,8 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, asD,
     )
   } else if (method == "pc") {
     est <- PCdfm(
-      Y, m = m, p = p, FC = FC, Bp = Bp,
+      Y,
+      m = m, p = p, FC = FC, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
       ID = ID, reps = reps, burn = burn
     )
@@ -223,7 +222,7 @@ predict.dfm <- function(object, ...) {
 print.dfm <- function(x, ...) {
   cat(
     "Call: \n Bayesian dynamic factor model with",
-    nrow(x$B), "factor(s) and", ncol(x$B)/nrow(x$B), "lag(s)."
+    nrow(x$B), "factor(s) and", ncol(x$B) / nrow(x$B), "lag(s)."
   )
   cat("\n \n")
   cat("Log Likelihood:", x$Lik)
@@ -236,7 +235,7 @@ print.dfm <- function(x, ...) {
 summary.dfm <- function(object, ...) {
   cat(
     "Call: \n Bayesian dynamic factor model with", nrow(object$B),
-    "factor(s) and", ncol(object$B)/nrow(object$B), "lag(s)."
+    "factor(s) and", ncol(object$B) / nrow(object$B), "lag(s)."
   )
   cat("\n \n")
   cat("Log Likelihood:", object$Lik)
@@ -253,12 +252,11 @@ summary.dfm <- function(object, ...) {
   cat("\n Coefficients H: \n")
   H <- data.frame(object$H)
   row.names(H) <- colnames(object$values)
-  colnames(H) <- as.character(seq(1,ncol(H)))
+  colnames(H) <- as.character(seq(1, ncol(H)))
   print(H)
   cat("\n shocks R: \n")
   r <- data.frame(diag(object$R))
   row.names(r) <- colnames(object$values)
   colnames(r) <- "Variance of Shocks"
   print(r)
-
 }

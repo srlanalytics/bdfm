@@ -17,7 +17,7 @@
 #' @aliases cny diwali
 #' @keywords datasets
 #' @examples
-#'
+#' 
 #' cny
 #' diwali
 #' easter

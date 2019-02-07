@@ -1,6 +1,5 @@
 #' @importFrom Matrix Matrix Diagonal sparseMatrix
 MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, loud = FALSE) {
-
   Y <- as.matrix(Y)
   r <- nrow(Y)
   k <- ncol(Y)
@@ -9,10 +8,10 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, loud = FALSE) {
   sA <- m * (p + 1) # number of factors and size of A matrix
 
   Ytmp <- base::scale(Ytmp) # scale before taking principle components
-  scl  <- attr(Ytmp, "scaled:scale")
+  scl <- attr(Ytmp, "scaled:scale")
   # loadings on principle components and initial guess for H
-  PC   <- PrinComp(Y, m)
-  H    <- PC$loadings
+  PC <- PrinComp(Y, m)
+  H <- PC$loadings
 
   if (sum(sign(H[, 1])) < 0) {
     H[, 1] <- -H[, 1]
@@ -31,10 +30,10 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, loud = FALSE) {
   # Arbitrary intitial guess for R
   R <- diag(1, k, k)
 
-  if(FC>0){
-    tmp <- matrix(NA,FC,k)
-    Y   <- rbind(Y, tmp)
-    r   <- r + FC
+  if (FC > 0) {
+    tmp <- matrix(NA, FC, k)
+    Y <- rbind(Y, tmp)
+    r <- r + FC
   }
 
   count <- 0
@@ -70,12 +69,12 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, loud = FALSE) {
   HJ <- sparseMatrix(i = rep(1:k, m), j = (1:m) %x% rep(1, k), x = c(H), dims = c(k, m * p), symmetric = FALSE, triangular = FALSE, giveCsparse = TRUE)
 
   Smth <- Ksmoother(A, Q, HJ, R, Ydm)
-  B    <- A[1:m,1:(m*p)]
+  B <- A[1:m, 1:(m * p)]
 
   return(list(
     values = Smth$Ys + matrix(1, r, 1) %x% t(itc),
     Lik = Smth$Lik,
-    factors = Smth$Z[,1:m],
+    factors = Smth$Z[, 1:m],
     B = B,
     Q = Q,
     H = H,
@@ -83,7 +82,7 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, loud = FALSE) {
     A = A,
     HJ = HJ,
     itc = itc,
-    Kstore  = Smth$Kstr,
+    Kstore = Smth$Kstr,
     PEstore = Smth$PEstr
   ))
 }

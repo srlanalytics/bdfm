@@ -19,8 +19,8 @@ DayOfWeek <- function(Days, dates) {
   }
   return(day_dummy)
 }
-sum_yearmonth <- function(yearmonth, daily_seq, x){
-  ind <- which(format.Date(daily_seq, "%Y-%m")%in%yearmonth)
+sum_yearmonth <- function(yearmonth, daily_seq, x) {
+  ind <- which(format.Date(daily_seq, "%Y-%m") %in% yearmonth)
   out <- sum(x[ind])
   return(out)
 }
@@ -410,75 +410,83 @@ Predetermined.d <- function(dates, predetermined) {
     }
     indx <- indx + 1
   }
-  if("Easter"%in%predetermined || "CNY"%in%predetermined || "Diwali"%in%predetermined){
+  if ("Easter" %in% predetermined || "CNY" %in% predetermined || "Diwali" %in% predetermined) {
     load(system.file("data/Holiday.RData", package = "bdfm"))
   }
 
-  if("CNY"%in%predetermined){ #Chinese New Year
-    #month_day   <- format.Date(dates_ex_long, "%m-%d")
-    H_dates     <- which(dates_ex_long%in%(holiday$cny+7))  #Mid of CNY
-    if(!length(H_dates)==0){
-      spn         <- -7:7
-      nm          <- dnorm(spn/max(abs(spn)), mean = 0, sd = .5) #effect uses the shape of a normal pdf
-      nm          <- -10*nm/sum(nm)
-      H_span      <- sort(unlist(lapply(H_dates,function(bob){bob+spn}))) #indexes to span (Holiday span)
-      H_span      <- H_span[H_span>0 & H_span<=length(dates_ex_long)]
-      efx         <- rep(nm,length(H_dates))
-      H_dates     <- dates_ex_long[H_span]
-      ind_efx     <- which(H_dates%in%dates)
-      ind_date    <- which(dates%in%H_dates)
-      nn[ind_date, indx]  <- efx[ind_efx]
+  if ("CNY" %in% predetermined) { # Chinese New Year
+    # month_day   <- format.Date(dates_ex_long, "%m-%d")
+    H_dates <- which(dates_ex_long %in% (holiday$cny + 7)) # Mid of CNY
+    if (!length(H_dates) == 0) {
+      spn <- -7:7
+      nm <- dnorm(spn / max(abs(spn)), mean = 0, sd = .5) # effect uses the shape of a normal pdf
+      nm <- -10 * nm / sum(nm)
+      H_span <- sort(unlist(lapply(H_dates, function(bob) {
+        bob + spn
+      }))) # indexes to span (Holiday span)
+      H_span <- H_span[H_span > 0 & H_span <= length(dates_ex_long)]
+      efx <- rep(nm, length(H_dates))
+      H_dates <- dates_ex_long[H_span]
+      ind_efx <- which(H_dates %in% dates)
+      ind_date <- which(dates %in% H_dates)
+      nn[ind_date, indx] <- efx[ind_efx]
     }
-    R_dates     <- which(dates_ex_long%in%(holiday$cny+40))  #Mid of CNY
-    if(!length(H_dates)==0){
-      spn         <- -25:25
-      nm          <- dnorm(spn/max(abs(spn)), mean = 0, sd = .5) #effect uses the shape of a normal pdf
-      nm          <- 10*nm/sum(nm)
-      R_span      <- sort(unlist(lapply(R_dates,function(bob){bob+spn}))) #indexes to span (Recovery span)
-      R_span      <- R_span[R_span>0 & R_span<=length(dates_ex_long)]
-      efx         <- rep(nm,length(R_dates))
-      R_dates     <- dates_ex_long[R_span]
-      ind_efx     <- which(R_dates%in%dates)
-      ind_date    <- which(dates%in%R_dates)
-      nn[ind_date, indx]  <- efx[ind_efx]
+    R_dates <- which(dates_ex_long %in% (holiday$cny + 40)) # Mid of CNY
+    if (!length(H_dates) == 0) {
+      spn <- -25:25
+      nm <- dnorm(spn / max(abs(spn)), mean = 0, sd = .5) # effect uses the shape of a normal pdf
+      nm <- 10 * nm / sum(nm)
+      R_span <- sort(unlist(lapply(R_dates, function(bob) {
+        bob + spn
+      }))) # indexes to span (Recovery span)
+      R_span <- R_span[R_span > 0 & R_span <= length(dates_ex_long)]
+      efx <- rep(nm, length(R_dates))
+      R_dates <- dates_ex_long[R_span]
+      ind_efx <- which(R_dates %in% dates)
+      ind_date <- which(dates %in% R_dates)
+      nn[ind_date, indx] <- efx[ind_efx]
     }
-    indx <- indx+1
+    indx <- indx + 1
   }
 
-  if("Easter"%in%predetermined){
-    #month_day   <- format.Date(dates_ex_long, "%m-%d")
-    H_dates     <- which(dates_ex_long%in%holiday$easter)  #Index of dates
-    if(!length(H_dates)==0){
-      spn         <- -5:10
-      nm          <- dnorm(spn/max(abs(spn)), mean = 0, sd = .4) #effect uses the shape of a normal pdf
-      nm          <- 10*nm/sum(nm)
-      H_span      <- sort(unlist(lapply(H_dates,function(bob){bob+spn}))) #indexes to span (Holiday span)
-      H_span      <- H_span[H_span>0 & H_span<=length(dates_ex_long)]
-      efx         <- rep(nm,length(H_dates))
-      H_dates     <- dates_ex_long[H_span]
-      ind_efx     <- which(H_dates%in%dates)
-      ind_date    <- which(dates%in%H_dates)
-      nn[ind_date, indx]  <- efx[ind_efx]
+  if ("Easter" %in% predetermined) {
+    # month_day   <- format.Date(dates_ex_long, "%m-%d")
+    H_dates <- which(dates_ex_long %in% holiday$easter) # Index of dates
+    if (!length(H_dates) == 0) {
+      spn <- -5:10
+      nm <- dnorm(spn / max(abs(spn)), mean = 0, sd = .4) # effect uses the shape of a normal pdf
+      nm <- 10 * nm / sum(nm)
+      H_span <- sort(unlist(lapply(H_dates, function(bob) {
+        bob + spn
+      }))) # indexes to span (Holiday span)
+      H_span <- H_span[H_span > 0 & H_span <= length(dates_ex_long)]
+      efx <- rep(nm, length(H_dates))
+      H_dates <- dates_ex_long[H_span]
+      ind_efx <- which(H_dates %in% dates)
+      ind_date <- which(dates %in% H_dates)
+      nn[ind_date, indx] <- efx[ind_efx]
     }
-    indx <- indx+1
+    indx <- indx + 1
   }
 
-  if("Diwali"%in%predetermined){
-    #month_day   <- format.Date(dates_ex_long, "%m-%d")
-    H_dates     <- which(dates_ex_long%in%holiday$diwali)  #Index of dates
-    if(!length(H_dates)==0){
-      spn         <- -10:10
-      nm          <- dnorm(spn/max(abs(spn)), mean = 0, sd = .5) #effect uses the shape of a normal pdf
-      nm          <- 10*nm/sum(nm)
-      H_span      <- sort(unlist(lapply(H_dates,function(bob){bob+spn}))) #indexes to span (Holiday span)
-      H_span      <- H_span[H_span>0 & H_span<=length(dates_ex_long)]
-      efx         <- rep(nm,length(H_dates))
-      H_dates     <- dates_ex_long[H_span]
-      ind_efx     <- which(H_dates%in%dates)
-      ind_date    <- which(dates%in%H_dates)
-      nn[ind_date, indx]  <- efx[ind_efx]
+  if ("Diwali" %in% predetermined) {
+    # month_day   <- format.Date(dates_ex_long, "%m-%d")
+    H_dates <- which(dates_ex_long %in% holiday$diwali) # Index of dates
+    if (!length(H_dates) == 0) {
+      spn <- -10:10
+      nm <- dnorm(spn / max(abs(spn)), mean = 0, sd = .5) # effect uses the shape of a normal pdf
+      nm <- 10 * nm / sum(nm)
+      H_span <- sort(unlist(lapply(H_dates, function(bob) {
+        bob + spn
+      }))) # indexes to span (Holiday span)
+      H_span <- H_span[H_span > 0 & H_span <= length(dates_ex_long)]
+      efx <- rep(nm, length(H_dates))
+      H_dates <- dates_ex_long[H_span]
+      ind_efx <- which(H_dates %in% dates)
+      ind_date <- which(dates %in% H_dates)
+      nn[ind_date, indx] <- efx[ind_efx]
     }
-    indx <- indx+1
+    indx <- indx + 1
   }
   rownames(nn) <- as.character(dates)
   return(nn)
@@ -541,16 +549,16 @@ Predetermined.m <- function(dates, predetermined) {
   # }
 
   # browser()
-  #Fast data.table code, but doesn't seem to work when building package:
+  # Fast data.table code, but doesn't seem to work when building package:
 
-  if("trading_days"%in%predetermined){
-    daily_sequence <- seq.Date(from = as.Date(paste(year(dates[1]), month(dates[1]), "01", sep = "-")), to = End_This_Month(tail(dates,1)), by = "day")
+  if ("trading_days" %in% predetermined) {
+    daily_sequence <- seq.Date(from = as.Date(paste(year(dates[1]), month(dates[1]), "01", sep = "-")), to = End_This_Month(tail(dates, 1)), by = "day")
     weekday_count <- rep(1, length(daily_sequence))
-    weekday_count[weekdays(daily_sequence)%in%c("Saturday", "Sunday")] <- 0
+    weekday_count[weekdays(daily_sequence) %in% c("Saturday", "Sunday")] <- 0
     tmp_dt <- data.table(dates = daily_sequence, count = weekday_count)
-    out <- tmp_dt[, lapply(.SD,sum), by = .(year(dates), month(dates))]
-    N[,indx] <- out$count
-    indx <- indx+1
+    out <- tmp_dt[, lapply(.SD, sum), by = .(year(dates), month(dates))]
+    N[, indx] <- out$count
+    indx <- indx + 1
   }
   if ("January" %in% predetermined) {
     Month <- format.Date(dates, "%m")
@@ -617,32 +625,32 @@ Predetermined.m <- function(dates, predetermined) {
     N[Month == "12", indx] <- 1
     indx <- indx + 1
   }
-  if("Easter"%in%predetermined || "CNY"%in%predetermined || "Diwali"%in%predetermined){
+  if ("Easter" %in% predetermined || "CNY" %in% predetermined || "Diwali" %in% predetermined) {
     load(system.file("data/holiday.RData", package = "bdfm"))
   }
-  if("Easter"%in%predetermined){
-    Month     <- format.Date(dates, "%Y-%m")
-    HMonth    <- format.Date(holiday$easter, "%Y-%m")
-    H_dates   <- which(Month%in%HMonth)
+  if ("Easter" %in% predetermined) {
+    Month <- format.Date(dates, "%Y-%m")
+    HMonth <- format.Date(holiday$easter, "%Y-%m")
+    H_dates <- which(Month %in% HMonth)
     N[H_dates, indx] <- 1
-    indx <- indx+1
+    indx <- indx + 1
   }
-  if("CNY"%in%predetermined){
-    Month     <- format.Date(dates, "%Y-%m")
-    HMonth    <- format.Date(holiday$cny+7, "%Y-%m") #end of the holiday
-    RMonth    <- format.Date(End_Next_Month(holiday$cny+7), "%Y-%m") #recovery period
-    H_dates   <- which(Month%in%HMonth)
-    R_dates   <- which(Month%in%RMonth)
+  if ("CNY" %in% predetermined) {
+    Month <- format.Date(dates, "%Y-%m")
+    HMonth <- format.Date(holiday$cny + 7, "%Y-%m") # end of the holiday
+    RMonth <- format.Date(End_Next_Month(holiday$cny + 7), "%Y-%m") # recovery period
+    H_dates <- which(Month %in% HMonth)
+    R_dates <- which(Month %in% RMonth)
     N[H_dates, indx] <- -1
     N[R_dates, indx] <- 1
-    indx <- indx+1
+    indx <- indx + 1
   }
-  if("Diwali"%in%predetermined){
-    Month     <- format.Date(dates, "%Y-%m")
-    HMonth    <- format.Date(holiday$diwali, "%Y-%m")
-    H_dates   <- which(Month%in%HMonth)
+  if ("Diwali" %in% predetermined) {
+    Month <- format.Date(dates, "%Y-%m")
+    HMonth <- format.Date(holiday$diwali, "%Y-%m")
+    H_dates <- which(Month %in% HMonth)
     N[H_dates, indx] <- 1
-    indx <- indx+1
+    indx <- indx + 1
   }
   return(N)
 }
@@ -659,15 +667,15 @@ Predetermined.m <- function(dates, predetermined) {
 #' @export
 #' @useDynLib bdfm
 SeasAdj_WE <- function(y, N, lags = 1, tol = 0.01, Loud = FALSE) {
-  p <- lags #shorthand notation
+  p <- lags # shorthand notation
   row_N <- nrow(N) # number of observations (rows)
   y <- as.matrix(y) # required for C++ stuff
-  if(row_N>nrow(y)){
-    y <- c(y, rep(NA, row_N-nrow(y)))
+  if (row_N > nrow(y)) {
+    y <- c(y, rep(NA, row_N - nrow(y)))
   }
   m <- ncol(N) # number of seasonal factors (columns of N)
   B <- matrix(0, 1, p) # empty parameter matrix to be filled in (transition equation)
-  B[1,1] <- .1
+  B[1, 1] <- .1
   q <- var(y, na.rm = T) / 2 # arbitrary initial guess for q
   r <- q # arbitrary initial guess for r
   M <- t(QuickReg(N, y)) # abitrary initial guess for M (OLS using the C++ function QuickReg)

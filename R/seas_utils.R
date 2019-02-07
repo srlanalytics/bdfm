@@ -35,12 +35,11 @@ apply_to_segments <- function(x, fun) {
 
 
 daily_seq <- function(dates) {
-
   freq <- which_freq(dates)
 
   if (freq == "day") return(dates)
 
-  if (freq == "month"){
+  if (freq == "month") {
     start_of_period <- function(x) {
       as.Date(paste(
         as.POSIXlt(x)$year + 1900L,
@@ -54,7 +53,7 @@ daily_seq <- function(dates) {
     }
   }
 
-  if (freq == "quarter"){
+  if (freq == "quarter") {
     start_of_period <- function(x) {
       as.Date(paste(
         as.POSIXlt(x)$year + 1900L,
@@ -143,7 +142,7 @@ workdays <- function(dates) {
 dummy_matrix <- function(x) {
   # factors with same level order as x
   xf <- factor(x, levels = unique(x))
-  z <-  model.matrix(~ xf + 0)
+  z <- model.matrix(~ xf + 0)
   attr(z, "assign") <- NULL
   attr(z, "contrasts") <- NULL
   colnames(z) <- levels(xf)
@@ -159,7 +158,6 @@ dummy_matrix <- function(x) {
 #
 # should gain same arguments as 'genhol' in seasonal, start, end
 genhol_dates <- function(x, dates, start = 0, end = 0) {
-
   stopifnot(inherits(x, "Date"))
   stopifnot(inherits(dates, "Date"))
   freq <- which_freq(dates)
@@ -167,7 +165,7 @@ genhol_dates <- function(x, dates, start = 0, end = 0) {
   sq <- daily_seq(dates)
 
 
-  idx.holiday <-  which(sq %in% x)
+  idx.holiday <- which(sq %in% x)
   st <- idx.holiday + start
   en <- idx.holiday + end
   idx.holiday.extended <- unlist(Map(function(st, en) st:en, st, en))
@@ -178,8 +176,4 @@ genhol_dates <- function(x, dates, start = 0, end = 0) {
   z <- as.matrix(tapply(is.holiday, timestamp(sq), sum))
   colnames(z) <- "holiday"
   z
-
 }
-
-
-

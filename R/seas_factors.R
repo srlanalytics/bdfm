@@ -23,8 +23,7 @@ seas_factors <- function(dates,
                          effect = c("months", "workdays"),
                          holiday = easter,
                          start = -1, end = 0,
-                         dist_fun = NULL
-                         ) {
+                         dist_fun = NULL) {
   effect <- match.arg(
     effect,
     choices = c("months", "quarters", "workdays", "weekdays"),
@@ -71,7 +70,6 @@ seas_factors <- function(dates,
   }
 
   z
-
 }
 
 
@@ -86,5 +84,3 @@ dist_norm <- function(x) {
   z <- dnorm(seq(-2, 2, length.out = length(x)))
   z / sum(z)
 }
-
-
