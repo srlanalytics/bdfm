@@ -45,11 +45,11 @@
 #' summary(m)
 #'
 #' @useDynLib bdfm
-dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
-                method = c("bayesian", "ml", "pc"),
-                frequency_mix = NULL, differences = NULL,
-                B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
-                nu_r = NULL, identification = "PC_full", intercept = TRUE,
+dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
+                method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
+                frequency_mix = "auto", as_differenced = NULL, trans_prior = NULL,
+                trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
+                obs_df = NULL, identification = "PC_full",
                 store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
                 EM_tolerance = 0.01) {
   
@@ -67,38 +67,40 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
   }
 
   # non time series
-  if (!any(class(Y) %in% c(tsobjs, "ts", "mts")) && is.matrix(Y)) {
+  if (!any(class(data) %in% c(tsobjs, "ts", "mts")) && is.matrix(data)) {
 
     ans <- dfm_core(
-      Y = Y, m = factors, p = lags, FC = forecast, method = method,
-      freq = frequency_mix, LD = differences, Bp = B_prior,
-      lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-      ID = identification, ITC = intercept, store_idx = store_idx, reps = reps,
+      Y = data, m = factors, p = lags, FC = forecast, method = method,
+      scale = scale, logs = logs, diffs = diffs, freq = frequency_mix, 
+      asD = as_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
+      Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
+      ID = identification, store_idx = store_idx, reps = reps,
       burn = burn, loud = loud, tol = EM_tolerance
     )
-    colnames(ans$values) <- colnames(Y)
+    colnames(ans$values) <- colnames(data)
     ans$dates <- NULL
 
   } else {
 
     # no need for tsbox if Y is ts or mts
-    if (inherits(Y, "ts")) {
-      Y.uc  <- unclass(Y)
+    if (inherits(data, "ts")) {
+      Y.uc  <- unclass(data)
     } else {
       stopifnot(requireNamespace("tsbox"))
       # time series
-      stopifnot(tsbox::ts_boxable(Y))
+      stopifnot(tsbox::ts_boxable(data))
       # convert to mts
-      Y.uc  <- unclass(tsbox::ts_ts(Y))
+      Y.uc  <- unclass(tsbox::ts_ts(data))
     }
 
     Y.tsp <- attr(Y.uc, "tsp")
     attr(Y.uc, "tsp") <- NULL
     ans <- dfm_core(
-      Y = Y.uc, m = factors, p = lags, FC = forecast, method = method, 
-      freq = frequency_mix, LD = differences, Bp = B_prior,
-      lam_B = lam_B, Hp = H_prior, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-      ID = identification, ITC = intercept, store_idx = store_idx, reps = reps,
+      Y = Y.uc, m = factors, p = lags, FC = forecast, method = method,
+      scale = scale, logs = logs, diffs = diffs, freq = frequency_mix, 
+      asD = as_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
+      Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
+      ID = identification, store_idx = store_idx, reps = reps,
       burn = burn, loud = loud, tol = EM_tolerance
     )
 
@@ -109,17 +111,17 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
       ans$Ymedian <- ts(ans$Ymedian, start = Y.tsp[1], frequency = Y.tsp[3])
     }
     # apply column names from Y
-    colnames(ans$values) <- colnames(Y)
+    colnames(ans$values) <- colnames(data)
     
     #return a date vector
     ans$dates <- tsbox::ts_regular(tsbox::ts_df(ans$values))[, 1]
 
     # put values back into original class
     if (!inherits(Y, "ts")) {
-      ans$values  <- tsbox::copy_class(ans$values, Y)
-      ans$factors <- tsbox::copy_class(ans$factors, Y, preserve.mode = FALSE)
+      ans$values  <- tsbox::copy_class(ans$values, data)
+      ans$factors <- tsbox::copy_class(ans$factors, data, preserve.mode = FALSE)
       if(!is.null(store_idx)){
-         ans$Ymedian <- tsbox::copy_class(ans$Ymedian, Y)
+         ans$Ymedian <- tsbox::copy_class(ans$Ymedian, data)
       }
     }
   }
@@ -127,25 +129,75 @@ dfm <- function(Y, factors = 1, lags = 2, forecast = 0,
   return(ans)
 }
 
-dfm_core <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC,
-                     store_idx, reps, burn, tol, loud, method, freq, LD) {
+dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, asD,
+                     Bp, lam_B, nu_q, Hp, lam_H, nu_r, ID,
+                     store_idx, reps, burn, loud, tol) {
+  
+  #-------Data processing-------------------------
+  
+  #frequency
+  if(freq == "auto"){
+    freq <- apply(Y, MARGIN = 2, FUN = get_freq)
+  }else if(!is.integer(freq) || length(freq) != ncol(Y)){
+    stop("Argument 'freq' must be 'auto' or integer valued with 
+         length equal to the number data series")
+  }
+  
+  #logs
+  if(!is.null(logs)){
+    if(is.character(logs)){
+      logs <- unlist(sapply(logs, FUN = grep, colnames(Y)))
+    }else if(!is.numeric(logs)){
+      stop("Argument 'logs' must be either a character (string) vector or numeric index values")
+    }
+    Y[,logs] <- log(Y[,logs])
+  }
+  
+  #differences
+  if(!is.null(diffs)){
+    Y_lev <- Y
+    if(is.character(diffs)){
+      diffs <- unlist(sapply(diffs, FUN = grep, colnames(Y)))
+    }else if(!is.numeric(diffs)){
+      stop("Argument 'diffs' must be either a character (string) vector or numeric index values")
+    }
+    Y[,diffs] <-  sapply(diffs, mf_diff, fq=freq, Y=Y)
+  }
+  
+  #specify which series are differenced for mixed frequency estimation
+  LD <- rep(0, ncol(Y))
+  if(!is.null(asD)){
+    if(is.character(asD)){
+      preD <- unlist(sapply(asD, FUN = grep, colnames(Y)))
+    }else if(!is.numeric(asD)){
+      stop("Argument 'asD' must be either a character (string) vector or numeric index values")
+    }
+  }else{
+    LD[diffs] <- 1 #in bdfm 1 indicates differenced data, 0 level data
+  }
+  
+  
+  if(scale){
+    Y <- bdfm::scale(Y)
+  }
+  
   if (method == "bayesian") {
-    bdfm(
+    est <- bdfm(
       Y = Y, m = m, p = p, FC = FC, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-      ID = ID, ITC = ITC, store_idx = store_idx, freq = freq, LD = LD, reps = reps,
+      ID = ID, store_idx = store_idx, freq = freq, LD = LD, reps = reps,
       burn = burn, loud = loud
     )
   } else if (method == "ml") {
-    MLdfm(
+    est <- MLdfm(
       Y = Y, m = m, p = p, FC = FC, tol = tol,
       loud = loud
     )
   } else if (method == "pc") {
-    PCdfm(
+    est <- PCdfm(
       Y, m = m, p = p, FC = FC, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
-      ID = ID, ITC = ITC, reps = reps, burn = burn
+      ID = ID, reps = reps, burn = burn
     )
   }
 }

@@ -1,16 +1,16 @@
-bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_idx, freq, LD, reps, burn, loud) {
+bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq, LD, reps, burn, loud) {
 
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
   k <- ncol(Y)
   r <- nrow(Y)
   n_obs <- sum(is.finite(Y))
-  if (ITC) {
-    itc <- colMeans(Y, na.rm = T)
-    Y <- Y - matrix(1, r, 1) %x% t(itc) # De-mean data. Data is not automatically stadardized --- that is left up to the user and should be done before estimation if desired.
-  } else {
-    itc <- rep(0, k)
-  }
+  # if (ITC) {
+  #   itc <- colMeans(Y, na.rm = T)
+  #   Y <- Y - matrix(1, r, 1) %x% t(itc) # De-mean data. Data is not automatically stadardized --- that is left up to the user and should be done before estimation if desired.
+  # } else {
+  #   itc <- rep(0, k)
+  # }
   
   if(is.null(freq)){ #uniform frequency
     freq <- rep(1,k)
@@ -38,8 +38,18 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
   }
 
   # Identification is based on the first m variables so the initial guess just uses these variables as factors.
-
-  if (ID == "PC_sub") {
+  
+  if(is.numeric(ID)){
+    PC <- PrinComp(Y[,ID], m)
+    Y <- cbind(PC$components, Y)
+    k <- k + m
+    if(!is.null(nu_r)){
+      nu_r <- c(rep(0,m), nu_r)
+    }
+    freq <- c(rep(1,m), freq)
+    LD   <- c(rep(0,m), LD)
+  }
+  else if (ID == "pc_sub") {
     Ysub <- Y_sub(Y) # submatrix of Y with complete data, i.e. no missing values
     PC <- PrinComp(Ysub$Ysub, m)
     tmp <- matrix(NA, r, m)
@@ -51,7 +61,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
     }
     freq <- c(rep(1,m), freq)
     LD   <- c(rep(0,m), LD)
-  } else if (ID == "PC_full") {
+  } else if (ID == "pc_full") {
     PC <- PrinComp(Y, m)
     Y <- cbind(PC$components, Y)
     k <- k + m
@@ -61,11 +71,11 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
     freq <- c(rep(1,m), freq)
     LD   <- c(rep(0,m), LD)
     if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to PC_sub.")
+      stop("Every period contains missing data. Try setting ID to pc_sub.")
     }
   }else if(ID != "Name"){
-    warning(paste(ID, "not a valid identification string, defaulting to PC_full"))
-    ID <- "PC_full"
+    warning(paste(ID, "not a valid identification string or index vector, defaulting to pc_full"))
+    ID <- "pc_full"
     PC <- PrinComp(Y, m)
     Y <- cbind(PC$components, Y)
     k <- k + m
@@ -75,7 +85,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
     freq <- c(rep(1,m), freq)
     LD   <- c(rep(0,m), LD)
     if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to PC_sub.")
+      stop("Every period contains missing data. Try setting ID to pc_sub.")
     }
   }
 
@@ -135,7 +145,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
 
   Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, freq = freq, LD = LD, store_Y = store_Y, store_idx = store_idx, reps = reps, burn = burn, Loud = loud)
 
-  if (ID %in% c("PC_sub", "PC_full")) {
+  if (ID %in% c("PC_sub", "PC_full") || is.numeric(ID)) {
     B <- Parms$B
     q <- Parms$Q
     H <- as.matrix(Parms$H[-(1:m), ])
@@ -152,8 +162,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
       H = H,
       R = R,
       Jb = Jb,
-      itc = itc,
-      values  = Est$Ys + matrix(1, r, 1) %x% t(itc),
+      values  = Est$Ys, # + matrix(1, r, 1) %x% t(itc),
       factors = Est$Z[,1:m],
       Qstore  = Parms$Qstore,
       Bstore  = Parms$Bstore,
@@ -182,7 +191,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, ITC, store_i
       H = H,
       R = R,
       Jb = Jb,
-      values  = Est$Ys + matrix(1, r, 1) %x% t(itc),
+      values  = Est$Ys, # + matrix(1, r, 1) %x% t(itc),
       factors = Est$Z[,1:m],
       Qstore  = Parms$Qstore, # lets us look at full distribution
       Bstore  = Parms$Bstore,

@@ -84,6 +84,52 @@ unscale <- function(x, idx = NULL){
   return(x)
 }
 
+#convert string to numeric index value
+standardize_index <- function(x, Y){
+  argname <- deparse(substitute(x))
+  if(is.character(x)){
+    out <- unlist(sapply(x, FUN = grep, colnames(Y)))
+  }else if(is.numeric(x)){
+    out <- x
+  }else{
+    stop("Argument '", argname, 
+               "' must be either a character (string) vector or numeric index values", call. = FALSE)
+  }
+  out
+}
+
+standardize_numeric <- function(x, Y){
+  argname <- deparse(substitute(x))
+  if(!is.null(names(x))){
+    if(any(!(names(x)%in%colnames(Y)))){
+      stop("Names of '", argname, "' must correspond to colnames of 'data'", call. = FALSE)
+    }
+    out <- setNames(numeric(NCOL(Y)), colnames(Y))
+    out[names(x)] <- x
+  } else {
+    out <- x
+  }
+  if (length(out) != NCOL(Y)) {
+    stop("Lenght of '", argname, "' must correspond to number of columns of 'data'", call. = FALSE)
+  }
+  out
+}
+
+#auto detect frequency
+get_freq <- function(y){
+  out <- median(diff(which(!is.na(y))))
+}
+
+#diff mixed frequency data keeping the same length for observed series
+mf_diff <- function(ind, fq, Y){
+  out <- c(rep(NA,fq[ind]),diff(Y[,ind], lag = fq[ind]))
+}
+
+#convert differenced data back to levels
+level <- function(ind, y_lev, y){
+  
+}
+
 Dates_to_cpp <- function(dates){
   Dates_cpp <- matrix(0,length(dates),3)
   Dates_cpp[,1] <- as.numeric(format(dates, "%Y"))

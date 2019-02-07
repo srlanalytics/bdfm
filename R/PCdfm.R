@@ -1,16 +1,17 @@
-PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, nu_q = 0, nu_r = NULL, ID = "PC_full", ITC = T, reps = 1000, burn = 500) {
+PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0, 
+                  nu_q = 0, nu_r = NULL, reps = 1000, burn = 500) {
 
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
   k <- ncol(Y)
   r <- nrow(Y)
   n_obs <- sum(is.finite(Y))
-  if (ITC) {
-    itc <- colMeans(Y, na.rm = T)
-    Y <- Y - matrix(1, r, 1) %x% t(itc) # De-mean data. Data is not automatically stadardized --- that is left up to the user and should be done before estimation if desired.
-  } else {
-    itc <- rep(0, k)
-  }
+  # if (ITC) {
+  #   itc <- colMeans(Y, na.rm = T)
+  #   Y <- Y - matrix(1, r, 1) %x% t(itc) # De-mean data. Data is not automatically stadardized --- that is left up to the user and should be done before estimation if desired.
+  # } else {
+  #   itc <- rep(0, k)
+  # }
 
   #Estimate principal components
 
