@@ -1,5 +1,5 @@
 #' @importFrom Matrix Matrix Diagonal sparseMatrix
-MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, loud = FALSE) {
+MLdfm <- function(Y, m, p, tol = 0.01, loud = FALSE) {
   Y <- as.matrix(Y)
   r <- nrow(Y)
   k <- ncol(Y)
@@ -29,13 +29,7 @@ MLdfm <- function(Y, m, p, FC = 0, tol = 0.01, loud = FALSE) {
 
   # Arbitrary intitial guess for R
   R <- diag(1, k, k)
-
-  if (FC > 0) {
-    tmp <- matrix(NA, FC, k)
-    Y <- rbind(Y, tmp)
-    r <- r + FC
-  }
-
+  
   count <- 0
   Lik0 <- -1e10
   Conv <- 100

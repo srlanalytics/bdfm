@@ -10,7 +10,17 @@ using namespace Rcpp;
 // When the program uses an individual observation (i.e. one period) it takes the transpose of the data so that companion matrices and the like keep their standard form.
 // That is, for a single period series are also indexed by rows.
 
-// v 2018.07.20
+// v 2019.02.15
+
+// //cumsum for mixed frequency data
+
+// arma::vec mf_cumsum(arma::uword fq,
+//                     arma::vec y){
+//   for(uword j = fq; j<y.n_elem; j++){
+//     y(j) = y(j) + y(j-fq);
+//   }
+//   return(y);
+// }
 
 //Quick regression omitting missing values
 // [[Rcpp::export]]

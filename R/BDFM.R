@@ -1,4 +1,4 @@
-bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq, LD, reps, burn, loud) {
+bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq, LD, reps, burn, loud) {
 
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
@@ -73,7 +73,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
     if (!any(!is.na(PC$components))) {
       stop("Every period contains missing data. Try setting ID to pc_sub.")
     }
-  } else if (ID != "Name") {
+  } else if (ID != "name") {
     warning(paste(ID, "not a valid identification string or index vector, defaulting to pc_full"))
     ID <- "pc_full"
     PC <- PrinComp(Y, m)
@@ -128,17 +128,12 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
   if (is.null(Hp)) {
     Hp <- matrix(0, k, m)
   }
-  if (FC > 0) {
-    tmp <- matrix(NA, FC, k)
-    Y <- rbind(Y, tmp)
-    r <- r + FC
-  }
   if (is.null(store_idx)) {
     store_idx <- 0
     store_Y <- FALSE
   } else {
     store_Y <- TRUE
-    if (ID %in% c("PC_sub", "PC_full")) {
+    if (ID %in% c("pc_sub", "pc_full")) {
       store_idx <- store_idx + m - 1 # -1 due to zero indexing in C++
     } else {
       store_idx <- store_idx - 1
@@ -147,7 +142,7 @@ bdfm <- function(Y, m, p, FC, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, f
 
   Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, freq = freq, LD = LD, store_Y = store_Y, store_idx = store_idx, reps = reps, burn = burn, Loud = loud)
 
-  if (ID %in% c("PC_sub", "PC_full") || is.numeric(ID)) {
+  if (ID %in% c("pc_sub", "pc_full") || is.numeric(ID)) {
     B <- Parms$B
     q <- Parms$Q
     H <- as.matrix(Parms$H[-(1:m), ])

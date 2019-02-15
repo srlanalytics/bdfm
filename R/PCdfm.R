@@ -1,4 +1,4 @@
-PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
+PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
                   nu_q = 0, nu_r = NULL, reps = 1000, burn = 500) {
 
   # ----------- Preliminaries -----------------
@@ -64,12 +64,6 @@ PCdfm <- function(Y, m, p, FC = 0, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
   Best <- BReg(Z[-ind, , drop = FALSE], xx[-ind, , drop = FALSE], Int = FALSE, Bp = Bp, lam = lam_B, nu = nu_q, reps = reps, burn = burn)
   B <- Best$B
   q <- Best$q
-
-  if (FC > 0) {
-    tmp <- matrix(NA, FC, k)
-    Y <- rbind(Y, tmp)
-    r <- r + FC
-  }
 
   Jb <- Matrix::Diagonal(m * p)
 

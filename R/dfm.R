@@ -46,7 +46,7 @@
 #' @useDynLib bdfm
 dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
                 method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
-                frequency_mix = "auto", as_differenced = NULL, trans_prior = NULL,
+                frequency_mix = "auto", pre_differenced = NULL, trans_prior = NULL,
                 trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
                 obs_df = NULL, identification = "PC_full",
                 store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
@@ -71,7 +71,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
     ans <- dfm_core(
       Y = data, m = factors, p = lags, FC = forecast, method = method,
       scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
-      asD = as_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
+      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
       burn = burn, loud = loud, tol = EM_tolerance
@@ -96,7 +96,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
     ans <- dfm_core(
       Y = Y.uc, m = factors, p = lags, FC = forecast, method = method,
       scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
-      asD = as_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
+      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
       burn = burn, loud = loud, tol = EM_tolerance
@@ -127,9 +127,32 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
   return(ans)
 }
 
-dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, asD,
+# m <- 2
+# p <- 3
+# freq <- "auto"
+# Bp <- NULL
+# preD <- 1
+# lam_B = 0
+# nu_q = 0
+# Hp = NULL
+# lam_H = 0
+# nu_r = NULL
+# ID = "pc_sub"
+# store_idx = NULL
+# reps = 1000
+# burn = 500
+# loud = T
+# tol = .01
+# FC = 3
+# logs = c( 2,  4,  5,  8,  9, 10, 11, 12, 15, 16, 17, 21, 22)
+# diffs = c(2, 4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)
+# scale = TRUE
+
+dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
                      Bp, lam_B, nu_q, Hp, lam_H, nu_r, ID,
                      store_idx, reps, burn, loud, tol) {
+  
+ 
 
   #-------Data processing-------------------------
 
@@ -140,65 +163,75 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, asD,
     stop("Argument 'freq' must be 'auto' or integer valued with 
          length equal to the number data series")
   }
+  
+  if (FC > 0) {
+    tmp <- matrix(NA, FC, k)
+    Y <- rbind(Y, tmp)
+  }
 
   # logs
   if (!is.null(logs)) {
-    if (is.character(logs)) {
-      logs <- unlist(sapply(logs, FUN = grep, colnames(Y)))
-    } else if (!is.numeric(logs)) {
-      stop("Argument 'logs' must be either a character (string) vector or numeric index values")
-    }
+    logs <- standardize_index(logs, Y)
     Y[, logs] <- log(Y[, logs])
   }
 
   # differences
   if (!is.null(diffs)) {
     Y_lev <- Y
-    if (is.character(diffs)) {
-      diffs <- unlist(sapply(diffs, FUN = grep, colnames(Y)))
-    } else if (!is.numeric(diffs)) {
-      stop("Argument 'diffs' must be either a character (string) vector or numeric index values")
-    }
+    diffs <- standardize_index(diffs, Y)
     Y[, diffs] <- sapply(diffs, mf_diff, fq = freq, Y = Y)
   }
 
   # specify which series are differenced for mixed frequency estimation
-  LD <- rep(0, ncol(Y))
-  if (!is.null(asD)) {
-    if (is.character(asD)) {
-      preD <- unlist(sapply(asD, FUN = grep, colnames(Y)))
-    } else if (!is.numeric(asD)) {
-      stop("Argument 'asD' must be either a character (string) vector or numeric index values")
-    }
-  } else {
-    LD[diffs] <- 1 # in bdfm 1 indicates differenced data, 0 level data
-  }
-
-
+ 
+  LD <- rep(0, NCOL(Y))
+  if (!is.null(preD)) {
+    preD <- standardize_index(preD)
+  } 
+  LD[unique(c(preD, diffs))] <- 1 # in bdfm 1 indicates differenced data, 0 level data
+  
   if (scale) {
-    Y <- bdfm::scale(Y)
+    Y <- 100*scale(Y)
+    y_scale  <- attr(Y, "scaled:scale")
+    y_center <- attr(Y, "scaled:center")
   }
 
   if (method == "bayesian") {
     est <- bdfm(
-      Y = Y, m = m, p = p, FC = FC, Bp = Bp,
+      Y = Y, m = m, p = p, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
       ID = ID, store_idx = store_idx, freq = freq, LD = LD, reps = reps,
       burn = burn, loud = loud
     )
   } else if (method == "ml") {
     est <- MLdfm(
-      Y = Y, m = m, p = p, FC = FC, tol = tol,
+      Y = Y, m = m, p = p, tol = tol,
       loud = loud
     )
   } else if (method == "pc") {
     est <- PCdfm(
-      Y,
-      m = m, p = p, FC = FC, Bp = Bp,
+      Y, m = m, p = p, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
       ID = ID, reps = reps, burn = burn
     )
   }
+  
+  # undo scaling
+  if(scale){
+    est$values <- (matrix(1, nrow(est$values), 1) %x% t(y_scale)) * (est$values / 100) + (matrix(1, nrow(est$values), 1) %x% t(y_center))
+  }
+  
+  # undo differences
+  if (!is.null(diffs)) {
+    est$values[,diffs] <- sapply(diffs, FUN = level, fq = freq, Y_lev = Y_lev, vals = est$values)
+  }
+  
+  # undo logs
+  if (!is.null(logs)) {
+    est$values[,logs] <- exp(est$values[,logs])
+  }
+  
+  return(est)
 }
 
 

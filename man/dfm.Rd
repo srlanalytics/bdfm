@@ -4,25 +4,45 @@
 \alias{dfm}
 \title{Estimate dynamic factor model}
 \usage{
-dfm(Y, factors = 1, lags = 2, forecast = 0, method = c("bayesian",
-  "ml", "pc"), frequency_mix = NULL, differences = NULL,
-  B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
-  nu_r = NULL, identification = "PC_full", intercept = TRUE,
-  store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
-  EM_tolerance = 0.01)
+dfm(data, factors = 1, lags = 3, forecasts = 0,
+  method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL,
+  diffs = NULL, frequency_mix = "auto", pre_differenced = NULL,
+  trans_prior = NULL, trans_shrink = 0, trans_df = 0,
+  obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
+  identification = "PC_full", store_idx = NULL, reps = 1000,
+  burn = 500, loud = FALSE, EM_tolerance = 0.01)
 }
 \arguments{
-\item{Y}{data in matrix format with time in rows}
-
 \item{factors}{number of factors}
 
 \item{lags}{number of lags in transition equation}
 
-\item{forecast}{number of periods ahead to forecast}
-
 \item{method}{character, method to be used}
 
 \item{frequency_mix}{numeric, number of high frequency periods in observation if data is mixed frequency}
+
+\item{identification}{factor identification. 'PC_full' is the default (using
+all observed series), 'PC_sub' finds a submatrix of the data that maximizes
+the number of observations for a square (no missing values) data set. Use
+'PC_sub' when many observations are missing.}
+
+\item{store_idx, }{if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.}
+
+\item{reps}{number of repetitions for MCMC sampling}
+
+\item{burn}{number of iterations to burn in MCMC sampling}
+
+\item{loud}{print status of function during evalutation. If ML, print
+difference in likelihood at each iteration of the EM algorithm.}
+
+\item{EM_tolerance}{tolerance for convergence of EM algorithm (method `ml` only). Convergence
+criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
+is the log likelihood from this iteration and Lik0 is the likelihood from
+the previous iteration.}
+
+\item{Y}{data in matrix format with time in rows}
+
+\item{forecast}{number of periods ahead to forecast}
 
 \item{differences, }{numeric, 0 for levels, 1 for first differences, only specified for mixed frequency models}
 
@@ -42,26 +62,7 @@ with length equal to the number of factors.}
 \item{nu_r}{prior deg. of freedom for observables, entered as vector with
 length equal to the number of observables.}
 
-\item{identification}{factor identification. 'PC_full' is the default (using
-all observed series), 'PC_sub' finds a submatrix of the data that maximizes
-the number of observations for a square (no missing values) data set. Use
-'PC_sub' when many observations are missing.}
-
 \item{intercept}{logical, should an icept be included?}
-
-\item{store_idx, }{if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.}
-
-\item{reps}{number of repetitions for MCMC sampling}
-
-\item{burn}{number of iterations to burn in MCMC sampling}
-
-\item{loud}{print status of function during evalutation. If ML, print
-difference in likelihood at each iteration of the EM algorithm.}
-
-\item{EM_tolerance}{tolerance for convergence of EM algorithm (method `ml` only). Convergence
-criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
-is the log likelihood from this iteration and Lik0 is the likelihood from
-the previous iteration.}
 }
 \description{
 Estimate dynamic factor model
@@ -74,5 +75,4 @@ dta <- cbind(fdeaths0, mdeaths)
 library(bdfm)
 m <- dfm(dta, forecast = 2)
 summary(m)
-
 }

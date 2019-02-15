@@ -30,59 +30,59 @@ Y_sub <- function(Y) {
   return(list(Ysub = Ysub, ind = !ind))
 }
 
-#' scale
-#'
-#' Scale data for factor model estimation and store scaling values
-#'
-#' @param x a numeric matrix(like object)
-#' @param center either a logical value or a numeric vector of length equal to the number of columns of x
-#' @param scale either a logical value or a numeric vector of length equal to the number of columns of x
-#' @export
-#' @useDynLib bdfm
-scale <- function(x, center = TRUE, scale = TRUE) {
-  x <- 100 * (base::scale(x, center = center, scale = scale))
-  options(scaled_scale = attr(x, "scaled:scale"))
-  options(scaled_center = attr(x, "scaled:center"))
-  return(x)
-}
-
-#' unscale
-#'
-#' Unscale data using values from bdfm::scale
-#'
-#' @param x a numeric matrix(like object)
-#' @param idx An index of which elements of scaled_center and scaled_scale to use
-#' @export
-#' @useDynLib bdfm
-unscale <- function(x, idx = NULL) {
-  scaled_center <- getOption("scaled_center")
-  scaled_scale <- getOption("scaled_scale")
-  if (is.null(idx)) {
-    idx <- 1:ncol(x)
-  }
-  if (is.null(dim(x))) {
-    if (length(idx) != 1) {
-      stop("Index values idx must have the same length as the number of columns of x")
-    }
-    if (!is.null(scaled_scale)) {
-      x <- scaled_scale[idx] * x / 100
-    }
-    if (!is.null(scaled_center)) {
-      x <- x + scaled_center[idx]
-    }
-  } else {
-    if (length(idx) != ncol(x)) {
-      stop("Index values idx must have the same length as the number of columns of x")
-    }
-    if (!is.null(scaled_scale)) {
-      x <- (matrix(1, nrow(x), 1) %x% t(scaled_scale[idx])) * (x / 100)
-    }
-    if (!is.null(scaled_center)) {
-      x <- x + (matrix(1, nrow(x), 1) %x% t(scaled_center[idx]))
-    }
-  }
-  return(x)
-}
+#' #' scale
+#' #'
+#' #' Scale data for factor model estimation and store scaling values
+#' #'
+#' #' @param x a numeric matrix(like object)
+#' #' @param center either a logical value or a numeric vector of length equal to the number of columns of x
+#' #' @param scale either a logical value or a numeric vector of length equal to the number of columns of x
+#' #' @export
+#' #' @useDynLib bdfm
+#' bdfm_scale <- function(x, center = TRUE, scale = TRUE) {
+#'   x <- 100 * (scale(x, center = center, scale = scale))
+#'   options(scaled_scale = attr(x, "scaled:scale"))
+#'   options(scaled_center = attr(x, "scaled:center"))
+#'   return(x)
+#' }
+#' 
+#' #' unscale
+#' #'
+#' #' Unscale data using values from bdfm::scale
+#' #'
+#' #' @param x a numeric matrix(like object)
+#' #' @param idx An index of which elements of scaled_center and scaled_scale to use
+#' #' @export
+#' #' @useDynLib bdfm
+#' unscale <- function(x, idx = NULL) {
+#'   scaled_center <- getOption("scaled_center")
+#'   scaled_scale <- getOption("scaled_scale")
+#'   if (is.null(idx)) {
+#'     idx <- 1:ncol(x)
+#'   }
+#'   if (is.null(dim(x))) {
+#'     if (length(idx) != 1) {
+#'       stop("Index values idx must have the same length as the number of columns of x")
+#'     }
+#'     if (!is.null(scaled_scale)) {
+#'       x <- scaled_scale[idx] * x / 100
+#'     }
+#'     if (!is.null(scaled_center)) {
+#'       x <- x + scaled_center[idx]
+#'     }
+#'   } else {
+#'     if (length(idx) != ncol(x)) {
+#'       stop("Index values idx must have the same length as the number of columns of x")
+#'     }
+#'     if (!is.null(scaled_scale)) {
+#'       x <- (matrix(1, nrow(x), 1) %x% t(scaled_scale[idx])) * (x / 100)
+#'     }
+#'     if (!is.null(scaled_center)) {
+#'       x <- x + (matrix(1, nrow(x), 1) %x% t(scaled_center[idx]))
+#'     }
+#'   }
+#'   return(x)
+#' }
 
 # convert string to numeric index value
 standardize_index <- function(x, Y) {
@@ -124,13 +124,60 @@ get_freq <- function(y) {
 
 # diff mixed frequency data keeping the same length for observed series
 mf_diff <- function(ind, fq, Y) {
+  Y   <- as.matrix(Y)
   out <- c(rep(NA, fq[ind]), diff(Y[, ind], lag = fq[ind]))
 }
 
-# convert differenced data back to levels
-level <- function(ind, y_lev, y) {
-
+# x <- c(NA, 2, 4, NA, NA, 2, NA)
+# na_appox(x)
+na_appox <- function(x) {
+  idx <- seq_along(x)
+  
+  x_here <- x[!is.na(x)]
+  idx_here <- idx[!is.na(x)]
+  
+  # rule 2: NA outside of interpolation should be filled with last known value
+  ap <- approx(idx_here, x_here, idx, rule = 2)
+  
+  ap$y
 }
+
+# convert differenced data back to levels
+level <- function(ind, fq, Y_lev, vals) {
+  y_lev <- Y_lev[,ind]
+  #identify which periods should have observations
+  #for high frequency/uniform frequency observations this will be every period
+  rmdr    <- median(which(is.finite(y_lev))%%fq[ind])
+  indx    <- seq(1, length(y_lev))%%fq[ind] == rmdr
+  y       <- vals[indx, ind]
+  cs      <- cumsum(y)
+  appox   <- na_appox(y_lev[indx] - cs)
+  y_lev[indx]   <- appox + cs #return at same frequency as input
+  return(y_lev)
+}
+
+
+act <- c(1, 1, 2, 3, NA, NA, NA, 6, 7, 8, NA)
+dd <- c(NA, 1, 2, 1, 1, 1, 5, 2, 1, 2, 3)
+
+spline(act, n = length(act))
+
+cs <- c(0, cumsum(dd[-1]))
+
+offset <- act-cs
+
+
+offset <- c(1, 0, -1, -1, -2.5, -4, -5.5, -7, -7, -8, -8)
+
+
+cs+offset
+
+
+approx(offset)
+
+
+
+
 
 Dates_to_cpp <- function(dates) {
   Dates_cpp <- matrix(0, length(dates), 3)
