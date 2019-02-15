@@ -5,23 +5,24 @@
 #' @param lags number of lags in transition equation
 #' @param forecast number of periods ahead to forecast
 #' @param method character, method to be used
-#' @param frequency_mix numeric, number of high frequency periods in observation if data is mixed frequency
-#' @param differences, numeric, 0 for levels, 1 for first differences, only specified for mixed frequency models
-#' @param B_prior prior matrix for B in the transition equation. Default is
+#' @param scale scale data before estimation (True/False)?
+#' @param logs names or index values of series which should be entered in log levels
+#' @param diffs names or index values of series which should be differenced
+#' @param frequency_mix 'auto' or numeric, number of high frequency periods in observation if data is mixed frequency
+#' @param pre_differenced, names or index values of low freqeuncy series entered in differences (not necessary if already specified in 'diffs')
+#' @param trans_prior prior matrix for B in the transition equation. Default is
 #'   zeros.
-#' @param lam_B prior tightness on B
-#' @param H_prior prior matrix for H (loadings) in the observation equation.
+#' @param trans_shrink prior tightness on B matrix in trasition equation
+#' @param trans_df prior deg. of freedom for transition equation
+#' @param obs_prior prior matrix for H (loadings) in the observation equation
 #'  Default is zeros.
-#' @param lam_H prior tightness on H
-#' @param nu_q prior deg. of freedom for transition equation, entered as vector
-#'   with length equal to the number of factors.
-#' @param nu_r prior deg. of freedom for observables, entered as vector with
+#' @param obs_shrink prior tightness on H (loadings) in the observation equation
+#' @param obs_df prior deg. of freedom for observables, entered as vector with
 #'   length equal to the number of observables.
 #' @param identification factor identification. 'PC_full' is the default (using
 #'   all observed series), 'PC_sub' finds a submatrix of the data that maximizes
-#'   the number of observations for a square (no missing values) data set. Use
-#'   'PC_sub' when many observations are missing.
-#' @param intercept logical, should an icept be included?
+#'   the number of observations for a square (no missing values) data set. 
+#'   Numeric vector for user specified series.
 #' @param store_idx, if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
