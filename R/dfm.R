@@ -3,7 +3,7 @@
 #' @param Y data in matrix format with time in rows
 #' @param factors number of factors
 #' @param lags number of lags in transition equation
-#' @param forecast number of periods ahead to forecast
+#' @param forecasts number of periods ahead to forecasts
 #' @param method character, method to be used
 #' @param scale scale data before estimation (True/False)?
 #' @param logs names or index values of series which should be entered in log levels
@@ -42,10 +42,10 @@
 #' dta <- cbind(fdeaths0, mdeaths)
 #'
 #' library(bdfm)
-#' m <- dfm(dta, forecast = 2)
+#' m <- dfm(dta, forecasts = 2)
 #' summary(m)
 #' @useDynLib bdfm
-dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
+dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
                 method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
                 frequency_mix = "auto", pre_differenced = NULL, trans_prior = NULL,
                 trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
@@ -70,7 +70,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
   # non time series
   if (!any(class(data) %in% c(tsobjs, "ts", "mts")) && is.matrix(data)) {
     ans <- dfm_core(
-      Y = data, m = factors, p = lags, FC = forecast, method = method,
+      Y = data, m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
@@ -95,7 +95,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
     Y.tsp <- attr(Y.uc, "tsp")
     attr(Y.uc, "tsp") <- NULL
     ans <- dfm_core(
-      Y = Y.uc, m = factors, p = lags, FC = forecast, method = method,
+      Y = Y.uc, m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
