@@ -1,16 +1,10 @@
 bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq, LD, reps, burn, loud) {
 
-  # ----------- Preliminaries -----------------
+  # Preliminaries
   Y <- as.matrix(Y)
   k <- ncol(Y)
   r <- nrow(Y)
   n_obs <- sum(is.finite(Y))
-  # if (ITC) {
-  #   itc <- colMeans(Y, na.rm = T)
-  #   Y <- Y - matrix(1, r, 1) %x% t(itc) # De-mean data. Data is not automatically stadardized --- that is left up to the user and should be done before estimation if desired.
-  # } else {
-  #   itc <- rep(0, k)
-  # }
 
   if (is.null(freq)) { # uniform frequency
     freq <- rep(1, k)
@@ -89,8 +83,9 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     }
   }
 
-  # ----------- Format Priors ------------------
-  # enter priors multiplicatively so that 0 is a weak prior and 1 is a strong prior (additive        priors are relative to the number of observations)
+  # Format Priors
+  # enter priors multiplicatively so that 0 is a weak prior and 1 is a strong
+  # prior (additive priors are relative to the number of observations)
   lam_B <- r * lam_B + 1
   nu_q <- r * nu_q + 1
   lam_H <- r * lam_H + 1
@@ -210,7 +205,13 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
 
 #' MCMC Routine for Bayesian Dynamic Factor Models
 #'
-#' \code{Cppbdfm} is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (\url{http://arma.sourceforge.net/}) linear algebra library for C++ and the packages needed for interfacing with R (\code{\link{Rcpp}} and \code{\link{RcppArmadillo}}).
+#' \code{Cppbdfm} is the core C++ function for estimating a linear-Gaussian
+#' Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's
+#' disturbance smoother. This function may be called directly by advanced
+#' users. The only dependencies are the  Armadillo
+#' (\url{http://arma.sourceforge.net/}) linear algebra library for C++ and the
+#' packages needed for interfacing with R (\code{\link{Rcpp}} and
+#' \code{\link{RcppArmadillo}}).
 #'
 #' @param B  initial guess for B in transition equation
 #' @param Bp prior for B
