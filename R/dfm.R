@@ -1,6 +1,6 @@
 #' Estimate dynamic factor model
 #'
-#' @param Y data in matrix format with time in rows
+#' @param data data in matrix format with time in rows
 #' @param factors number of factors
 #' @param lags number of lags in transition equation
 #' @param forecasts number of periods ahead to forecasts
@@ -28,13 +28,13 @@
 #' @param burn number of iterations to burn in MCMC sampling
 #' @param loud print status of function during evalutation. If ML, print
 #'   difference in likelihood at each iteration of the EM algorithm.
-#' @param EM_tolerance tolerance for convergence of EM algorithm (method `ml` only). Convergence
+#' @param tol tolerance for convergence of EM algorithm (method `ml` only). Convergence
 #'   criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
 #'   is the log likelihood from this iteration and Lik0 is the likelihood from
 #'   the previous iteration.
 #' @export
 #' @importFrom Rcpp evalCpp
-#' @importFrom stats dnorm na.omit ts var
+#' @importFrom stats dnorm na.omit ts var approx frequency is.ts loess median model.matrix na.exclude predict setNames start
 #' @importFrom utils head tail
 #' @examples
 #' fdeaths0 <- fdeaths
@@ -51,7 +51,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
                 trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
                 obs_df = NULL, identification = "pc_full",
                 store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
-                EM_tolerance = 0.01) {
+                tol = 0.01) {
 
   call <- match.call
 
@@ -78,7 +78,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, loud = loud, tol = EM_tolerance
+      burn = burn, loud = loud, tol = tol
     )
     colnames(ans$values) <- colnames(data)
     ans$dates <- NULL
@@ -101,7 +101,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, loud = loud, tol = EM_tolerance
+      burn = burn, loud = loud, tol = tol
     )
 
     # make values a ts timeseries

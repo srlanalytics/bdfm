@@ -9,10 +9,12 @@ dfm(data, factors = 1, lags = 3, forecasts = 2,
   diffs = NULL, frequency_mix = "auto", pre_differenced = NULL,
   trans_prior = NULL, trans_shrink = 0, trans_df = 0,
   obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
-  identification = "PC_full", store_idx = NULL, reps = 1000,
-  burn = 500, loud = FALSE, EM_tolerance = 0.01)
+  identification = "pc_full", store_idx = NULL, reps = 1000,
+  burn = 500, loud = FALSE, tol = 0.01)
 }
 \arguments{
+\item{data}{data in matrix format with time in rows}
+
 \item{factors}{number of factors}
 
 \item{lags}{number of lags in transition equation}
@@ -46,8 +48,8 @@ Default is zeros.}
 \item{obs_df}{prior deg. of freedom for observables, entered as vector with
 length equal to the number of observables.}
 
-\item{identification}{factor identification. 'PC_full' is the default (using
-all observed series), 'PC_sub' finds a submatrix of the data that maximizes
+\item{identification}{factor identification. 'pc_full' is the default (using
+all observed series), 'pc_sub' finds a submatrix of the data that maximizes
 the number of observations for a square (no missing values) data set.
 Numeric vector for user specified series.}
 
@@ -60,12 +62,10 @@ Numeric vector for user specified series.}
 \item{loud}{print status of function during evalutation. If ML, print
 difference in likelihood at each iteration of the EM algorithm.}
 
-\item{EM_tolerance}{tolerance for convergence of EM algorithm (method `ml` only). Convergence
+\item{tol}{tolerance for convergence of EM algorithm (method `ml` only). Convergence
 criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
 is the log likelihood from this iteration and Lik0 is the likelihood from
 the previous iteration.}
-
-\item{Y}{data in matrix format with time in rows}
 }
 \description{
 Estimate dynamic factor model
