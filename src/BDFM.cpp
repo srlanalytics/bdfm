@@ -927,7 +927,9 @@ List EstDFM(      arma::mat B,     // transition matrix
 
     // Rcpp::Rcout << "\r1. Burning progress: " << 100*rep/burn << "%";
 
-    if (100*rep/burn % 10 == 0) Rcpp::Rcout << "\r1. Burning progress: " << 100*rep/burn << "%";
+    if (50*rep/burn % 10 == 0) {
+      Rcpp::Rcout << "\rProgress: " << 50*rep/burn << "%";
+    }
 
     // --------- Sample Factors given Data and Parameters ---------
 
@@ -1033,8 +1035,9 @@ List EstDFM(      arma::mat B,     // transition matrix
     Rcpp::checkUserInterrupt();
     //Rcpp::Rcout << rep <<endl;
 
-    if (100*rep/reps % 10 == 0) Rcpp::Rcout << "\r2. Sampling progress: " << 100*rep/reps << "%";
-
+    if (50*rep/reps % 10 == 0) {
+      Rcpp::Rcout << "\rProgress: " << 50 + 50*rep/reps << "%";
+    }
 
     // --------- Sample Factors given Data and Parameters
 
