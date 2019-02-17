@@ -5,14 +5,6 @@ QuickReg <- function(X, Y) {
     .Call('_bdfm_QuickReg', PACKAGE = 'bdfm', X, Y)
 }
 
-MonthDays <- function(year, month) {
-    .Call('_bdfm_MonthDays', PACKAGE = 'bdfm', year, month)
-}
-
-end_of_month <- function(Dates) {
-    .Call('_bdfm_end_of_month', PACKAGE = 'bdfm', Dates)
-}
-
 comp_form <- function(B) {
     .Call('_bdfm_comp_form', PACKAGE = 'bdfm', B)
 }

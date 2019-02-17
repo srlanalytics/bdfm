@@ -18,29 +18,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// MonthDays
-arma::uword MonthDays(double year, double month);
-RcppExport SEXP _bdfm_MonthDays(SEXP yearSEXP, SEXP monthSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type year(yearSEXP);
-    Rcpp::traits::input_parameter< double >::type month(monthSEXP);
-    rcpp_result_gen = Rcpp::wrap(MonthDays(year, month));
-    return rcpp_result_gen;
-END_RCPP
-}
-// end_of_month
-arma::mat end_of_month(arma::mat Dates);
-RcppExport SEXP _bdfm_end_of_month(SEXP DatesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type Dates(DatesSEXP);
-    rcpp_result_gen = Rcpp::wrap(end_of_month(Dates));
-    return rcpp_result_gen;
-END_RCPP
-}
 // comp_form
 arma::mat comp_form(arma::mat B);
 RcppExport SEXP _bdfm_comp_form(SEXP BSEXP) {
@@ -300,8 +277,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_bdfm_QuickReg", (DL_FUNC) &_bdfm_QuickReg, 2},
-    {"_bdfm_MonthDays", (DL_FUNC) &_bdfm_MonthDays, 2},
-    {"_bdfm_end_of_month", (DL_FUNC) &_bdfm_end_of_month, 1},
     {"_bdfm_comp_form", (DL_FUNC) &_bdfm_comp_form, 1},
     {"_bdfm_mvrnrm", (DL_FUNC) &_bdfm_mvrnrm, 3},
     {"_bdfm_rinvwish", (DL_FUNC) &_bdfm_rinvwish, 3},

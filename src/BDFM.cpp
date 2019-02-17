@@ -48,33 +48,33 @@ arma::mat QuickReg(arma::mat X,
   return(B);
 }
 
-// [[Rcpp::export]]
-arma::uword MonthDays(double year,
-                      double month){
-  double days;
-  if((month == 1) || (month == 3) || (month == 5) || (month == 7) || (month == 8) || (month == 10) || (month == 12)){
-    days = 31;
-  }
-  else if((month == 4) || (month == 6) || (month == 9) || (month == 11) ){
-    days = 30;
-  }
-  else if(round((year-1940)/4) == ((year-1940)/4) ){
-    days = 29;
-  }
-  else{
-    days = 28;
-  }
-  return(days);
-}
+// // [[Rcpp::export]]
+// arma::uword MonthDays(double year,
+//                       double month){
+//   double days;
+//   if((month == 1) || (month == 3) || (month == 5) || (month == 7) || (month == 8) || (month == 10) || (month == 12)){
+//     days = 31;
+//   }
+//   else if((month == 4) || (month == 6) || (month == 9) || (month == 11) ){
+//     days = 30;
+//   }
+//   else if(round((year-1940)/4) == ((year-1940)/4) ){
+//     days = 29;
+//   }
+//   else{
+//     days = 28;
+//   }
+//   return(days);
+// }
 
-//return last day for the given month
-// [[Rcpp::export]]
-arma::mat end_of_month(arma::mat Dates){
-  for(uword t=0; t<Dates.n_rows; t++){
-    Dates(t,2) = MonthDays(Dates(t,0), Dates(t,1));
-  }
-  return(Dates);
-}
+// //return last day for the given month
+// // [[Rcpp::export]]
+// arma::mat end_of_month(arma::mat Dates){
+//   for(uword t=0; t<Dates.n_rows; t++){
+//     Dates(t,2) = MonthDays(Dates(t,0), Dates(t,1));
+//   }
+//   return(Dates);
+// }
 
 arma::sp_mat MakeSparse(arma::mat A){
   uword n_rows   = A.n_rows;
@@ -304,13 +304,13 @@ List BReg(arma::mat X,   // RHS variables
           double nu,     //prior "deg of freedom"
           arma::uword reps = 1000,
           arma::uword burn = 1000){
-  
+
   uword k    = Y.n_cols;
   uword m    = X.n_cols;
   uword T    = Y.n_rows;
   mat Lam    = lam*eye<mat>(m,m);
   mat tmp;
-  
+
   if(Int){ //if we should estimate an intercept term
     m        = m+1;
     Lam      = lam*eye<mat>(m,m);
@@ -320,19 +320,19 @@ List BReg(arma::mat X,   // RHS variables
     tmp      = ones<mat>(T,1);
     X        = join_horiz(tmp,X);
   }
-  
+
   //declairing variables
   cube Bstore(k,m,reps), Qstore(k,k,reps);
   mat v_1, V_1, Mu, B, Beta, scale, q;
   vec mu;
-  
+
   //Burn Loop
-  
+
   for(uword rep = 0; rep<burn; rep++){
-    
+
     Rcpp::checkUserInterrupt();
     //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
-    
+
     v_1   = trans(X)*X+Lam;
     v_1   = (trans(v_1)+v_1)/2;
     v_1   = inv_sympd(v_1);
@@ -345,14 +345,14 @@ List BReg(arma::mat X,   // RHS variables
     Beta  = mvrnrm(1,mu,V_1);       //Draw for B
     B     = reshape(Beta,k,m);      //recovering original dimensions
   }
-  
+
   //Sampling Loop
-  
+
   for(uword rep = 0; rep<reps; rep++){
-    
+
     Rcpp::checkUserInterrupt();
-    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations 
-    
+    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations
+
     v_1   = trans(X)*X+Lam;
     v_1   = (trans(v_1)+v_1)/2;
     v_1   = inv_sympd(v_1);
@@ -367,7 +367,7 @@ List BReg(arma::mat X,   // RHS variables
     Qstore.slice(rep) = q;
     Bstore.slice(rep) = B;
   }
-  
+
   //For B
   for(uword rw=0;rw<k;rw++){
     for(uword cl=0;cl<m;cl++){
@@ -380,15 +380,15 @@ List BReg(arma::mat X,   // RHS variables
       q(rw,cl) = as_scalar(median(vectorise(Qstore.tube(rw,cl))));
     }
   }
-  
+
   List Out;
   Out["B"]   = B;
   Out["q"]   = q;
   Out["Bstore"]   = Bstore;
   Out["Qstore"]   = Qstore;
-  
+
   return(Out);
-  
+
 }
 
 
@@ -402,13 +402,13 @@ List BReg_diag(arma::mat X,   // RHS variables
                arma::vec nu,  //prior "deg of freedom"
                arma::uword reps = 1000, //MCMC sampling iterations
                arma::uword burn = 1000){ //MCMC burn in iterations
-  
+
   uword k    = Y.n_cols;
   uword m    = X.n_cols;
   uword T    = Y.n_rows;
   mat Lam    = lam*eye<mat>(m,m);
   mat tmp;
-  
+
   if(Int){ //if we should estimate an intercept term
     m        = m+1;
     Lam      = lam*eye<mat>(m,m);
@@ -418,7 +418,7 @@ List BReg_diag(arma::mat X,   // RHS variables
     tmp      = ones<mat>(T,1);
     X        = join_horiz(tmp,X);
   }
-  
+
   //declairing variables
   cube Bstore(k,m,reps);
   mat v_1, Beta, Qstore(k,reps), xx;
@@ -434,24 +434,24 @@ List BReg_diag(arma::mat X,   // RHS variables
       indX = unique( join_cols(indX, find_nonfinite(x))); //index of missing X values
     }
   }
-  
+
   //Burn Loop
-  
+
   for(uword rep = 0; rep<burn; rep++){
     Rcpp::checkUserInterrupt();
     //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
-    
+
     for(uword j=0; j<k; j++){
       y       = Y.col(j);
       ind     = unique(join_cols(indX,find_nonfinite(y))); //index of elements to remove
       xx      = X;
-      
+
       //this seems a tedious way to shed non-contiguous indexes
       for(uword n = ind.n_elem; n>0; n--){
         xx.shed_row(ind(n-1));
         y.shed_row(ind(n-1));
       }
-      
+
       v_1   = trans(xx)*xx+Lam;
       v_1   = (trans(v_1)+v_1)/2;
       v_1   = inv_sympd(v_1);
@@ -461,16 +461,16 @@ List BReg_diag(arma::mat X,   // RHS variables
       Beta  = mvrnrm(1, mu, v_1*q(j));
       B.row(j) = trans(Beta.col(0));
     }
-    
+
   }
-  
+
   // Sampling loop
-  
+
   for(uword rep = 0; rep<reps; rep++){
-    
+
     Rcpp::checkUserInterrupt();
     //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
-    
+
     for(uword j=0; j<k; j++){
       y       = Y.col(j);
       ind     = unique(join_cols(indX,find_nonfinite(y))); //index of elements to remove
@@ -491,10 +491,10 @@ List BReg_diag(arma::mat X,   // RHS variables
     }
     Qstore.col(rep)   = q;
     Bstore.slice(rep) = B;
-    
+
   }
-  
-  
+
+
   //For B
   for(uword rw=0;rw<k;rw++){
     for(uword cl=0;cl<m;cl++){
@@ -502,18 +502,18 @@ List BReg_diag(arma::mat X,   // RHS variables
     }
   }
   //For q
-  
+
   for(uword rw=0;rw<k;rw++){
     q(rw) = as_scalar(median(Qstore.row(rw)));
   }
-  
-  
+
+
   List Out;
   Out["B"]   = B;
   Out["q"]   = q;
   Out["Bstore"]   = Bstore;
   Out["Qstore"]   = Qstore;
-  
+
   return(Out);
 }
 
@@ -532,7 +532,7 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
                    arma::mat R,     // covariance matrix of shocks to observables; Y are observations
                    arma::mat Y,     //data
                    arma::uvec freq,  // frequency of each series (# low freq. periods in one obs)
-                   arma::uvec LD){   // 0 if level, 1 if one diff.   
+                   arma::uvec LD){   // 0 if level, 1 if one diff.
 
 
   // preliminaries
@@ -561,11 +561,11 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
   qq(span(0,m-1),span(0,m-1)) = q;
   sp_mat Q(qq);
 
-  // specifying difuse initial values 
+  // specifying difuse initial values
   mat P0, P1, S, C;
   P0  = 100000*eye<mat>(sA,sA); //difuse initial factor variance
-  P1  = P0; 
- 
+  P1  = P0;
+
   //Declairing variables for the filter
   field<mat> Kstr(T); //store Kalman gain
   field<vec> PEstr(T); //store prediction error
@@ -665,8 +665,8 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
                           arma::mat R,     // covariance matrix of shocks to observables; Y are observations
                           arma::mat Y,     // data
                           arma::uvec freq, //frequency of each seres
-                          arma::uvec LD){  // 0 for levels, 1 for first difference   
-                         
+                          arma::uvec LD){  // 0 for levels, 1 for first difference
+
 
   // preliminaries
   uword T  = Y.n_rows; //number of time peridos
@@ -682,7 +682,7 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
     hj  = H(j,span::all)*J_MF(freq(j), m, LD(j), sA);
     HJ  = sprow(HJ,hj,j); //replace row j of HJ with vector hj
   }
-  
+
   //Making the A matrix
   sp_mat BJb    = MakeSparse(B*Jb);
   sp_mat tmp_sp(sA-m,m);
@@ -694,7 +694,7 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
   qq(span(0,m-1),span(0,m-1)) = q;
   sp_mat Q(qq);
 
-  // specifying difuse initial values 
+  // specifying difuse initial values
   mat P0, P1, S, C;
   P0  = 100000*eye<mat>(sA,sA);
   P1  = P0;
@@ -788,8 +788,8 @@ arma::field<arma::mat> FSimMF(    arma::mat B,     // companion form of transiti
                                   arma::mat R,     // covariance matrix of shocks to observables; Y are observations
                                   arma::mat Y,     // data
                                   arma::uvec freq, // frequency
-                                  arma::uvec LD){  // level 0, or diff 1    
- 
+                                  arma::uvec LD){  // level 0, or diff 1
+
 
   // preliminaries
   uword T  = Y.n_rows; //number of time peridos
@@ -805,7 +805,7 @@ arma::field<arma::mat> FSimMF(    arma::mat B,     // companion form of transiti
     hj  = H(j,span::all)*J_MF(freq(j), m, LD(j), sA);
     HJ  = sprow(HJ,hj,j); //replace row j of HJ with vector hj
   }
-  
+
   //Draw Eps (for observations) and E (for factors)
   vec mu_Eps(k,fill::zeros);
   vec mu_E(m,fill::zeros);
@@ -825,7 +825,7 @@ arma::field<arma::mat> FSimMF(    arma::mat B,     // companion form of transiti
 
   //Forward Recursion
   for(uword t=0; t<T; t++) {
-    yt        = trans(Y.row(t)); 
+    yt        = trans(Y.row(t));
     ind       = find_finite(yt); //identify missing values that they are replicated in simulated data
     Hn        = sp_rows(HJ,ind);
     yd.fill(datum::nan);
@@ -833,7 +833,7 @@ arma::field<arma::mat> FSimMF(    arma::mat B,     // companion form of transiti
     yd(ind)   = Hn*trans(Z.row(t)) + eps(ind);
     Yd.row(t) = trans(yd);
     //next period factors
-    x      = B*Jb*trans(Z.row(t)) + trans(E.row(t)); //prediction for Z(t+1) 
+    x      = B*Jb*trans(Z.row(t)) + trans(E.row(t)); //prediction for Z(t+1)
     Z(t+1,span(0,m-1))  = trans(x);
     if(p>1){
       Z(t+1,span(m,sA-1)) = Z(t,span(0,sA-m-1));
@@ -913,7 +913,7 @@ List EstDFM(      arma::mat B,     // transition matrix
   mat eigvec;
   cx_vec eigval_cx;
   cx_mat eigvec_cx;
-  
+
   mat Ytmp = Y;
   Ytmp.shed_rows(0,p-1); //shed initial values to match Z
 
@@ -931,7 +931,7 @@ List EstDFM(      arma::mat B,     // transition matrix
 
     Rmat  = diagmat(R); // Make a matrix out of R to plug in to DSimMF
     // Draw observations Y^star and Z^star
-    FSim  = FSimMF(B, Jb, q, H, Rmat, Y, freq, LD); 
+    FSim  = FSimMF(B, Jb, q, H, Rmat, Y, freq, LD);
     Zd    = FSim(0); //draw for Z
     Yd    = FSim(1); //draw for Y
     Ys    = Y-Yd;
@@ -992,7 +992,7 @@ List EstDFM(      arma::mat B,     // transition matrix
     v_1   = trans(xx)*xx+Lam_B;
     v_1   = (trans(v_1)+v_1)/2;
     v_1   = inv_sympd(v_1);
-    Mu    = v_1*(trans(xx)*yy+Lam_B*trans(Bp));   
+    Mu    = v_1*(trans(xx)*yy+Lam_B*trans(Bp));
     scale = eye(m,m)+trans(yy-xx*Mu)*(yy-xx*Mu)+trans(Mu-trans(Bp))*Lam_B*(Mu-trans(Bp)); // eye(k) is the prior scale parameter for the IW distribution and eye(k)+junk the posterior.
     scale = (scale+trans(scale))/2;
     q     = rinvwish(1,nu_q+T,scale); //Draw for q
@@ -1042,13 +1042,13 @@ List EstDFM(      arma::mat B,     // transition matrix
     // Smooth using Ys (i.e. Y^star)
     Zs    = DSMF(B, Jb, q, H, Rmat, Ys, freq, LD);
     Zsim  = Zs + Zd; // Draw for factors
-    
+
     if(store_Y){
       Jh        = J_MF(freq(store_idx), m, LD(store_idx), sA);
       //Ystore(t,rep) =  as_scalar(Zsim.row(t)*trans(Jh)*trans(H.row(0)));
       Ystore.col(rep) = Zsim*trans(Jh)*trans(H.row(store_idx));
     }
-    
+
 
     Zsim.shed_rows(0,p-1);
 
@@ -1095,7 +1095,7 @@ List EstDFM(      arma::mat B,     // transition matrix
     }
 
     // For B and q
-    
+
     yy    = Zsim.cols(0,m-1);
     yy.shed_row(0);
     xx    = Zsim*trans(Jb);
@@ -1103,7 +1103,7 @@ List EstDFM(      arma::mat B,     // transition matrix
     v_1   = trans(xx)*xx+Lam_B;
     v_1   = (trans(v_1)+v_1)/2;
     v_1   = inv_sympd(v_1);
-    Mu    = v_1*(trans(xx)*yy+Lam_B*trans(Bp));   
+    Mu    = v_1*(trans(xx)*yy+Lam_B*trans(Bp));
     scale = eye(m,m)+trans(yy-xx*Mu)*(yy-xx*Mu)+trans(Mu-trans(Bp))*Lam_B*(Mu-trans(Bp)); // eye(k) is the prior scale parameter for the IW distribution and eye(k)+junk the posterior.
     scale = (scale+trans(scale))/2;
     q     = rinvwish(1,nu_q+T,scale); //Draw for q
@@ -1134,7 +1134,7 @@ List EstDFM(      arma::mat B,     // transition matrix
     Rstore.col(rep)   = R;
 
   }
-  
+
   if(Loud){
     Rcpp::Rcout << "Completed " << reps << " sampling iterations " <<endl;
   }
@@ -1303,32 +1303,32 @@ List KestExact(arma::sp_mat A,
                arma::vec itc,
                arma::uword m,
                arma::uword p){
-  
-  
+
+
   uword T  = Y.n_rows;
   uword k  = Y.n_cols;
-  
+
   // Helper matrix J
-  
+
   sp_mat J(m,m*(p+1));
   J(span(0,m-1),span(0,m-1)) = speye<sp_mat>(m,m);
-  
+
   sp_mat   HJ  = MakeSparse(H*J);
-  
+
   // Removing intercept terms from Y
-  
+
   mat Ytmp  = Y - kron(ones<mat>(T,1),trans(itc));
-  
+
   List Smth = Ksmoother(A, Q, HJ, R, Ytmp);
-  
+
   mat Z     = Smth["Z"];
   cube Ps   = Smth["Ps"];
   mat Lik   = Smth["Lik"];
-  
+
   mat xx, Zx, axz, XZ, azz, ZZ, axx, tmp, B;
-  
+
   //For B and qB
-  
+
   xx  = Z.cols(span(0,m-1));
   Zx  = Z.cols(span(m,(p+1)*m-1));
   axz = sum(Ps(span(0,m-1),span(m,(p+1)*m-1),span::all),2);
@@ -1337,21 +1337,21 @@ List KestExact(arma::sp_mat A,
   ZZ  = trans(Zx)*Zx + azz;
   B = trans(solve(ZZ,XZ));
   A(span(0,m-1),span(0,m*p-1)) = B;
-  
+
   axx = sum(Ps(span(0,m-1),span(0,m-1),span::all),2);
   mat q = (trans(xx-Zx*trans(B))*(xx-Zx*trans(B)) + axx - axz*trans(B) - B*trans(axz) + B*azz*trans(B) )/T;
-  
+
   Q(span(0,m-1),span(0,m-1))   = q;
-  
+
   //For H, R
-  
+
   uword n_elm;
   uvec ind;
   vec yy, y, h;
   mat x, XX;
-  
+
   xx     =  join_horiz( ones<mat>(T,1), Z*trans(J) ); // ones are for the intercept term
-  
+
   for(uword j=0; j<k; j++) {
     yy    =  Y.col(j);
     ind   = find_finite(yy);
@@ -1370,21 +1370,21 @@ List KestExact(arma::sp_mat A,
     H.row(j)  = trans(h(span(1,m)));
     R(j,j)    = as_scalar( trans(y-x*h)*(y-x*h)  + trans(h(span(1,m)))*axx(span(1,m),span(1,m))*h(span(1,m)) )/n_elm;
   }
-  
+
   //Normalization --- cholesky ordering
   mat Thet, ThetI;
   Thet  = chol(q, "lower");
   ThetI = inv(Thet);
-  
+
   //Normalization
   H      = H*Thet;
   tmp    = kron(eye<mat>(p,p),ThetI)*A(span(0,m*p-1),span(0,m*p-1))*kron(eye<mat>(p,p),Thet);
   A(span(0,m-1),span(0,m*p-1))   = tmp(span(0,m-1),span(0,m*p-1));
   Q(span(0,m-1),span(0,m-1))     = ThetI*Q(span(0,m-1),span(0,m-1))*trans(ThetI);
   mat X  = Z.cols(0,m-1)*trans(ThetI);
-  
+
   mat Ys = X*trans(H);
-  
+
   List Out;
   Out["A"]    = A;
   Out["Q"]    = Q;
@@ -1394,7 +1394,7 @@ List KestExact(arma::sp_mat A,
   Out["X"]    = X;
   Out["itc"]  = itc;
   Out["Ys"]   = Ys;
-  
+
   return(Out);
 }
 
@@ -1405,7 +1405,7 @@ List KSeas(arma::mat B,
                double r,
                arma::mat Y, //Data must be entered as uniform frequency --- deal with this in R code
                arma::mat N){ //seasonal adjusment factors
-              
+
 
 
   uword T  = Y.n_rows;
@@ -1422,7 +1422,7 @@ List KSeas(arma::mat B,
   Q(0,0)  = q;
   mat R(1,1);
   R(0,0)  = r;
-  
+
   // Remove seasonal factors to smooth (solution is identical to smoothing with exogenous factors)
   mat Ydm   = Y - N*trans(M);
   List Smth = Ksmoother(A, Q, HJ, R, Ydm);
@@ -1479,7 +1479,7 @@ List KSeas(arma::mat B,
   // mat Y_hat = h*Z.col(0) + N*trans(M);
 
   List Out;
-  
+
   // Out["A"] = A;
   // Out["Q"] = Q;
   // Out["R"] = R;
