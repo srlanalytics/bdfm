@@ -4,7 +4,7 @@
 \alias{dfm}
 \title{Estimate dynamic factor model}
 \usage{
-dfm(data, factors = 1, lags = 3, forecasts = 0,
+dfm(data, factors = 1, lags = 3, forecasts = 2,
   method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL,
   diffs = NULL, frequency_mix = "auto", pre_differenced = NULL,
   trans_prior = NULL, trans_shrink = 0, trans_df = 0,
@@ -16,6 +16,8 @@ dfm(data, factors = 1, lags = 3, forecasts = 0,
 \item{factors}{number of factors}
 
 \item{lags}{number of lags in transition equation}
+
+\item{forecasts}{number of periods ahead to forecasts}
 
 \item{method}{character, method to be used}
 
@@ -46,7 +48,7 @@ length equal to the number of observables.}
 
 \item{identification}{factor identification. 'PC_full' is the default (using
 all observed series), 'PC_sub' finds a submatrix of the data that maximizes
-the number of observations for a square (no missing values) data set. 
+the number of observations for a square (no missing values) data set.
 Numeric vector for user specified series.}
 
 \item{store_idx, }{if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.}
@@ -64,8 +66,6 @@ is the log likelihood from this iteration and Lik0 is the likelihood from
 the previous iteration.}
 
 \item{Y}{data in matrix format with time in rows}
-
-\item{forecast}{number of periods ahead to forecast}
 }
 \description{
 Estimate dynamic factor model
@@ -76,6 +76,6 @@ fdeaths0[length(fdeaths0)] <- NA
 dta <- cbind(fdeaths0, mdeaths)
 
 library(bdfm)
-m <- dfm(dta, forecast = 2)
+m <- dfm(dta, forecasts = 2)
 summary(m)
 }

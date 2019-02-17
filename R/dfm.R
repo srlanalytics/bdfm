@@ -58,12 +58,12 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
     stop("Mixed freqeuncy models are only supported for Bayesian estimation")
   }
 
+  # check need for tsbox
   tsobjs <- c(
     "zoo", "xts", "tslist", "tbl_ts", "timeSeries",
     "tbl_time", "tbl_df", "data.table", "data.frame", "dts"
   )
-
-  if (!requireNamespace("tsbox") & any(class(Y) %in% tsobjs)) {
+  if (any(class(data) %in% tsobjs) && !requireNamespace("tsbox")) {
     stop('"tsbox" is needed to support non ts-time-series. To install: \n\n  install.packages("tsbox")', call. = FALSE)
   }
 
@@ -80,7 +80,6 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
     colnames(ans$values) <- colnames(data)
     ans$dates <- NULL
   } else {
-
     # no need for tsbox if Y is ts or mts
     if (inherits(data, "ts")) {
       Y.uc <- unclass(data)
@@ -91,7 +90,6 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
       # convert to mts
       Y.uc <- unclass(tsbox::ts_ts(data))
     }
-
     Y.tsp <- attr(Y.uc, "tsp")
     attr(Y.uc, "tsp") <- NULL
     ans <- dfm_core(
@@ -113,7 +111,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
     colnames(ans$values) <- colnames(data)
 
     # return a date vector
-    ans$dates <- tsbox::ts_regular(tsbox::ts_df(ans$values))[, 1]
+    # ans$dates <- tsbox::ts_regular(tsbox::ts_df(ans$values))[, 1]
 
     # put values back into original class
     if (!inherits(Y, "ts")) {
@@ -157,6 +155,8 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
 
   #-------Data processing-------------------------
 
+  k <- NCOL(Y) # number of series
+
   # frequency
   if (freq == "auto") {
     freq <- apply(Y, MARGIN = 2, FUN = get_freq)
@@ -187,7 +187,7 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
 
   LD <- rep(0, NCOL(Y))
   if (!is.null(preD)) {
-    preD <- standardize_index(preD)
+    preD <- standardize_index(preD, Y)
   }
   LD[unique(c(preD, diffs))] <- 1 # in bdfm 1 indicates differenced data, 0 level data
 
