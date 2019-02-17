@@ -51,7 +51,7 @@ As previously mentioned, small values can result in inaccurate estimations. It's
 [TODO: The package should take care of technical stuff, not the user. If scaling is a good idea, we should do it by default, and unscale at the end. With an option to turn it of => This isn't so obvious to deal with. What I've done is put together very simple `scale()` and `unscale()` functions to make this step as easy as possible.]
 
 ```{r echo = T}
-data <- bdfm::scale(data)
+# data <- bdfm::scale(data)
 ```
 We can then estimate our DFM. A model with one factor is a good way to create an index of the data, in this case a small index of monthly real activity in the U.S.
 
@@ -69,7 +69,7 @@ ts.plot(cbind(data, est$factors), col = c(rep("steelblue", 5), "red"), lwd = c(r
 If we want the forecast in the original units, we can use the `unscale()` function:
 
 ```{r echo = T}
-raw_forecast <- unscale(predict(est))
+raw_forecast <- predict(est)
 ts.plot(raw_forecast)
 ```
 
@@ -81,7 +81,7 @@ To generate forecasts using `bdfm` the user can specify the number of periods ah
 
 est_fct <- dfm(data, factors = 2, lags = 3, forecast = 3)
 fct <- predict(est_fct)[,"INDPRO"]
-print(tail(unscale(fct, idx = "INDPRO"),4)) #print in raw units
+print(tail(fct),4) #print in raw units
 
 ```
 Note that the value for November 2018 is also a prediction before IP was observed; in this case it is a nowcast using initial jobless claims to update the one step ahead forecast.
@@ -129,7 +129,7 @@ Since we have normalized the variance of each series to 10000, this gives us a g
 A great advantage of fully Bayesian DFM estimation is that it allows us to incorporate prior beliefs into parameter estimates. Suppose, for example, that we wanted a model in which initial jobless claims played a bigger role. We can accomplish this by incorporating the prior belief that shocks to initial jobless claims in the transition equation are small. We can specify this prior using the "degrees of freedom" for the inverse gamma prior distribution for $R_{5,5}$, the variance of shocks to the observed series initial jobless claims. We can specify this prior using `nu_r = c(0,0,0,0,1)` and then estimate the model as
 ```{r echo = T}
 nu_r = c(0,0,0,0,1)
-estB <- dfm(data, factors = 1, lags = 3, nu_r = nu_r)
+estB <- dfm(data, factors = 1, lags = 3)
 print(diag(estB$R))
 ```
 Estimated shocks to the transition equation are now smaller implying jobless claims will play a bigger role in updating our factor.
@@ -196,13 +196,13 @@ The package `bdfm` also supports maximum likelihood estimation, specified by set
 
 One can estimate a dynamic factor model via maximum likelihood (ML) by simply plugging the likelihood function into a numerical solver such as optim() in R. However, this is computationally inefficient approach and will be very slow for large models. For this reason the option `method = 'ml'` uses Watson and Engle's (1983) EM algorithm to estimate models by ML. This will generally be faster than Bayesian estimation by simulation and model identification is less important as rotating the factors will not change the log likelihood. However, maximum likelihood estimation does not allow the incorporation of prior beliefs. To estimate our simple five variable model from the previous section by maximum likelihood we simply specify that method in the `dfm()` call. With ML we can also look at the improvement in the log likelihood at each iteration of the EM algorithm by specifying `loud = T`.\footnote{Note that the first value printed with `loud = T` is meaningless as the program arbitrarily assigns `-1e10` as the initial likelihood value.}
 ```{r echo=T}
-est_ml <- dfm(data, factors = 2, lags = 3, method = 'ml', loud = T)
+# est_ml <- dfm(data, factors = 2, lags = 3, method = 'ml', loud = T)
 ```
 Because factors are under-identified, ML factor estimates will be different than Bayesian factor estimates. However, fitted values should be similar. Forecasting using a model estimated by ML uses the same syntax the Bayesian case.
 ```{r echo = T}
-est_ml <- dfm(data, factors = 2, lags = 3, forecast = 3, method = 'ml')
-fct <- predict(est_ml)[,"INDPRO"]
-print(unscale(tail(fct,4), idx = "INDPRO"))
+# est_ml <- dfm(data, factors = 2, lags = 3, forecast = 3, method = 'ml')
+# fct <- predict(est_ml)[,"INDPRO"]
+# print(tail(fct,4))
 
 ```
 When using ML estimation any specification of priors for Bayesian estimation will be ignored. Users can set the tolerance for convergence of the EM algorithm using the input `EM_tolerance`. The default value is 0.01 which corresponds to the convergence criteria used in Doz, Giannone, and Reichlin (2012).
@@ -211,9 +211,9 @@ When using ML estimation any specification of priors for Bayesian estimation wil
 
 For very large models with few missing observation two step estimation following Doz, Giannone, and Reichlin (2009) is a final possibility by setting `method = 'pc'`. This approach estimates parameters of the model by treating principal components as factors, then re-estimates factors based on estimated parameters. Predictive power will typically be less than models estimated by Bayesian simulation or maximum likelihood, but the approach is very fast and can handle very large data sets. It is not suitable for data sets with many missing values however as there is no straightforward way of estimating principal components with missing observations. We can estimate the simple five variable model introduced above using two step estimation and forecast three periods ahead of the last observation as follows:
 ```{r echo=T}
-est_pc <- dfm(data, factors = 2, lags = 3, forecast = 3, method = 'pc')
-fct <- predict(est_pc)[,"INDPRO"]
-print(unscale(tail(fct,4), idx = "INDPRO"))
+# est_pc <- dfm(data, factors = 2, lags = 3, forecast = 3, method = 'pc')
+# fct <- predict(est_pc)[,"INDPRO"]
+# print(tail(fct,4))
 ```
 
 
