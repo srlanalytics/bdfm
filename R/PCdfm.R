@@ -1,5 +1,5 @@
 PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
-                  nu_q = 0, nu_r = NULL, reps = 1000, burn = 500) {
+                  nu_q = 0, nu_r = NULL, ID = "pc_sub", reps = 1000, burn = 500) {
 
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
@@ -15,16 +15,16 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
 
   # Estimate principal components
 
-  if (ID == "PC_sub") {
+  if (ID == "pc_sub") {
     Ysub <- Y_sub(Y) # submatrix of Y with complete data, i.e. no missing values
     PC <- PrinComp(Ysub$Ysub, m)
     X <- matrix(NA, r, m)
     X[Ysub$ind, ] <- PC$components
-  } else if (ID == "PC_full") {
+  } else if (ID == "pc_full") {
     PC <- PrinComp(Y, m)
     X <- PC$components
     if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to PC_sub.")
+      stop("Every period contains missing data. Try setting ID to pc_sub.")
     }
   }
 

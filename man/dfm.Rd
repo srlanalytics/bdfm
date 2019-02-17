@@ -4,27 +4,54 @@
 \alias{dfm}
 \title{Estimate dynamic factor model}
 \usage{
-dfm(data, factors = 1, lags = 3, forecasts = 0,
+dfm(data, factors = 1, lags = 3, forecasts = 2,
   method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL,
   diffs = NULL, frequency_mix = "auto", pre_differenced = NULL,
   trans_prior = NULL, trans_shrink = 0, trans_df = 0,
   obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
-  identification = "PC_full", store_idx = NULL, reps = 1000,
-  burn = 500, loud = FALSE, EM_tolerance = 0.01)
+  identification = "pc_full", store_idx = NULL, reps = 1000,
+  burn = 500, loud = FALSE, tol = 0.01)
 }
 \arguments{
+\item{data}{data in matrix format with time in rows}
+
 \item{factors}{number of factors}
 
 \item{lags}{number of lags in transition equation}
 
+\item{forecasts}{number of periods ahead to forecasts}
+
 \item{method}{character, method to be used}
 
-\item{frequency_mix}{numeric, number of high frequency periods in observation if data is mixed frequency}
+\item{scale}{scale data before estimation (True/False)?}
 
-\item{identification}{factor identification. 'PC_full' is the default (using
-all observed series), 'PC_sub' finds a submatrix of the data that maximizes
-the number of observations for a square (no missing values) data set. Use
-'PC_sub' when many observations are missing.}
+\item{logs}{names or index values of series which should be entered in log levels}
+
+\item{diffs}{names or index values of series which should be differenced}
+
+\item{frequency_mix}{'auto' or numeric, number of high frequency periods in observation if data is mixed frequency}
+
+\item{pre_differenced, }{names or index values of low freqeuncy series entered in differences (not necessary if already specified in 'diffs')}
+
+\item{trans_prior}{prior matrix for B in the transition equation. Default is
+zeros.}
+
+\item{trans_shrink}{prior tightness on B matrix in trasition equation}
+
+\item{trans_df}{prior deg. of freedom for transition equation}
+
+\item{obs_prior}{prior matrix for H (loadings) in the observation equation
+Default is zeros.}
+
+\item{obs_shrink}{prior tightness on H (loadings) in the observation equation}
+
+\item{obs_df}{prior deg. of freedom for observables, entered as vector with
+length equal to the number of observables.}
+
+\item{identification}{factor identification. 'pc_full' is the default (using
+all observed series), 'pc_sub' finds a submatrix of the data that maximizes
+the number of observations for a square (no missing values) data set.
+Numeric vector for user specified series.}
 
 \item{store_idx, }{if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.}
 
@@ -35,34 +62,10 @@ the number of observations for a square (no missing values) data set. Use
 \item{loud}{print status of function during evalutation. If ML, print
 difference in likelihood at each iteration of the EM algorithm.}
 
-\item{EM_tolerance}{tolerance for convergence of EM algorithm (method `ml` only). Convergence
+\item{tol}{tolerance for convergence of EM algorithm (method `ml` only). Convergence
 criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
 is the log likelihood from this iteration and Lik0 is the likelihood from
 the previous iteration.}
-
-\item{Y}{data in matrix format with time in rows}
-
-\item{forecast}{number of periods ahead to forecast}
-
-\item{differences, }{numeric, 0 for levels, 1 for first differences, only specified for mixed frequency models}
-
-\item{B_prior}{prior matrix for B in the transition equation. Default is
-zeros.}
-
-\item{lam_B}{prior tightness on B}
-
-\item{H_prior}{prior matrix for H (loadings) in the observation equation.
-Default is zeros.}
-
-\item{lam_H}{prior tightness on H}
-
-\item{nu_q}{prior deg. of freedom for transition equation, entered as vector
-with length equal to the number of factors.}
-
-\item{nu_r}{prior deg. of freedom for observables, entered as vector with
-length equal to the number of observables.}
-
-\item{intercept}{logical, should an icept be included?}
 }
 \description{
 Estimate dynamic factor model
@@ -73,6 +76,6 @@ fdeaths0[length(fdeaths0)] <- NA
 dta <- cbind(fdeaths0, mdeaths)
 
 library(bdfm)
-m <- dfm(dta, forecast = 2)
+m <- dfm(dta, forecasts = 2)
 summary(m)
 }
