@@ -925,6 +925,10 @@ List EstDFM(      arma::mat B,     // transition matrix
 
     Rcpp::checkUserInterrupt();
 
+    // Rcpp::Rcout << "\r1. Burning progress: " << 100*rep/burn << "%";
+
+    if (100*rep/burn % 10 == 0) Rcpp::Rcout << "\r1. Burning progress: " << 100*rep/burn << "%";
+
     // --------- Sample Factors given Data and Parameters ---------
 
     // Sampling follows Durbin and Koopman 2002/2012
@@ -1023,10 +1027,13 @@ List EstDFM(      arma::mat B,     // transition matrix
     Rcpp::Rcout << "Completed " << burn << " burn iterations; entering sampling iterations " <<endl;
   }
 
+
   for(uword rep = 0; rep<reps; rep++){
 
     Rcpp::checkUserInterrupt();
     //Rcpp::Rcout << rep <<endl;
+
+    if (100*rep/reps % 10 == 0) Rcpp::Rcout << "\r2. Sampling progress: " << 100*rep/reps << "%";
 
 
     // --------- Sample Factors given Data and Parameters
@@ -1134,6 +1141,8 @@ List EstDFM(      arma::mat B,     // transition matrix
     Rstore.col(rep)   = R;
 
   }
+
+  Rcpp::Rcout << "\r                          \r";
 
   if(Loud){
     Rcpp::Rcout << "Completed " << reps << " sampling iterations " <<endl;
