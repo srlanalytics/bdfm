@@ -21,7 +21,7 @@
 #'   length equal to the number of observables.
 #' @param identification factor identification. 'PC_full' is the default (using
 #'   all observed series), 'PC_sub' finds a submatrix of the data that maximizes
-#'   the number of observations for a square (no missing values) data set. 
+#'   the number of observations for a square (no missing values) data set.
 #'   Numeric vector for user specified series.
 #' @param store_idx, if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
 #' @param reps number of repetitions for MCMC sampling
@@ -40,7 +40,7 @@
 #' fdeaths0 <- fdeaths
 #' fdeaths0[length(fdeaths0)] <- NA
 #' dta <- cbind(fdeaths0, mdeaths)
-#' 
+#'
 #' library(bdfm)
 #' m <- dfm(dta, forecast = 2)
 #' summary(m)
@@ -152,8 +152,8 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 0,
 dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
                      Bp, lam_B, nu_q, Hp, lam_H, nu_r, ID,
                      store_idx, reps, burn, loud, tol) {
-  
- 
+
+
 
   #-------Data processing-------------------------
 
@@ -161,10 +161,10 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
   if (freq == "auto") {
     freq <- apply(Y, MARGIN = 2, FUN = get_freq)
   } else if (!is.integer(freq) || length(freq) != ncol(Y)) {
-    stop("Argument 'freq' must be 'auto' or integer valued with 
+    stop("Argument 'freq' must be 'auto' or integer valued with
          length equal to the number data series")
   }
-  
+
   if (FC > 0) {
     tmp <- matrix(NA, FC, k)
     Y <- rbind(Y, tmp)
@@ -184,13 +184,13 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
   }
 
   # specify which series are differenced for mixed frequency estimation
- 
+
   LD <- rep(0, NCOL(Y))
   if (!is.null(preD)) {
     preD <- standardize_index(preD)
-  } 
+  }
   LD[unique(c(preD, diffs))] <- 1 # in bdfm 1 indicates differenced data, 0 level data
-  
+
   if (scale) {
     Y <- 100*scale(Y)
     y_scale  <- attr(Y, "scaled:scale")
@@ -216,22 +216,22 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
       ID = ID, reps = reps, burn = burn
     )
   }
-  
+
   # undo scaling
   if(scale){
     est$values <- (matrix(1, nrow(est$values), 1) %x% t(y_scale)) * (est$values / 100) + (matrix(1, nrow(est$values), 1) %x% t(y_center))
   }
-  
+
   # undo differences
   if (!is.null(diffs)) {
     est$values[,diffs] <- sapply(diffs, FUN = level, fq = freq, Y_lev = Y_lev, vals = est$values)
   }
-  
+
   # undo logs
   if (!is.null(logs)) {
     est$values[,logs] <- exp(est$values[,logs])
   }
-  
+
   return(est)
 }
 
