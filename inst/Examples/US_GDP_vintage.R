@@ -165,6 +165,10 @@ for(j in ind_SA){
 
 # Work with matrices from now on to make life easier
 Y <- as.matrix(dt[,-1])
+
+# Y.pkg <- `attr<-`(unclass(econ_us), "tsp", NULL)
+# all.equal(Y.pkg, Y[-470,])  # TRUE (2019-02-17)
+
 k <- ncol(Y) #number of series
 
 # --------- Take logs where necessary ------------------------------------------------------------
