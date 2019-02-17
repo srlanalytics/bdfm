@@ -19,8 +19,8 @@
 #' @param obs_shrink prior tightness on H (loadings) in the observation equation
 #' @param obs_df prior deg. of freedom for observables, entered as vector with
 #'   length equal to the number of observables.
-#' @param identification factor identification. 'PC_full' is the default (using
-#'   all observed series), 'PC_sub' finds a submatrix of the data that maximizes
+#' @param identification factor identification. 'pc_full' is the default (using
+#'   all observed series), 'pc_sub' finds a submatrix of the data that maximizes
 #'   the number of observations for a square (no missing values) data set.
 #'   Numeric vector for user specified series.
 #' @param store_idx, if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
@@ -49,9 +49,12 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
                 method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
                 frequency_mix = "auto", pre_differenced = NULL, trans_prior = NULL,
                 trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
-                obs_df = NULL, identification = "PC_full",
+                obs_df = NULL, identification = "pc_full",
                 store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
                 EM_tolerance = 0.01) {
+
+  call <- match.call
+
   method <- match.arg(method) # checks and picks the first if unspecified
 
   if (!is.null(frequency_mix) && method != "bayesian") {
@@ -114,7 +117,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
     # ans$dates <- tsbox::ts_regular(tsbox::ts_df(ans$values))[, 1]
 
     # put values back into original class
-    if (!inherits(Y, "ts")) {
+    if (!inherits(data, "ts")) {
       ans$values <- tsbox::copy_class(ans$values, data)
       ans$factors <- tsbox::copy_class(ans$factors, data, preserve.mode = FALSE)
       if (!is.null(store_idx)) {
@@ -122,6 +125,8 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
       }
     }
   }
+
+  ans$call <- match.call()
   class(ans) <- "dfm"
   return(ans)
 }
@@ -254,14 +259,17 @@ predict.dfm <- function(object, ...) {
 #' @export
 #' @method print dfm
 print.dfm <- function(x, ...) {
-  cat(
-    "Call: \n Bayesian dynamic factor model with",
+
+  cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"),
+        "\n\n", sep = "")
+  cat("Bayesian dynamic factor model with",
     nrow(x$B), "factor(s) and", ncol(x$B) / nrow(x$B), "lag(s)."
   )
-  cat("\n \n")
-  cat("Log Likelihood:", x$Lik)
-  cat("\n \n")
+  cat("\n")
+  cat("Log Likelihood:", x$Lik, " ")
   cat("BIC:", x$BIC)
+  cat("\n")
+  invisible(x)
 }
 
 #' @export
