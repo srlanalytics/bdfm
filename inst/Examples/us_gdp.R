@@ -21,18 +21,13 @@ logs <- c(
 
 diffs <- setdiff(colnames(econ_us), c("A191RL1Q225SBEA", 'W068RCQ027SBEA', "USSLIND"))
 
-m <- dfm(econ_us, factors = 3, pre_differenced = "A191RL1Q225SBEA", logs = logs, diffs = diffs)
 
-# Error in EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q,  :
-#   c++ exception (unknown reason)
-
-# - [ ] What is wrong?
-# - [ ] Better Error that tells me whats wrong
+m <- dfm(econ_us, obs_df = c("A191RL1Q225SBEA" = 1), factors = 2, pre_differenced = "A191RL1Q225SBEA", logs = logs, diffs = diffs)
 
 # Are we drawing from a stationary distribution?
-# ts.plot(m$Qstore[1,1,])
-# ts.plot(m$Hstore[1,1,])
+ts.plot(m$Qstore[1,1,])
+ts.plot(m$Hstore[1,1,])
 
-# summary(m)
+summary(m)
 
 

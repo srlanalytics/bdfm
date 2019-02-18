@@ -75,8 +75,8 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
     ans <- dfm_core(
       Y = data, m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
-      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
-      Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
+      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
+      Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
       burn = burn, verbose = verbose, tol = tol
     )
@@ -98,8 +98,8 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
     ans <- dfm_core(
       Y = Y.uc, m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
-      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
-      Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
+      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
+      Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
       burn = burn, verbose = verbose, tol = tol
     )
@@ -140,7 +140,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
 # nu_q = 0
 # Hp = NULL
 # lam_H = 0
-# nu_r = NULL
+# obs_df = NULL
 # ID = "pc_sub"
 # store_idx = NULL
 # reps = 1000
@@ -153,7 +153,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
 # scale = TRUE
 
 dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
-                     Bp, lam_B, nu_q, Hp, lam_H, nu_r, ID,
+                     Bp, lam_B, trans_df, Hp, lam_H, obs_df, ID,
                      store_idx, reps, burn, verbose, tol) {
 
 
@@ -188,6 +188,14 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
     Y[, diffs] <- sapply(diffs, mf_diff, fq = freq, Y = Y)
   }
 
+  # if (!is.null(trans_df)) {
+  #   trans_df <- standardize_index(trans_df, Y)
+  # }
+
+  if (!is.null(obs_df)) {
+    obs_df <- standardize_numeric(obs_df, Y)
+  }
+
   # specify which series are differenced for mixed frequency estimation
 
   LD <- rep(0, NCOL(Y))
@@ -205,7 +213,7 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
   if (method == "bayesian") {
     est <- bdfm(
       Y = Y, m = m, p = p, Bp = Bp,
-      lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
+      lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = trans_df, nu_r = obs_df,
       ID = ID, store_idx = store_idx, freq = freq, LD = LD, reps = reps,
       burn = burn, verbose = verbose
     )
@@ -217,7 +225,7 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
   } else if (method == "pc") {
     est <- PCdfm(
       Y, m = m, p = p, Bp = Bp,
-      lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
+      lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = trans_df, nu_r = obs_df,
       ID = ID, reps = reps, burn = burn
     )
   }
