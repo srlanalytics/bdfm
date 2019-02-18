@@ -331,7 +331,6 @@ List BReg(arma::mat X,   // RHS variables
   for(uword rep = 0; rep<burn; rep++){
 
     Rcpp::checkUserInterrupt();
-    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
 
     v_1   = trans(X)*X+Lam;
     v_1   = (trans(v_1)+v_1)/2;
@@ -351,7 +350,6 @@ List BReg(arma::mat X,   // RHS variables
   for(uword rep = 0; rep<reps; rep++){
 
     Rcpp::checkUserInterrupt();
-    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations
 
     v_1   = trans(X)*X+Lam;
     v_1   = (trans(v_1)+v_1)/2;
@@ -439,7 +437,6 @@ List BReg_diag(arma::mat X,   // RHS variables
 
   for(uword rep = 0; rep<burn; rep++){
     Rcpp::checkUserInterrupt();
-    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
 
     for(uword j=0; j<k; j++){
       y       = Y.col(j);
@@ -469,7 +466,6 @@ List BReg_diag(arma::mat X,   // RHS variables
   for(uword rep = 0; rep<reps; rep++){
 
     Rcpp::checkUserInterrupt();
-    //Rcpp::Rcout << rep <<endl; //outcomment to suppress iterations //Burn Loop
 
     for(uword j=0; j<k; j++){
       y       = Y.col(j);
@@ -869,7 +865,7 @@ List EstDFM(      arma::mat B,     // transition matrix
                   arma::uword store_idx = 0, // index to store distribution of predicted values
                   arma::uword reps = 1000, //repetitions
                   arma::uword burn = 500,
-                  bool Loud = false){ //burn in periods
+                  bool verbose = false){ //burn in periods
 
   // preliminaries
 
@@ -917,18 +913,12 @@ List EstDFM(      arma::mat B,     // transition matrix
   mat Ytmp = Y;
   Ytmp.shed_rows(0,p-1); //shed initial values to match Z
 
-  //Burn Loop
-  if(Loud){
-    Rcpp::Rcout << "Entering burn iterations" <<endl;
-  }
   for(uword rep = 0; rep<burn; rep++){
 
     Rcpp::checkUserInterrupt();
 
-    // Rcpp::Rcout << "\r1. Burning progress: " << 100*rep/burn << "%";
-
-    if (50*rep/burn % 10 == 0) {
-      Rcpp::Rcout << "\rProgress: " << 50*rep/burn << "%";
+    if(verbose){
+      Rcpp::Rcout << "\rProgress: " << round(100*rep/(burn + reps)) << "% (burning)";
     }
 
     // --------- Sample Factors given Data and Parameters ---------
@@ -1025,18 +1015,13 @@ List EstDFM(      arma::mat B,     // transition matrix
   }
 
   // ------------------ Sampling Loop ------------------------------------
-  if(Loud){
-    Rcpp::Rcout << "Completed " << burn << " burn iterations; entering sampling iterations " <<endl;
-  }
-
 
   for(uword rep = 0; rep<reps; rep++){
 
     Rcpp::checkUserInterrupt();
-    //Rcpp::Rcout << rep <<endl;
 
-    if (50*rep/reps % 10 == 0) {
-      Rcpp::Rcout << "\rProgress: " << 50 + 50*rep/reps << "%";
+    if(verbose){
+      Rcpp::Rcout << "\rProgress: " << round(100*(burn + rep)/(burn + reps)) << "% (sampling)";
     }
 
     // --------- Sample Factors given Data and Parameters
@@ -1146,10 +1131,6 @@ List EstDFM(      arma::mat B,     // transition matrix
   }
 
   Rcpp::Rcout << "\r                          \r";
-
-  if(Loud){
-    Rcpp::Rcout << "Completed " << reps << " sampling iterations " <<endl;
-  }
 
   //Getting posterior medians
 

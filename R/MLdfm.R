@@ -1,5 +1,5 @@
 #' @importFrom Matrix Matrix Diagonal sparseMatrix
-MLdfm <- function(Y, m, p, tol = 0.01, loud = FALSE) {
+MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE) {
   Y <- as.matrix(Y)
   r <- nrow(Y)
   k <- ncol(Y)
@@ -43,7 +43,7 @@ MLdfm <- function(Y, m, p, tol = 0.01, loud = FALSE) {
     Lik1 <- Est$Lik
     Conv <- 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0)
     Lik0 <- Lik1
-    if (loud) {
+    if (verbose) {
       print(Conv)
     }
     count <- count + 1
