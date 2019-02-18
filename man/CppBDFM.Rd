@@ -6,7 +6,7 @@
 \usage{
 Cppbdfm(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD,
   Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500,
-  Loud = FALSE)
+  verbose = FALSE)
 }
 \arguments{
 \item{B}{initial guess for B in transition equation}
@@ -45,7 +45,7 @@ Cppbdfm(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD,
 
 \item{burn}{number of iterations to burn in MCMC sampling}
 
-\item{Loud}{print status of function during evaluation.}
+\item{verbose}{print status of function during evaluation.}
 }
 \description{
 \code{Cppbdfm} is the core C++ function for estimating a linear-Gaussian

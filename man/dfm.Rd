@@ -10,7 +10,7 @@ dfm(data, factors = 1, lags = 3, forecasts = 2,
   trans_prior = NULL, trans_shrink = 0, trans_df = 0,
   obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
   identification = "pc_full", store_idx = NULL, reps = 1000,
-  burn = 500, loud = FALSE, tol = 0.01)
+  burn = 500, verbose = interactive(), tol = 0.01)
 }
 \arguments{
 \item{data}{data in matrix format with time in rows}
@@ -59,8 +59,8 @@ Numeric vector for user specified series.}
 
 \item{burn}{number of iterations to burn in MCMC sampling}
 
-\item{loud}{print status of function during evalutation. If ML, print
-difference in likelihood at each iteration of the EM algorithm.}
+\item{verbose}{print status of function during evalutation. If ML, print
+difference in likelihood at each iteration of the EM algorithm. Default is `TRUE` in interactive mode, `FALSE` otherwise.}
 
 \item{tol}{tolerance for convergence of EM algorithm (method `ml` only). Convergence
 criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
