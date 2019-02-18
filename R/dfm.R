@@ -85,7 +85,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
   } else {
     # no need for tsbox if Y is ts or mts
     if (inherits(data, "ts")) {
-      Y.uc <- unclass(data)
+      Y.uc <- as.matrix(unclass(data))
     } else {
       stopifnot(requireNamespace("tsbox"))
       # time series
