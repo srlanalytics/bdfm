@@ -21,8 +21,14 @@ logs <- c(
 
 diffs <- setdiff(colnames(econ_us), c("A191RL1Q225SBEA", 'W068RCQ027SBEA', "USSLIND"))
 
-
-m <- dfm(econ_us, obs_df = c("A191RL1Q225SBEA" = 1), factors = 2, pre_differenced = "A191RL1Q225SBEA", logs = logs, diffs = diffs)
+m <- dfm(
+  econ_us,
+  obs_df = c("A191RL1Q225SBEA" = 1),
+  factors = 2,
+  pre_differenced = "A191RL1Q225SBEA",
+  logs = logs,
+  diffs = diffs
+)
 
 # Are we drawing from a stationary distribution?
 ts.plot(m$Qstore[1,1,])
