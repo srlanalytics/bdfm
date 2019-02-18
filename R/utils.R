@@ -157,23 +157,23 @@ level <- function(ind, fq, Y_lev, vals) {
 }
 
 
-act <- c(1, 1, 2, 3, NA, NA, NA, 6, 7, 8, NA)
-dd <- c(NA, 1, 2, 1, 1, 1, 5, 2, 1, 2, 3)
+# act <- c(1, 1, 2, 3, NA, NA, NA, 6, 7, 8, NA)
+# dd <- c(NA, 1, 2, 1, 1, 1, 5, 2, 1, 2, 3)
 
-spline(act, n = length(act))
+# spline(act, n = length(act))
 
-cs <- c(0, cumsum(dd[-1]))
+# cs <- c(0, cumsum(dd[-1]))
 
-offset <- act-cs
-
-
-offset <- c(1, 0, -1, -1, -2.5, -4, -5.5, -7, -7, -8, -8)
+# offset <- act-cs
 
 
-cs+offset
+# offset <- c(1, 0, -1, -1, -2.5, -4, -5.5, -7, -7, -8, -8)
 
 
-approx(offset)
+# cs+offset
+
+
+# approx(offset)
 
 
 
