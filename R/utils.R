@@ -156,6 +156,19 @@ level <- function(ind, fq, Y_lev, vals) {
   return(y_lev)
 }
 
+# convert differenced data back to levels
+level_simple <- function(val, y_lev, fq) {
+  #identify which periods should have observations
+  #for high frequency/uniform frequency observations this will be every period
+  rmdr    <- median(which(is.finite(y_lev))%%fq)
+  indx    <- seq(1, length(y_lev))%%fq == rmdr
+  y       <- val[indx]
+  cs      <- cumsum(y)
+  appox   <- na_appox(y_lev[indx] - cs)
+  y_lev[indx]   <- appox + cs #return at same frequency as input
+  return(y_lev)
+}
+
 
 # act <- c(1, 1, 2, 3, NA, NA, NA, 6, 7, 8, NA)
 # dd <- c(NA, 1, 2, 1, 1, 1, 5, 2, 1, 2, 3)

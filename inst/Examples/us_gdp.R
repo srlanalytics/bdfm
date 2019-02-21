@@ -1,7 +1,5 @@
 library(bdfm)
-
-# drop outliers (optional but gets rid of some wierd stuff)
-econ_us[abs(scale(econ_us)) > 4] <- NA
+library(data.table)
 
 logs <- c(
   "W068RCQ027SBEA",
@@ -19,15 +17,17 @@ logs <- c(
   "ICSA"
 )
 
-diffs <- setdiff(colnames(econ_us), c("A191RL1Q225SBEA", 'W068RCQ027SBEA', "USSLIND"))
+diffs <- setdiff(colnames(econ_us), c("A191RL1Q225SBEA", "USSLIND"))
 
 m <- dfm(
   econ_us,
   obs_df = c("A191RL1Q225SBEA" = 1),
   factors = 2,
   pre_differenced = "A191RL1Q225SBEA",
+  store_idx = "A191RL1Q225SBEA",
   logs = logs,
-  diffs = diffs
+  diffs = diffs,
+  loud = T
 )
 
 # Are we drawing from a stationary distribution?
