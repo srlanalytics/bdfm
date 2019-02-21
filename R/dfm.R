@@ -98,9 +98,9 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
     attr(Y.uc, "tsp") <- NULL
     ans <- dfm_core(
       Y = Y.uc, m = factors, p = lags, FC = forecasts, method = method,
-      scale = scale, logs = logs, diffs = diffs, ot = outlier_threshold, freq = frequency_mix,
-      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
-      Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
+      scale = scale, logs = logs, diffs = diffs, outlier_threshold = outlier_threshold, freq = frequency_mix,
+      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
+      Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
       burn = burn, verbose = verbose, tol = tol
     )
@@ -151,10 +151,10 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
 # FC = 3
 # logs = c( 2,  4,  5,  8,  9, 10, 11, 12, 15, 16, 17, 21, 22)
 # diffs = c(2, 4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)
-# ot <- 4
+# outlier_threshold <- 4
 # scale = TRUE
 
-dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
+dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs, freq, preD,
                      Bp, lam_B, trans_df, Hp, lam_H, obs_df, ID,
                      store_idx, reps, burn, verbose, tol) {
 
@@ -216,7 +216,7 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
   LD[unique(c(preD, diffs))] <- 1 # in bdfm 1 indicates differenced data, 0 level data
 
   # drop outliers
-  Y[abs(scale(Y)) > ot] <- NA
+  Y[abs(scale(Y)) > outlier_threshold] <- NA
 
   if (scale) {
     Y <- 100*scale(Y)
