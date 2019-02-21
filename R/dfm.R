@@ -75,7 +75,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
   if (!any(class(data) %in% c(tsobjs, "ts", "mts")) && is.matrix(data)) {
     ans <- dfm_core(
       Y = data, m = factors, p = lags, FC = forecasts, method = method,
-      scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
+      scale = scale, logs = logs, diffs = diffs, outlier_threshold = outlier_threshold, freq = frequency_mix,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
@@ -138,7 +138,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
 # Bp <- NULL
 # preD <- 1
 # lam_B = 0
-# nu_q = 0
+# trans_df = 0
 # Hp = NULL
 # lam_H = 0
 # obs_df = NULL
@@ -157,8 +157,6 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
 dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs, freq, preD,
                      Bp, lam_B, trans_df, Hp, lam_H, obs_df, ID,
                      store_idx, reps, burn, verbose, tol) {
-
-
 
   #-------Data processing-------------------------
 
