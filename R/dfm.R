@@ -22,7 +22,7 @@
 #'   length equal to the number of observables.
 #' @param identification factor identification. 'pc_long' is the default and finds series with the most
 #' observations over time. 'pc_full' uses all observed series, 'pc_sub' finds a submatrix of the data that maximizes
-#'   the number of observations for a square (no missing values) data set. Users may also enter a 
+#'   the number of observations for a square (no missing values) data set. Users may also enter a
 #'   numeric vector for specified series.
 #' @param store_idx, if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
 #' @param reps number of repetitions for MCMC sampling
@@ -48,7 +48,7 @@
 #' @useDynLib bdfm
 dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
                 method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
-                outlier_threshold = 4, frequency_mix = "auto", pre_differenced = NULL, 
+                outlier_threshold = 4, frequency_mix = "auto", pre_differenced = NULL,
                 trans_prior = NULL, trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
                 obs_df = NULL, identification = "pc_long",
                 store_idx = NULL, reps = 1000, burn = 500, verbose = interactive(),
@@ -75,7 +75,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
   if (!any(class(data) %in% c(tsobjs, "ts", "mts")) && is.matrix(data)) {
     ans <- dfm_core(
       Y = data, m = factors, p = lags, FC = forecasts, method = method,
-      scale = scale, logs = logs, diffs = diffs, ot = outlier_threshold, freq = frequency_mix,
+      scale = scale, logs = logs, diffs = diffs, outlier_threshold = outlier_threshold, freq = frequency_mix,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
@@ -98,7 +98,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
     attr(Y.uc, "tsp") <- NULL
     ans <- dfm_core(
       Y = Y.uc, m = factors, p = lags, FC = forecasts, method = method,
-      scale = scale, logs = logs, diffs = diffs, ot = outlier_threshold, freq = frequency_mix,
+      scale = scale, logs = logs, diffs = diffs, outlier_threshold = outlier_threshold, freq = frequency_mix,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
@@ -142,7 +142,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
 # Hp = NULL
 # lam_H = 0
 # obs_df = NULL
-# ID = "pc_sub"
+# ID = "pc_long"
 # store_idx = 2
 # reps = 1000
 # burn = 500
@@ -151,10 +151,10 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
 # FC = 3
 # logs = c( 2,  4,  5,  8,  9, 10, 11, 12, 15, 16, 17, 21, 22)
 # diffs = c(2, 4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)
-# ot <- 4
+# outlier_threshold <- 4
 # scale = TRUE
 
-dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, ot, freq, preD,
+dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs, freq, preD,
                      Bp, lam_B, trans_df, Hp, lam_H, obs_df, ID,
                      store_idx, reps, burn, verbose, tol) {
 
@@ -169,15 +169,15 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, ot, freq, preD,
     stop("Argument 'freq' must be 'auto' or integer valued with
          length equal to the number data series")
   }
-  
+
   if (p == "auto"){
     p <- max(freq)
   }
-  
+
   if (FC == "auto"){
     FC <- max(freq)
   }
-  
+
   # add forecast periods
   if (FC > 0) {
     tmp <- matrix(NA, FC, k)
@@ -212,23 +212,23 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, ot, freq, preD,
     preD <- standardize_index(preD, Y)
   }
   LD[unique(c(preD, diffs))] <- 1 # in bdfm 1 indicates differenced data, 0 level data
-  
-  # drop outliers 
-  Y[abs(scale(Y)) > ot] <- NA
+
+  # drop outliers
+  Y[abs(scale(Y)) > outlier_threshold] <- NA
 
   if (scale) {
     Y <- 100*scale(Y)
     y_scale  <- attr(Y, "scaled:scale")
     y_center <- attr(Y, "scaled:center")
   }
-  
+
   if (!is.null(store_idx)){
     if(length(store_idx)>1){
       stop("Length of 'store_idx' cannot be greater than 1")
     }
     store_idx <- standardize_index(store_idx, Y)
   }
-  
+
   if(!ID%in%c("pc_full", "pc_sub", "pc_long", "name")){
     ID <- standardize_index(ID, Y)
   }
@@ -279,7 +279,7 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, ot, freq, preD,
       est$Ystore  <- exp(est$Ystore)
     }
   }
-  
+
   return(est)
 }
 
