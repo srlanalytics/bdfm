@@ -28,7 +28,7 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
     }
   }
 
-  # ----------- Format Priors ------------------
+  # Format Priors
   # enter priors multiplicatively so that 0 is a weak prior and 1 is a strong prior (additive        priors are relative to the number of observations)
   lam_B <- r * lam_B + 1
   nu_q <- r * nu_q + 1
@@ -47,7 +47,6 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
   if (is.null(Bp)) {
     Bp <- matrix(0, m, m * p)
   }
-  # ---------------------------------------------
 
   # Estimate parameters of the observation equation
   Hest <- BReg_diag(X, Y, Int = F, Bp = Hp, lam = lam_H, nu = nu_r, reps = reps, burn = burn)

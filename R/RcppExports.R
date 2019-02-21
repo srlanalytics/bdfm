@@ -5,14 +5,6 @@ QuickReg <- function(X, Y) {
     .Call('_bdfm_QuickReg', PACKAGE = 'bdfm', X, Y)
 }
 
-MonthDays <- function(year, month) {
-    .Call('_bdfm_MonthDays', PACKAGE = 'bdfm', year, month)
-}
-
-end_of_month <- function(Dates) {
-    .Call('_bdfm_end_of_month', PACKAGE = 'bdfm', Dates)
-}
-
 comp_form <- function(B) {
     .Call('_bdfm_comp_form', PACKAGE = 'bdfm', B)
 }
@@ -61,8 +53,8 @@ FSimMF <- function(B, Jb, q, H, R, Y, freq, LD) {
     .Call('_bdfm_FSimMF', PACKAGE = 'bdfm', B, Jb, q, H, R, Y, freq, LD)
 }
 
-EstDFM <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y = FALSE, store_idx = 0L, reps = 1000L, burn = 500L, Loud = FALSE) {
-    .Call('_bdfm_EstDFM', PACKAGE = 'bdfm', B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y, store_idx, reps, burn, Loud)
+EstDFM <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y = FALSE, store_idx = 0L, reps = 1000L, burn = 500L, verbose = FALSE) {
+    .Call('_bdfm_EstDFM', PACKAGE = 'bdfm', B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y, store_idx, reps, burn, verbose)
 }
 
 Ksmoother <- function(A, Q, HJ, R, Y) {

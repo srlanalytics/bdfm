@@ -26,8 +26,8 @@
 #' @param store_idx, if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
-#' @param loud print status of function during evalutation. If ML, print
-#'   difference in likelihood at each iteration of the EM algorithm.
+#' @param verbose print status of function during evalutation. If ML, print
+#'   difference in likelihood at each iteration of the EM algorithm. Default is `TRUE` in interactive mode, `FALSE` otherwise.
 #' @param tol tolerance for convergence of EM algorithm (method `ml` only). Convergence
 #'   criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
 #'   is the log likelihood from this iteration and Lik0 is the likelihood from
@@ -50,7 +50,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
                 frequency_mix = "auto", pre_differenced = NULL, trans_prior = NULL,
                 trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
                 obs_df = NULL, identification = "pc_full",
-                store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
+                store_idx = NULL, reps = 1000, burn = 500, verbose = interactive(),
                 tol = 0.01) {
 
   call <- match.call
@@ -75,17 +75,17 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
     ans <- dfm_core(
       Y = data, m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
-      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
-      Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
+      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
+      Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, loud = loud, tol = tol
+      burn = burn, verbose = verbose, tol = tol
     )
     colnames(ans$values) <- colnames(data)
     ans$dates <- NULL
   } else {
     # no need for tsbox if Y is ts or mts
     if (inherits(data, "ts")) {
-      Y.uc <- unclass(data)
+      Y.uc <- as.matrix(unclass(data))
     } else {
       stopifnot(requireNamespace("tsbox"))
       # time series
@@ -98,10 +98,10 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
     ans <- dfm_core(
       Y = Y.uc, m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
-      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
-      Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
+      preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
+      Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, loud = loud, tol = tol
+      burn = burn, verbose = verbose, tol = tol
     )
 
     # make values a ts timeseries
@@ -140,12 +140,12 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
 # nu_q = 0
 # Hp = NULL
 # lam_H = 0
-# nu_r = NULL
+# obs_df = NULL
 # ID = "pc_sub"
 # store_idx = NULL
 # reps = 1000
 # burn = 500
-# loud = T
+# verbose = T
 # tol = .01
 # FC = 3
 # logs = c( 2,  4,  5,  8,  9, 10, 11, 12, 15, 16, 17, 21, 22)
@@ -153,8 +153,8 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
 # scale = TRUE
 
 dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
-                     Bp, lam_B, nu_q, Hp, lam_H, nu_r, ID,
-                     store_idx, reps, burn, loud, tol) {
+                     Bp, lam_B, trans_df, Hp, lam_H, obs_df, ID,
+                     store_idx, reps, burn, verbose, tol) {
 
 
 
@@ -188,6 +188,14 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
     Y[, diffs] <- sapply(diffs, mf_diff, fq = freq, Y = Y)
   }
 
+  # if (!is.null(trans_df)) {
+  #   trans_df <- standardize_index(trans_df, Y)
+  # }
+
+  if (!is.null(obs_df)) {
+    obs_df <- standardize_numeric(obs_df, Y)
+  }
+
   # specify which series are differenced for mixed frequency estimation
 
   LD <- rep(0, NCOL(Y))
@@ -205,19 +213,19 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
   if (method == "bayesian") {
     est <- bdfm(
       Y = Y, m = m, p = p, Bp = Bp,
-      lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
+      lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = trans_df, nu_r = obs_df,
       ID = ID, store_idx = store_idx, freq = freq, LD = LD, reps = reps,
-      burn = burn, loud = loud
+      burn = burn, verbose = verbose
     )
   } else if (method == "ml") {
     est <- MLdfm(
       Y = Y, m = m, p = p, tol = tol,
-      loud = loud
+      verbose = verbose
     )
   } else if (method == "pc") {
     est <- PCdfm(
       Y, m = m, p = p, Bp = Bp,
-      lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = nu_q, nu_r = nu_r,
+      lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = trans_df, nu_r = obs_df,
       ID = ID, reps = reps, burn = burn
     )
   }

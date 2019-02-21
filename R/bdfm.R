@@ -1,16 +1,10 @@
-bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq, LD, reps, burn, loud) {
+bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq, LD, reps, burn, verbose) {
 
-  # ----------- Preliminaries -----------------
+  # Preliminaries
   Y <- as.matrix(Y)
   k <- ncol(Y)
   r <- nrow(Y)
   n_obs <- sum(is.finite(Y))
-  # if (ITC) {
-  #   itc <- colMeans(Y, na.rm = T)
-  #   Y <- Y - matrix(1, r, 1) %x% t(itc) # De-mean data. Data is not automatically stadardized --- that is left up to the user and should be done before estimation if desired.
-  # } else {
-  #   itc <- rep(0, k)
-  # }
 
   if (is.null(freq)) { # uniform frequency
     freq <- rep(1, k)
@@ -89,8 +83,9 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     }
   }
 
-  # ----------- Format Priors ------------------
-  # enter priors multiplicatively so that 0 is a weak prior and 1 is a strong prior (additive        priors are relative to the number of observations)
+  # Format Priors
+  # enter priors multiplicatively so that 0 is a weak prior and 1 is a strong
+  # prior (additive priors are relative to the number of observations)
   lam_B <- r * lam_B + 1
   nu_q <- r * nu_q + 1
   lam_H <- r * lam_H + 1
@@ -140,7 +135,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     }
   }
 
-  Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, freq = freq, LD = LD, store_Y = store_Y, store_idx = store_idx, reps = reps, burn = burn, Loud = loud)
+  Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, freq = freq, LD = LD, store_Y = store_Y, store_idx = store_idx, reps = reps, burn = burn, verbose = verbose)
 
   if (ID %in% c("pc_sub", "pc_full") || is.numeric(ID)) {
     B <- Parms$B
@@ -210,7 +205,13 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
 
 #' MCMC Routine for Bayesian Dynamic Factor Models
 #'
-#' \code{Cppbdfm} is the core C++ function for estimating a linear-Gaussian Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's disturbance smoother. This function may be called directly by advanced users. The only dependencies are the  Armadillo (\url{http://arma.sourceforge.net/}) linear algebra library for C++ and the packages needed for interfacing with R (\code{\link{Rcpp}} and \code{\link{RcppArmadillo}}).
+#' \code{Cppbdfm} is the core C++ function for estimating a linear-Gaussian
+#' Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's
+#' disturbance smoother. This function may be called directly by advanced
+#' users. The only dependencies are the  Armadillo
+#' (\url{http://arma.sourceforge.net/}) linear algebra library for C++ and the
+#' packages needed for interfacing with R (\code{\link{Rcpp}} and
+#' \code{\link{RcppArmadillo}}).
 #'
 #' @param B  initial guess for B in transition equation
 #' @param Bp prior for B
@@ -230,11 +231,11 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
 #' @param store_idx, if Ystore is TRUE, index of which observed series to store. Note C++ uses zero indexing (i.e. subtract 1 from the R index value)
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
-#' @param Loud print status of function during evaluation.
+#' @param verbose print status of function during evaluation.
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @useDynLib bdfm
-Cppbdfm <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, Loud = FALSE) {
-  OUT <- EstDFM(B = B, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = R, nu_r = nu_r, Y = Y, freq = freq, LD = LD, reps = reps, burn = burn, Loud = Loud)
+Cppbdfm <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, verbose = FALSE) {
+  OUT <- EstDFM(B = B, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = R, nu_r = nu_r, Y = Y, freq = freq, LD = LD, reps = reps, burn = burn, verbose = verbose)
   return(OUT)
 }
