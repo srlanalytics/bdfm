@@ -18,29 +18,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// MonthDays
-arma::uword MonthDays(double year, double month);
-RcppExport SEXP _bdfm_MonthDays(SEXP yearSEXP, SEXP monthSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type year(yearSEXP);
-    Rcpp::traits::input_parameter< double >::type month(monthSEXP);
-    rcpp_result_gen = Rcpp::wrap(MonthDays(year, month));
-    return rcpp_result_gen;
-END_RCPP
-}
-// end_of_month
-arma::mat end_of_month(arma::mat Dates);
-RcppExport SEXP _bdfm_end_of_month(SEXP DatesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type Dates(DatesSEXP);
-    rcpp_result_gen = Rcpp::wrap(end_of_month(Dates));
-    return rcpp_result_gen;
-END_RCPP
-}
 // comp_form
 arma::mat comp_form(arma::mat B);
 RcppExport SEXP _bdfm_comp_form(SEXP BSEXP) {
@@ -220,8 +197,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // EstDFM
-List EstDFM(arma::mat B, arma::mat Bp, arma::sp_mat Jb, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, arma::uvec freq, arma::uvec LD, bool store_Y, arma::uword store_idx, arma::uword reps, arma::uword burn, bool Loud);
-RcppExport SEXP _bdfm_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP JbSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP freqSEXP, SEXP LDSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP LoudSEXP) {
+List EstDFM(arma::mat B, arma::mat Bp, arma::sp_mat Jb, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, arma::uvec freq, arma::uvec LD, bool store_Y, arma::uword store_idx, arma::uword reps, arma::uword burn, bool verbose);
+RcppExport SEXP _bdfm_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP JbSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP freqSEXP, SEXP LDSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -243,8 +220,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::uword >::type store_idx(store_idxSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type reps(repsSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type burn(burnSEXP);
-    Rcpp::traits::input_parameter< bool >::type Loud(LoudSEXP);
-    rcpp_result_gen = Rcpp::wrap(EstDFM(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y, store_idx, reps, burn, Loud));
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(EstDFM(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y, store_idx, reps, burn, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -300,8 +277,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_bdfm_QuickReg", (DL_FUNC) &_bdfm_QuickReg, 2},
-    {"_bdfm_MonthDays", (DL_FUNC) &_bdfm_MonthDays, 2},
-    {"_bdfm_end_of_month", (DL_FUNC) &_bdfm_end_of_month, 1},
     {"_bdfm_comp_form", (DL_FUNC) &_bdfm_comp_form, 1},
     {"_bdfm_mvrnrm", (DL_FUNC) &_bdfm_mvrnrm, 3},
     {"_bdfm_rinvwish", (DL_FUNC) &_bdfm_rinvwish, 3},

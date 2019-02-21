@@ -1,4 +1,4 @@
-# applies a function on each continous segment of 1s. Function need to retur
+# applies a function on each continous segment of 1s.
 # @example
 #
 # dist_unif <- function(x) rep(1 / length(x), length(x))

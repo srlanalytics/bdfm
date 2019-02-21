@@ -22,7 +22,7 @@ logs <- c(
 diffs <- setdiff(colnames(econ_us), c("A191RL1Q225SBEA", "USSLIND"))
 
 # Forecasts should ALWAYS be made using store_idx if we are interested in forcasting
-# one of the series in the model. 
+# one of the series in the model.
 m <- dfm(data = econ_us, factors = 3, pre_differenced = "A191RL1Q225SBEA", store_idx = "A191RL1Q225SBEA",
          logs = logs, diffs = diffs, loud = T)
 

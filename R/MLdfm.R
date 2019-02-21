@@ -1,5 +1,5 @@
 #' @importFrom Matrix Matrix Diagonal sparseMatrix
-MLdfm <- function(Y, m, p, tol = 0.01, loud = FALSE) {
+MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE) {
   Y <- as.matrix(Y)
   r <- nrow(Y)
   k <- ncol(Y)
@@ -29,7 +29,7 @@ MLdfm <- function(Y, m, p, tol = 0.01, loud = FALSE) {
 
   # Arbitrary intitial guess for R
   R <- diag(1, k, k)
-  
+
   count <- 0
   Lik0 <- -1e10
   Conv <- 100
@@ -43,14 +43,13 @@ MLdfm <- function(Y, m, p, tol = 0.01, loud = FALSE) {
     Lik1 <- Est$Lik
     Conv <- 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0)
     Lik0 <- Lik1
-    if (loud) {
+    if (verbose) {
       print(Conv)
     }
     count <- count + 1
   }
 
-
-  ############ Final Estimates ############
+  # Final Estimates
   if (m * p == 1) {
     A <- sparseMatrix(i = 1, j = 1, x = c(A[1, 1]), dims = c(1, 1), symmetric = FALSE, triangular = FALSE, giveCsparse = TRUE)
     Q <- sparseMatrix(i = 1, j = 1, x = c(Q[1, 1]), dims = c(1, 1), symmetric = FALSE, triangular = FALSE, giveCsparse = TRUE)
