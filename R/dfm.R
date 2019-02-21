@@ -8,6 +8,7 @@
 #' @param scale scale data before estimation (True/False)?
 #' @param logs names or index values of series which should be entered in log levels
 #' @param diffs names or index values of series which should be differenced
+#' @param outlier_threshold drop observations more than x standard deviations from the mean
 #' @param frequency_mix 'auto' or numeric, number of high frequency periods in observation if data is mixed frequency
 #' @param pre_differenced, names or index values of low freqeuncy series entered in differences (not necessary if already specified in 'diffs')
 #' @param trans_prior prior matrix for B in the transition equation. Default is
@@ -19,10 +20,10 @@
 #' @param obs_shrink prior tightness on H (loadings) in the observation equation
 #' @param obs_df prior deg. of freedom for observables, entered as vector with
 #'   length equal to the number of observables.
-#' @param identification factor identification. 'pc_full' is the default (using
-#'   all observed series), 'pc_sub' finds a submatrix of the data that maximizes
-#'   the number of observations for a square (no missing values) data set.
-#'   Numeric vector for user specified series.
+#' @param identification factor identification. 'pc_long' is the default and finds series with the most
+#' observations over time. 'pc_full' uses all observed series, 'pc_sub' finds a submatrix of the data that maximizes
+#'   the number of observations for a square (no missing values) data set. Users may also enter a 
+#'   numeric vector for specified series.
 #' @param store_idx, if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
@@ -45,11 +46,11 @@
 #' m <- dfm(dta, forecasts = 2)
 #' summary(m)
 #' @useDynLib bdfm
-dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
+dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
                 method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
-                frequency_mix = "auto", pre_differenced = NULL, trans_prior = NULL,
-                trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
-                obs_df = NULL, identification = "pc_full",
+                outlier_threshold = 4, frequency_mix = "auto", pre_differenced = NULL, 
+                trans_prior = NULL, trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
+                obs_df = NULL, identification = "pc_long",
                 store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
                 tol = 0.01) {
 
@@ -74,7 +75,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
   if (!any(class(data) %in% c(tsobjs, "ts", "mts")) && is.matrix(data)) {
     ans <- dfm_core(
       Y = data, m = factors, p = lags, FC = forecasts, method = method,
-      scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
+      scale = scale, logs = logs, diffs = diffs, ot = outlier_threshold, freq = frequency_mix,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
@@ -97,7 +98,7 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
     attr(Y.uc, "tsp") <- NULL
     ans <- dfm_core(
       Y = Y.uc, m = factors, p = lags, FC = forecasts, method = method,
-      scale = scale, logs = logs, diffs = diffs, freq = frequency_mix,
+      scale = scale, logs = logs, diffs = diffs, ot = outlier_threshold, freq = frequency_mix,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, nu_q = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, nu_r = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
@@ -131,8 +132,8 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
   return(ans)
 }
 
-# m <- 2
-# p <- 3
+# m <- 3
+# p <- "auto"
 # freq <- "auto"
 # Bp <- NULL
 # preD <- 1
@@ -141,8 +142,8 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
 # Hp = NULL
 # lam_H = 0
 # nu_r = NULL
-# ID = "pc_sub"
-# store_idx = NULL
+# ID = "pc_long"
+# store_idx = 2
 # reps = 1000
 # burn = 500
 # loud = T
@@ -150,10 +151,11 @@ dfm <- function(data, factors = 1, lags = 3, forecasts = 2,
 # FC = 3
 # logs = c( 2,  4,  5,  8,  9, 10, 11, 12, 15, 16, 17, 21, 22)
 # diffs = c(2, 4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)
+# ot <- 4
 # scale = TRUE
 
-dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
-                     Bp, lam_B, nu_q, Hp, lam_H, nu_r, ID,
+dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, ot, freq, 
+                    preD, Bp, lam_B, nu_q, Hp, lam_H, nu_r, ID,
                      store_idx, reps, burn, loud, tol) {
 
 
@@ -169,7 +171,16 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
     stop("Argument 'freq' must be 'auto' or integer valued with
          length equal to the number data series")
   }
-
+  
+  if (p == "auto"){
+    p <- max(freq)
+  }
+  
+  if (FC == "auto"){
+    FC <- max(freq)
+  }
+  
+  # add forecast periods
   if (FC > 0) {
     tmp <- matrix(NA, FC, k)
     Y <- rbind(Y, tmp)
@@ -195,11 +206,25 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
     preD <- standardize_index(preD, Y)
   }
   LD[unique(c(preD, diffs))] <- 1 # in bdfm 1 indicates differenced data, 0 level data
+  
+  # drop outliers 
+  Y[abs(scale(Y)) > ot] <- NA
 
   if (scale) {
     Y <- 100*scale(Y)
     y_scale  <- attr(Y, "scaled:scale")
     y_center <- attr(Y, "scaled:center")
+  }
+  
+  if (!is.null(store_idx)){
+    if(length(store_idx)>1){
+      stop("Length of 'store_idx' cannot be greater than 1")
+    }
+    store_idx <- standardize_index(store_idx, Y)
+  }
+  
+  if(!ID%in%c("pc_full", "pc_sub", "pc_long", "name")){
+    ID <- standardize_index(ID, Y)
   }
 
   if (method == "bayesian") {
@@ -225,18 +250,30 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, diffs, freq, preD,
   # undo scaling
   if(scale){
     est$values <- (matrix(1, nrow(est$values), 1) %x% t(y_scale)) * (est$values / 100) + (matrix(1, nrow(est$values), 1) %x% t(y_center))
+    if(!is.null(store_idx) && method == "bayesian"){
+      est$Ystore <- est$Ystore*(y_scale[store_idx]/100) + y_center[store_idx]
+      est$Ymedain <- est$Ymedian*(y_scale[store_idx]/100) + y_center[store_idx]
+    }
   }
 
   # undo differences
   if (!is.null(diffs)) {
     est$values[,diffs] <- sapply(diffs, FUN = level, fq = freq, Y_lev = Y_lev, vals = est$values)
+    if(!is.null(store_idx) && method == "bayesian" && store_idx%in%diffs){
+      est$Ymedain <- level_simple(est$Ymedain, y_lev = Y_lev[,store_idx], fq = freq[store_idx])
+      est$Ystore  <- apply(est$Ystore, MARGIN = 2, FUN = level_simple, y_lev = Y_lev[,store_idx], fq = freq[store_idx])
+    }
   }
 
   # undo logs
   if (!is.null(logs)) {
     est$values[,logs] <- exp(est$values[,logs])
+    if(!is.null(store_idx) && method == "bayesian" && store_idx%in%logs){
+      est$Ymedain <- exp(est$Ymedain)
+      est$Ystore  <- exp(est$Ystore)
+    }
   }
-
+  
   return(est)
 }
 

@@ -4,12 +4,12 @@
 \alias{dfm}
 \title{Estimate dynamic factor model}
 \usage{
-dfm(data, factors = 1, lags = 3, forecasts = 2,
+dfm(data, factors = 1, lags = "auto", forecasts = 2,
   method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL,
-  diffs = NULL, frequency_mix = "auto", pre_differenced = NULL,
-  trans_prior = NULL, trans_shrink = 0, trans_df = 0,
-  obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
-  identification = "pc_full", store_idx = NULL, reps = 1000,
+  diffs = NULL, outlier_threshold = 4, frequency_mix = "auto",
+  pre_differenced = NULL, trans_prior = NULL, trans_shrink = 0,
+  trans_df = 0, obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
+  identification = "pc_long", store_idx = NULL, reps = 1000,
   burn = 500, loud = FALSE, tol = 0.01)
 }
 \arguments{
@@ -28,6 +28,8 @@ dfm(data, factors = 1, lags = 3, forecasts = 2,
 \item{logs}{names or index values of series which should be entered in log levels}
 
 \item{diffs}{names or index values of series which should be differenced}
+
+\item{outlier_threshold}{drop observations more than x standard deviations from the mean}
 
 \item{frequency_mix}{'auto' or numeric, number of high frequency periods in observation if data is mixed frequency}
 

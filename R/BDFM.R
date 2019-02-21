@@ -40,6 +40,9 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
   # Identification is based on the first m variables so the initial guess just uses these variables as factors.
 
   if (is.numeric(ID)) {
+    if(length(ID)<m){
+      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
+    }
     PC <- PrinComp(Y[, ID], m)
     Y <- cbind(PC$components, Y)
     k <- k + m
@@ -48,9 +51,11 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     }
     freq <- c(rep(1, m), freq)
     LD <- c(rep(0, m), LD)
-  }
-  else if (ID == "pc_sub") {
+  } else if (ID == "pc_sub") {
     Ysub <- Y_sub(Y) # submatrix of Y with complete data, i.e. no missing values
+    if(NCOL(Ysub)<m){
+      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
+    }
     PC <- PrinComp(Ysub$Ysub, m)
     tmp <- matrix(NA, r, m)
     tmp[Ysub$ind, ] <- PC$components
@@ -63,6 +68,23 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     LD <- c(rep(0, m), LD)
   } else if (ID == "pc_full") {
     PC <- PrinComp(Y, m)
+    Y <- cbind(PC$components, Y)
+    k <- k + m
+    if (!is.null(nu_r)) {
+      nu_r <- c(rep(0, m), nu_r)
+    }
+    freq <- c(rep(1, m), freq)
+    LD <- c(rep(0, m), LD)
+    if (!any(!is.na(PC$components))) {
+      stop("Every period contains missing data. Try setting ID to pc_sub.")
+    }
+  }else if (ID == "pc_long") {
+    long <- apply(Y,2,function(e) sum(is.finite(e)))
+    long <- long>=median(long)
+    PC <- PrinComp(Y[,long], m)
+    if(sum(long)<m){
+      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
+    }
     Y <- cbind(PC$components, Y)
     k <- k + m
     if (!is.null(nu_r)) {
@@ -133,7 +155,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     store_Y <- FALSE
   } else {
     store_Y <- TRUE
-    if (ID %in% c("pc_sub", "pc_full")) {
+    if (ID %in% c("pc_sub", "pc_full", "pc_long") || is.numeric(ID)) {
       store_idx <- store_idx + m - 1 # -1 due to zero indexing in C++
     } else {
       store_idx <- store_idx - 1
@@ -142,7 +164,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
 
   Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, freq = freq, LD = LD, store_Y = store_Y, store_idx = store_idx, reps = reps, burn = burn, Loud = loud)
 
-  if (ID %in% c("pc_sub", "pc_full") || is.numeric(ID)) {
+  if (ID %in% c("pc_sub", "pc_full", "pc_long") || is.numeric(ID)) {
     B <- Parms$B
     q <- Parms$Q
     H <- as.matrix(Parms$H[-(1:m), ])
