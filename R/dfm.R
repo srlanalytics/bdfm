@@ -84,18 +84,19 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
     colnames(ans$values) <- colnames(data)
     ans$dates <- NULL
   } else {
-    # no need for tsbox if Y is ts or mts
+    # no requirement for tsbox if data is ts or mts
     if (inherits(data, "ts")) {
       data_unclassed <- as.matrix(unclass(data))
     } else {
+      # all other time series classes are handled by tsbox
       stopifnot(requireNamespace("tsbox"))
-      # time series
       stopifnot(tsbox::ts_boxable(data))
-      # convert to mts
       data_unclassed <- unclass(tsbox::ts_ts(data))
     }
+
     data_tsp <- attr(data_unclassed, "tsp")
     attr(data_unclassed, "tsp") <- NULL
+
     ans <- dfm_core(
       Y = data_unclassed, m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, outlier_threshold = outlier_threshold, freq = frequency_mix,
@@ -105,19 +106,15 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
       burn = burn, verbose = verbose, tol = tol
     )
 
-    # make values a ts timeseries
+    # re-apply time series properties and colnames from input
     ans$values <- ts(ans$values, start = data_tsp[1], frequency = data_tsp[3])
     ans$factors <- ts(ans$factors, start = data_tsp[1], frequency = data_tsp[3])
     if (!is.null(store_idx)) {
       ans$Ymedian <- ts(ans$Ymedian, start = data_tsp[1], frequency = data_tsp[3])
     }
-    # apply column names from Y
     colnames(ans$values) <- colnames(data)
 
-    # return a date vector
-    # ans$dates <- tsbox::ts_regular(tsbox::ts_df(ans$values))[, 1]
-
-    # put values back into original class
+    # put values back into original class (other than ts)
     if (!inherits(data, "ts")) {
       ans$values <- tsbox::copy_class(ans$values, data)
       ans$factors <- tsbox::copy_class(ans$factors, data, preserve.mode = FALSE)
