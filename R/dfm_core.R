@@ -146,5 +146,29 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     }
   }
 
+  # adjusted series: align 'values' with original series
+  est$adjusted <- align_with_benchmark(est$values, Y)
+
   return(est)
 }
+
+
+# benchmark <- fdeaths
+# benchmark[c(1:10, 20:25)] <- NA
+# tsbox::ts_plot(mdeaths, fdeaths, aligned = align_with_benchmark(x, benchmark))
+align_with_benchmark <- function(x, benchmark) {
+
+  if (NCOL(x) > 1) {  # multivariate mode
+    stopifnot(identical(dim(x), dim(benchmark)))
+    z <- x
+    for (i in 1:NCOL(x)) {
+      z[, i] <- align_with_benchmark(x[, i], benchmark[, i])
+    }
+    return(z)
+  }
+
+  dff <- benchmark - x
+  dff_approx <- na_appox(dff)
+  x + dff_approx
+}
+
