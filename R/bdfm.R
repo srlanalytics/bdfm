@@ -75,7 +75,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
   }else if (ID == "pc_long") {
     long <- apply(Y,2,function(e) sum(is.finite(e)))
     long <- long>=median(long)
-    PC <- PrinComp(Y[,long], m)
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
     if(sum(long)<m){
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
     }
@@ -163,7 +163,8 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     B <- Parms$B
     q <- Parms$Q
     H <- as.matrix(Parms$H[-(1:m), ])
-    R <- diag(c(Parms$R[-(1:m)]))
+    R <- diag(c(Parms$R[-(1:m)]), nrow = k-m, ncol = k-m)
+    
 
     Est <- DSmooth(
       B = B, Jb = Jb, q = q, H = H, R = R,

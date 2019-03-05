@@ -36,7 +36,7 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
   } else if (ID == "pc_long") {
     long <- apply(Y,2,function(e) sum(is.finite(e)))
     long <- long>=median(long)
-    PC <- PrinComp(Y[,long], m)
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
     if(sum(long)<m){
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
     }
@@ -77,7 +77,7 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
   # Estimate parameters of the observation equation
   Hest <- BReg_diag(X, Y, Int = F, Bp = Hp, lam = lam_H, nu = nu_r, reps = reps, burn = burn)
   H <- Hest$B
-  R <- diag(c(Hest$q))
+  R <- diag(c(Hest$q), k, k)
 
   # Estimate parameters of the transition equation (Bayesian VAR)
   Z <- stack_obs(X, p = p)

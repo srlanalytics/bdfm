@@ -1,24 +1,26 @@
-# m <- 3
-# p <- "auto"
-# freq <- "auto"
-# Bp <- NULL
-# preD <- 1
-# lam_B = 0
-# trans_df = 0
-# Hp = NULL
-# lam_H = 0
-# obs_df = NULL
-# ID = "pc_long"
-# store_idx = 2
-# reps = 1000
-# burn = 500
-# verbose = T
-# tol = .01
-# FC = 3
+m <- 1
+p <- "auto"
+freq <- "auto"
+Bp <- NULL
+preD <- 1
+lam_B = 0
+trans_df = 0
+Hp = NULL
+lam_H = 0
+obs_df = NULL
+ID = "pc_long"
+store_idx = 1
+reps = 1000
+burn = 500
+verbose = T
+tol = .01
+FC = 3
+logs = NULL
+diffs = NULL
 # logs = c( 2,  4,  5,  8,  9, 10, 11, 12, 15, 16, 17, 21, 22)
 # diffs = c(2, 4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)
-# outlier_threshold <- 4
-# scale = TRUE
+outlier_threshold <- 4
+scale = TRUE
 
 dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs, freq, preD,
                      Bp, lam_B, trans_df, Hp, lam_H, obs_df, ID,
@@ -97,6 +99,10 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
 
   if(!ID%in%c("pc_full", "pc_sub", "pc_long", "name")){
     ID <- standardize_index(ID, Y)
+  }
+  
+  if (length(unique(freq)) != 1 && method != "bayesian") {
+    stop("Mixed freqeuncy models are only supported for Bayesian estimation")
   }
 
   if (method == "bayesian") {

@@ -10,25 +10,31 @@ test_that("dfm works on minimal example", {
   dta <- cbind(fdeaths0, mdeaths)
 
   library(bdfm)
-  m <- dfm(dta, forecast = 2)
-  expect_is(m, "dfm")
-  a <- predict(m)
-  expect_is(a, "ts")
+  m0 <- dfm(dta, forecast = 2)
+  expect_is(m0, "dfm")
+  a0 <- predict(m0)
+  expect_is(a0, "ts")
+  
+  m1 <- dfm(fdeaths, forecast = 2)
+  expect_is(m1, "dfm")
+  a <- predict(m1)
+  expect_is(a1, "ts")
+  
+  
 })
 
+test_that("dfm works with ml, pc method", {
+  # https://github.com/srlanalytics/bdfm/issues/38
+  library(bdfm)
+  m0 <- dfm(cbind(fdeaths, mdeaths), method = "pc") #multivariate example
+  m1 <- dfm(cbind(fdeaths, mdeaths), method = "ml") #multivariate example
+  m2 <- dfm(fdeaths, method = "pc") #univariate example
+  m3 <- dfm(fdeaths, method = "ml") #univariate example
 
-# test_that("dfm works with ml, pc method", {
-#   # https://github.com/srlanalytics/bdfm/issues/38
-#   library(bdfm)
-#   m0 <- dfm(cbind(fdeaths, mdeaths), method = "pc")
-#   #> Error in dfm(cbind(fdeaths, mdeaths), method = "pc"): Mixed freqeuncy models are only supported for Bayesian estimation
-#   m1 <- dfm(fdeaths, method = "pc")
-#   #> Error in dfm(fdeaths, method = "pc"): Mixed freqeuncy models are only supported for Bayesian estimation
-#   m2 <- dfm(fdeaths, method = "ml")
+  expect_is(predict(m0), "ts")
+  expect_is(predict(m1), "ts")
+  expect_is(predict(m2), "ts")
+  expect_is(predict(m3), "ts")
 
-#   expect_is(predict(m0), "ts")
-#   expect_is(predict(m1), "ts")
-#   expect_is(predict(m2), "ts")
-
-# })
+})
 

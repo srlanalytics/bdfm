@@ -58,10 +58,6 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
 
   method <- match.arg(method) # checks and picks the first if unspecified
 
-  if (!is.null(frequency_mix) && method != "bayesian") {
-    stop("Mixed freqeuncy models are only supported for Bayesian estimation")
-  }
-
   # check need for tsbox
   tsobjs <- c(
     "zoo", "xts", "tslist", "tbl_ts", "timeSeries",
@@ -86,19 +82,20 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
   } else {
     # no requirement for tsbox if data is ts or mts
     if (inherits(data, "ts")) {
+      data_tsp <- attr(data, "tsp")
       data_unclassed <- as.matrix(unclass(data))
     } else {
       # all other time series classes are handled by tsbox
       stopifnot(requireNamespace("tsbox"))
       stopifnot(tsbox::ts_boxable(data))
+      data_tsp <- attr(tsbox::ts_ts(data), "tsp")
       data_unclassed <- unclass(tsbox::ts_ts(data))
     }
 
-    data_tsp <- attr(data_unclassed, "tsp")
     attr(data_unclassed, "tsp") <- NULL
 
     ans <- dfm_core(
-      Y = data_unclassed, m = factors, p = lags, FC = forecasts, method = method,
+      Y = as.matrix(data_unclassed), m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, outlier_threshold = outlier_threshold, freq = frequency_mix,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
