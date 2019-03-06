@@ -101,7 +101,7 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
   if(!ID%in%c("pc_full", "pc_sub", "pc_long", "name")){
     ID <- standardize_index(ID, Y)
   }
-  
+
   if (length(unique(freq)) != 1 && method != "bayesian") {
     stop("Mixed freqeuncy models are only supported for Bayesian estimation")
   }
@@ -125,13 +125,27 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
       ID = ID, reps = reps, burn = burn
     )
   }
-  
-  
-  #Get forecast updates at each period
-  factor_update <- lapply(X = seq(to = NROW(Y)), FUN = factor_updates, gain = lapply(est$Kstore, one_through_m, m = m), PE = est$PEstore)
-  factor_update <- lapply(X = seq(to = NROW(Y)), FUN = name_updates, Y = Y, fc_update = factor_update) #name updates
-  est$Kstore  <- NULL #this is huge and no longer needed, so drop it
-  est$PEstore <- NULL #this is huge and no longer needed, so drop it
+
+  # any reason why est$Kstore is in such a strange form? why not simple lists?
+  k_list <- lapply(seq(NROW(est$Kstore)), function(i) est$Kstore[i, 1, drop = FALSE][[1]])
+  names_list <- lapply(seq(NROW(Y)), function(i) names(Y[i, ])[is.finite(Y[i, ])])
+  pe_list <- lapply(seq(NROW(est$PEstore)), function(i) est$PEstore[i, 1, drop = FALSE][[1]])
+  gain_list <- lapply(k_list, function(e) t(e[1:m, , drop = FALSE]))
+
+  # because these are lists of the same lengths, we can use them with Map
+  factor_update <- Map(
+    function(g, pe, nm) {
+      x <- g * (matrix(1, 1, NCOL(g)) %x% pe)
+      rownames(x) <- nm
+      x
+    },
+    g = gain_list,
+    pe = pe_list,
+    nm = names_list
+  )
+
+  est$Kstore  <- NULL # this is huge and no longer needed, so drop it
+  est$PEstore <- NULL
   est$factor_update <- factor_update #return this instead --- far more useful!
 
   # undo scaling
@@ -142,14 +156,15 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
       est$Ymedain <- est$Ymedian*(y_scale[store_idx]/100) + y_center[store_idx]
     }
   }
-  
+
   # get updates to store_idx if specified
   if(!is.null(store_idx)){
-    if(scale){
-      est$idx_update <- lapply(factor_update, FUN = multiply_each, loading = t(est$H[store_idx,,drop=FALSE]), y_scale = y_scale[store_idx]/100)
-    }else{
-      est$idx_update <- lapply(factor_update, FUN = multiply_each, loading = t(est$H[store_idx,,drop=FALSE]), y_scale = 1)
-    }
+    idx_loading <- t(est$H[store_idx,,drop=FALSE])
+    idx_scale <- if (scale) y_scale[store_idx]/100 else 1
+    idx_update <- lapply(factor_update, function(x) (idx_scale * (x %*% idx_loading))[,])
+    # same structure as data: missing values as NA
+    idx_update <- lapply(idx_update, function(e) setNames(e[colnames(Y)], colnames(Y)))
+    est$idx_update <- do.call(rbind, idx_update)
   }
 
   # undo differences
