@@ -175,15 +175,15 @@ hist(est$Ystore[period,], breaks = 30)
 
 For every type of estimation including maximum likelihood, `method = "ml"`, and two step principal components, `method = 'pc`,`bdfm` will store the prediction error and Kalman gain at every period. This allows us to look at exactly how much each series contributes to forecast updates at any point in time. Continuing with our model estimated using scaled centered data from Fred, in period 320 each series contributed to factor updates as follows:
 ```{r echo=T}
-Update <- c(est$Kstore[[320]][1,]*est$PEstore[[320]])
-names(Update) <- colnames(data)
-print(Update)
+# Update <- c(est$Kstore[[320]][1,]*est$PEstore[[320]])
+# names(Update) <- colnames(data)
+# print(Update)
 ```
 The syntax here might be a little confusing at first. `est$Kstore[[320]]` is the Kalman gain at period 320. The stored Kalman gain is a list because its dimensions are not constant --- only observed series contribute to updates, thus if a series is not observed in period $t$ there will be no Kalman gain stored for that period. The same is true of the prediction error, `est$PEstore`. In period 321 only two series are observed: industrial production and initial jobless claims. The we have
 ```{r echo=T}
-Update <- c(est$Kstore[[321]][1,]*est$PEstore[[321]])
-names(Update) <- colnames(data)[is.finite(data[321,])]
-print(Update)
+# Update <- c(est$Kstore[[321]][1,]*est$PEstore[[321]])
+# names(Update) <- colnames(data)[is.finite(data[321,])]
+# print(Update)
 ```
 
 A second issue is that we only use the first row of the Kalman gain. This is because we are only interested in the update to contemporaneous factors. The entire matrix of factors is stacked over the number of lags we specified in the model. Because we specified $p = 3$ lags and $m = 1$ factor, `est$Kstore` will have $m*p = 3$ rows. The second two rows specify updates to lagged factors (where are around zero) and are thus not very interesting. In a model with $p = 3$ lags and $m = 3$ factors, `est$Kstore` would have $m*p = 9$ rows of which the first three are of interest. The remaining rows are stored because they are used internally for disturbance smoothing.

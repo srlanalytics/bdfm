@@ -29,4 +29,5 @@ ts.plot(m$Hstore[1,1,])
 
 summary(m)
 
-
+#how did observed variables contribute to the nowcast update in period 469?
+m$idx_update[[469]]

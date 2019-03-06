@@ -117,6 +117,48 @@ standardize_numeric <- function(x, Y) {
   out
 }
 
+#util to get gain for current period only
+one_through_m <- function(x,m){
+  return(t(x[1:m,,drop = FALSE]))
+}
+
+#hadamard function for mapply to get forecast updates
+hadamard <- function(a,b){
+  return(a*b)
+}
+
+#matrix multiplication for lapply to get forecast updates
+multiply_each <- function(x, loading, y_scale = 1){
+  return(y_scale*(x%*%loading))
+}
+
+factor_updates <- function(idx, gain, PE){ #get factor updates from gain and prediction error
+  g  <- gain[[idx]]
+  pe <- PE[[idx]]
+  fc_ud <- g*(matrix(1,1,NCOL(g))%x%pe)
+  return(fc_ud)
+}
+
+
+name_updates <- function(idx, Y, fc_update){
+  y <- Y[idx,]
+  fc_ud <- fc_update[[idx]]
+  if(any(is.finite(y))){
+    row.names(fc_ud) <- names(y)[is.finite(y)]
+  }
+  return(fc_ud)
+}
+
+scale_updates <- function(idx, fc_update, y_scale){
+  y <- Y[idx,]
+  fc_ud <- fc_update[[idx]]
+  if(any(is.finite(y))){
+    ind <- is.finite(y)
+    fc_ud <- y_scale[ind]*fc_ud/100
+  }
+  return(fc_ud)
+}
+
 # auto detect frequency
 get_freq <- function(y) {
   out <- median(diff(which(!is.na(y))))
