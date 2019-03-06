@@ -25,7 +25,7 @@
 
 dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs, freq, preD,
                      Bp, lam_B, trans_df, Hp, lam_H, obs_df, ID,
-                     store_idx, reps, burn, verbose, tol) {
+                     store_idx, reps, burn, verbose, tol, return_intermediates) {
 
   #-------Data processing-------------------------
 
@@ -171,6 +171,11 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
       est$Ymedain <- exp(est$Ymedain)
       est$Ystore  <- exp(est$Ystore)
     }
+  }
+  
+  if (length(unique(freq))>1 && !return_intermediates){
+    est$values[,which(freq != 1)] <- do.call(cbind, lapply(X = which(freq != 1), FUN = drop_intermediates, 
+                                                           freq = freq, Y_raw = Y, vals = est$values))
   }
 
   return(est)

@@ -29,6 +29,14 @@ ts.plot(m$Hstore[1,1,])
 
 print(m)
 
-#how did observed variables contribute to the nowcast update in period 469?
+# how did observed variables contribute to the nowcast update in period 469?
 m$idx_update[[469]]
+
+# Fill in missing values in the econ_us data set using estimated values
+# Note that this is already done for differenced series as level observations are not replaced by estimated values
+Y_fill <- econ_us
+Y_fill[!is.finite(Y_fill)] <- m$values[1:NROW(Y_fill), ][!is.finite(Y_fill)]
+
+
+
 

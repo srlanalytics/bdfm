@@ -24,7 +24,7 @@
 #' observations over time. 'pc_full' uses all observed series, 'pc_sub' finds a submatrix of the data that maximizes
 #'   the number of observations for a square (no missing values) data set. Users may also enter a
 #'   numeric vector for specified series.
-#' @param store_idx, if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
+#' @param store_idx if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
 #' @param verbose print status of function during evalutation. If ML, print
@@ -33,6 +33,7 @@
 #'   criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
 #'   is the log likelihood from this iteration and Lik0 is the likelihood from
 #'   the previous iteration.
+#' @param return_intermediates if data is mixed frequency, should estimation return intermediate values of low frequency variables
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats dnorm na.omit ts var approx frequency is.ts loess median model.matrix na.exclude predict setNames start
@@ -52,7 +53,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
                 trans_prior = NULL, trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
                 obs_df = NULL, identification = "pc_long",
                 store_idx = NULL, reps = 1000, burn = 500, verbose = interactive(),
-                tol = 0.01) {
+                tol = 0.01, return_intermediates = FALSE) {
 
   call <- match.call
 
@@ -75,7 +76,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, verbose = verbose, tol = tol
+      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates
     )
     colnames(ans$values) <- colnames(data)
     ans$dates <- NULL
@@ -100,7 +101,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, verbose = verbose, tol = tol
+      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates
     )
 
     # re-apply time series properties and colnames from input
