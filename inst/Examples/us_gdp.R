@@ -27,7 +27,8 @@ m <- dfm(data = econ_us, factors = 3, pre_differenced = "A191RL1Q225SBEA", store
 ts.plot(m$Qstore[1,1,])
 ts.plot(m$Hstore[1,1,])
 
-summary(m)
+print(m)
 
 #how did observed variables contribute to the nowcast update in period 469?
 m$idx_update[[469]]
+

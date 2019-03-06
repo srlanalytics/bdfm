@@ -63,6 +63,11 @@ MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE) {
 
   Smth <- Ksmoother(A, Q, HJ, R, Ydm)
   B <- A[1:m, 1:(m * p)]
+  
+  #Format output a bit
+  rownames(H) <- colnames(Y)
+  R <- diag(R)
+  names(R) <- colnames(Y)
 
   return(list(
     values = Smth$Ys + matrix(1, r, 1) %x% t(itc),

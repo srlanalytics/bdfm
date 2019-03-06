@@ -1,4 +1,4 @@
-# m <- 1
+# m <- 2
 # p <- "auto"
 # freq <- "auto"
 # method = "bayesian"
@@ -137,10 +137,13 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
   # undo scaling
   if(scale){
     est$values <- (matrix(1, nrow(est$values), 1) %x% t(y_scale)) * (est$values / 100) + (matrix(1, nrow(est$values), 1) %x% t(y_center))
+    est$R2     <- 1 - est$R/10000
     if(!is.null(store_idx) && method == "bayesian"){
       est$Ystore <- est$Ystore*(y_scale[store_idx]/100) + y_center[store_idx]
       est$Ymedain <- est$Ymedian*(y_scale[store_idx]/100) + y_center[store_idx]
     }
+  }else{
+    est$R2 <- 1 - est$R/apply(X = Y, MARGIN = 2, FUN = var, na.rm = TRUE)
   }
   
   # get updates to store_idx if specified

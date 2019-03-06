@@ -96,6 +96,11 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
     B = B, Jb = Jb, q = q, H = H, R = R,
     Y = Y, freq = rep(1, k), LD = rep(0, k)
   )
+  
+  #Format output a bit
+  rownames(H) <- colnames(Y)
+  R <- diag(R)
+  names(R) <- colnames(Y)
 
   BIC <- log(n_obs) * (m * p + m^2 + k * m + k) - 2 * Est$Lik
 
