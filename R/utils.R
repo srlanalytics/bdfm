@@ -149,16 +149,6 @@ name_updates <- function(idx, Y, fc_update){
   return(fc_ud)
 }
 
-scale_updates <- function(idx, fc_update, y_scale){
-  y <- Y[idx,]
-  fc_ud <- fc_update[[idx]]
-  if(any(is.finite(y))){
-    ind <- is.finite(y)
-    fc_ud <- y_scale[ind]*fc_ud/100
-  }
-  return(fc_ud)
-}
-
 # auto detect frequency
 get_freq <- function(y) {
   out <- median(diff(which(!is.na(y))))

@@ -4,13 +4,14 @@
 \alias{dfm}
 \title{Estimate dynamic factor model}
 \usage{
-dfm(data, factors = 1, lags = "auto", forecasts = "auto",
+dfm(data, factors = 1, lags = "auto", forecasts = 0,
   method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL,
   diffs = NULL, outlier_threshold = 4, frequency_mix = "auto",
   pre_differenced = NULL, trans_prior = NULL, trans_shrink = 0,
   trans_df = 0, obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
   identification = "pc_long", store_idx = NULL, reps = 1000,
-  burn = 500, verbose = interactive(), tol = 0.01)
+  burn = 500, verbose = interactive(), tol = 0.01,
+  return_intermediates = FALSE)
 }
 \arguments{
 \item{data}{data in matrix format with time in rows}
@@ -55,7 +56,7 @@ observations over time. 'pc_full' uses all observed series, 'pc_sub' finds a sub
   the number of observations for a square (no missing values) data set. Users may also enter a
   numeric vector for specified series.}
 
-\item{store_idx, }{if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.}
+\item{store_idx}{if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.}
 
 \item{reps}{number of repetitions for MCMC sampling}
 
@@ -68,6 +69,8 @@ difference in likelihood at each iteration of the EM algorithm. Default is `TRUE
 criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
 is the log likelihood from this iteration and Lik0 is the likelihood from
 the previous iteration.}
+
+\item{return_intermediates}{if data is mixed frequency, should estimation return intermediate values of low frequency variables}
 }
 \description{
 Estimate dynamic factor model
