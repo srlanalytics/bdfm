@@ -43,9 +43,9 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     p <- max(freq)
   }
 
-  if (FC == "auto"){
-    FC <- max(freq)
-  }
+  # if (FC == "auto"){
+  #   FC <- max(freq)
+  # }
 
   # add forecast periods
   if (FC > 0) {

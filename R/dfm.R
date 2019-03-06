@@ -47,7 +47,7 @@
 #' m <- dfm(dta, forecasts = 2)
 #' summary(m)
 #' @useDynLib bdfm
-dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
+dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
                 method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
                 outlier_threshold = 4, frequency_mix = "auto", pre_differenced = NULL,
                 trans_prior = NULL, trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
