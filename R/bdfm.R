@@ -172,7 +172,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
       Y = Y, freq = freq[-(1:m)], LD = LD[-(1:m)]
     )
 
-    stopifnot(!all(is.na(Est$Ys)))
+    # stopifnot(!all(is.na(Est$Ys)))
 
     #Format output a bit
     rownames(H) <- colnames(Y)
