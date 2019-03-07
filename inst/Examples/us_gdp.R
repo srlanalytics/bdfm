@@ -34,8 +34,13 @@ m <- dfm(data = econ_us, factors = 3, pre_differenced = "A191RL1Q225SBEA", store
 ts.plot(m$Qstore[1,1,])
 ts.plot(m$Hstore[1,1,])
 
-summary(m)
+print(m)
 
 # how did observed variables contribute to the nowcast update in January 2018?
 window(m$idx_update, start = c(2018, 1), end = c(2018, 1))
+
+# Fill in missing values in the econ_us data set using estimated values
+# Note that this is already done for differenced series as level observations are not replaced by estimated values
+Y_fill <- econ_us
+Y_fill[!is.finite(Y_fill)] <- m$values[1:NROW(Y_fill), ][!is.finite(Y_fill)]
 

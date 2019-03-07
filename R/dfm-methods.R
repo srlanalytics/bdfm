@@ -26,7 +26,9 @@ print.dfm <- function(x, ...) {
   cat("\n")
   cat("Log Likelihood:", x$Lik, " ")
   cat("BIC:", x$BIC)
-  cat("\n")
+  cat("\n \n")
+  cat("Goodness of in-sample fit: \n")
+  print(x$R2)
   invisible(x)
 }
 
@@ -50,13 +52,15 @@ summary.dfm <- function(object, ...) {
   cat("\n \n")
   cat("Posterior medians for observation equation: \n")
   cat("\n Coefficients H: \n")
-  H <- data.frame(object$H)
-  row.names(H) <- colnames(object$values)
-  colnames(H) <- as.character(seq(1, ncol(H)))
-  print(H)
-  cat("\n shocks R: \n")
-  r <- data.frame(diag(object$R))
-  row.names(r) <- colnames(object$values)
-  colnames(r) <- "Variance of Shocks"
-  print(r)
+  # H <- data.frame(object$H)
+  # row.names(H) <- colnames(object$values)
+  # colnames(H) <- as.character(seq(1, ncol(H)))
+  print(object$H)
+  cat("\n Shocks R: \n")
+  # r <- data.frame(diag(object$R))
+  # row.names(r) <- colnames(object$values)
+  # colnames(r) <- "Variance of Shocks"
+  print(object$R)
 }
+
+

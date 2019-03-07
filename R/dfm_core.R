@@ -1,4 +1,4 @@
-# m <- 1
+# m <- 2
 # p <- "auto"
 # freq <- "auto"
 # method = "bayesian"
@@ -25,7 +25,7 @@
 
 dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs, freq, preD,
                      Bp, lam_B, trans_df, Hp, lam_H, obs_df, ID,
-                     store_idx, reps, burn, verbose, tol) {
+                     store_idx, reps, burn, verbose, tol, return_intermediates) {
 
   #-------Data processing-------------------------
 
@@ -43,9 +43,9 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     p <- max(freq)
   }
 
-  if (FC == "auto"){
-    FC <- max(freq)
-  }
+  # if (FC == "auto"){
+  #   FC <- max(freq)
+  # }
 
   # add forecast periods
   if (FC > 0) {
@@ -151,10 +151,13 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
   # undo scaling
   if(scale){
     est$values <- (matrix(1, nrow(est$values), 1) %x% t(y_scale)) * (est$values / 100) + (matrix(1, nrow(est$values), 1) %x% t(y_center))
+    est$R2     <- 1 - est$R/10000
     if(!is.null(store_idx) && method == "bayesian"){
       est$Ystore <- est$Ystore*(y_scale[store_idx]/100) + y_center[store_idx]
       est$Ymedain <- est$Ymedian*(y_scale[store_idx]/100) + y_center[store_idx]
     }
+  }else{
+    est$R2 <- 1 - est$R/apply(X = Y, MARGIN = 2, FUN = var, na.rm = TRUE)
   }
 
   # get updates to store_idx if specified
@@ -183,6 +186,11 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
       est$Ymedain <- exp(est$Ymedain)
       est$Ystore  <- exp(est$Ystore)
     }
+  }
+  
+  if (length(unique(freq))>1 && !return_intermediates){
+    est$values[,which(freq != 1)] <- do.call(cbind, lapply(X = which(freq != 1), FUN = drop_intermediates, 
+                                                           freq = freq, Y_raw = Y, vals = est$values))
   }
 
   return(est)
