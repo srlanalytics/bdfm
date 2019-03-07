@@ -127,26 +127,45 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
   }
 
   # any reason why est$Kstore is in such a strange form? why not simple lists?
-  k_list <- lapply(seq(NROW(est$Kstore)), function(i) est$Kstore[i, 1, drop = FALSE][[1]])
+  # SL: These objects are arma::field<mat> in the Rcpp code, which works much better
+  # than a list internally. As I understand it, in R it is in fact already a list, just
+  # one in which all the objects are matrices.
+  
+  # k_list <- lapply(seq(NROW(est$Kstore)), function(i) est$Kstore[i, 1, drop = FALSE][[1]])
+  # pe_list <- lapply(seq(NROW(est$PEstore)), function(i) est$PEstore[i, 1, drop = FALSE][[1]])
+  # gain_list <- lapply(k_list, function(e) t(e[1:m, , drop = FALSE]))
+  
   names_list <- lapply(seq(NROW(Y)), function(i) names(Y[i, ])[is.finite(Y[i, ])])
-  pe_list <- lapply(seq(NROW(est$PEstore)), function(i) est$PEstore[i, 1, drop = FALSE][[1]])
-  gain_list <- lapply(k_list, function(e) t(e[1:m, , drop = FALSE]))
-
-  # because these are lists of the same lengths, we can use them with Map
+  
   factor_update <- Map(
     function(g, pe, nm) {
-      x <- g * (matrix(1, 1, NCOL(g)) %x% pe)
-      rownames(x) <- nm
+      x <- g * (matrix(1, NROW(g), 1) %x% t(pe))
+      colnames(x) <- nm
       x
     },
-    g = gain_list,
-    pe = pe_list,
+    g = est$Kstore,
+    pe = est$PEstore,
     nm = names_list
   )
-
+  
   est$Kstore  <- NULL # this is huge and no longer needed, so drop it
   est$PEstore <- NULL
-  est$factor_update <- factor_update #return this instead --- far more useful!
+  
+  # get updates to store_idx if specified
+  if(!is.null(store_idx)){
+    idx_loading <- est$H[store_idx,,drop=FALSE]%*%J_MF(freq[store_idx], m = m, ld = LD[store_idx], sA = NCOL(est$Jb))
+    idx_scale <- if (scale) y_scale[store_idx]/100 else 1
+    idx_update <- lapply(factor_update, function(x) as.matrix(idx_scale * (idx_loading %*% x)) )
+    # same structure as data: missing values as NA
+    idx_update <- lapply(idx_update, function(e){
+      tmp <- setNames(rep(NA, k), colnames(Y))
+      tmp[colnames(e)] <- e
+      return(tmp)
+    })
+    est$idx_update <- do.call(rbind, idx_update)
+  }
+  
+  est$factor_update <- lapply(factor_update, function(e) e[1:m,]) #return this instead of gain and prediction error far more useful!
 
   # undo scaling
   if(scale){
@@ -158,16 +177,6 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     }
   }else{
     est$R2 <- 1 - est$R/apply(X = Y, MARGIN = 2, FUN = var, na.rm = TRUE)
-  }
-
-  # get updates to store_idx if specified
-  if(!is.null(store_idx)){
-    idx_loading <- t(est$H[store_idx,,drop=FALSE])
-    idx_scale <- if (scale) y_scale[store_idx]/100 else 1
-    idx_update <- lapply(factor_update, function(x) (idx_scale * (x %*% idx_loading))[,])
-    # same structure as data: missing values as NA
-    idx_update <- lapply(idx_update, function(e) setNames(e[colnames(Y)], colnames(Y)))
-    est$idx_update <- do.call(rbind, idx_update)
   }
 
   # undo differences
