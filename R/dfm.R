@@ -24,7 +24,7 @@
 #' observations over time. 'pc_full' uses all observed series, 'pc_sub' finds a submatrix of the data that maximizes
 #'   the number of observations for a square (no missing values) data set. Users may also enter a
 #'   numeric vector for specified series.
-#' @param store_idx, if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
+#' @param store_idx if estimation is Bayesian, index of input data to store the full posterior distribution of predicted values.
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
 #' @param verbose print status of function during evalutation. If ML, print
@@ -33,6 +33,7 @@
 #'   criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
 #'   is the log likelihood from this iteration and Lik0 is the likelihood from
 #'   the previous iteration.
+#' @param return_intermediates if data is mixed frequency, should estimation return intermediate values of low frequency variables
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats dnorm na.omit ts var approx frequency is.ts loess median model.matrix na.exclude predict setNames start
@@ -46,21 +47,17 @@
 #' m <- dfm(dta, forecasts = 2)
 #' summary(m)
 #' @useDynLib bdfm
-dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
+dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
                 method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
                 outlier_threshold = 4, frequency_mix = "auto", pre_differenced = NULL,
                 trans_prior = NULL, trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
                 obs_df = NULL, identification = "pc_long",
                 store_idx = NULL, reps = 1000, burn = 500, verbose = interactive(),
-                tol = 0.01) {
+                tol = 0.01, return_intermediates = FALSE) {
 
   call <- match.call
 
   method <- match.arg(method) # checks and picks the first if unspecified
-
-  if (!is.null(frequency_mix) && method != "bayesian") {
-    stop("Mixed freqeuncy models are only supported for Bayesian estimation")
-  }
 
   # check need for tsbox
   tsobjs <- c(
@@ -79,31 +76,32 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, verbose = verbose, tol = tol
+      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates
     )
     colnames(ans$values) <- colnames(data)
     ans$dates <- NULL
   } else {
     # no requirement for tsbox if data is ts or mts
     if (inherits(data, "ts")) {
+      data_tsp <- attr(data, "tsp")
       data_unclassed <- as.matrix(unclass(data))
     } else {
       # all other time series classes are handled by tsbox
       stopifnot(requireNamespace("tsbox"))
       stopifnot(tsbox::ts_boxable(data))
+      data_tsp <- attr(tsbox::ts_ts(data), "tsp")
       data_unclassed <- unclass(tsbox::ts_ts(data))
     }
 
-    data_tsp <- attr(data_unclassed, "tsp")
     attr(data_unclassed, "tsp") <- NULL
 
     ans <- dfm_core(
-      Y = data_unclassed, m = factors, p = lags, FC = forecasts, method = method,
+      Y = as.matrix(data_unclassed), m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, outlier_threshold = outlier_threshold, freq = frequency_mix,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, verbose = verbose, tol = tol
+      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates
     )
 
     # re-apply time series properties and colnames from input
@@ -111,6 +109,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
     ans$factors <- ts(ans$factors, start = data_tsp[1], frequency = data_tsp[3])
     if (!is.null(store_idx)) {
       ans$Ymedian <- ts(ans$Ymedian, start = data_tsp[1], frequency = data_tsp[3])
+      ans$idx_update <- ts(ans$idx_update, start = data_tsp[1], frequency = data_tsp[3])
     }
     colnames(ans$values) <- colnames(data)
 
@@ -120,6 +119,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
       ans$factors <- tsbox::copy_class(ans$factors, data, preserve.mode = FALSE)
       if (!is.null(store_idx)) {
         ans$Ymedian <- tsbox::copy_class(ans$Ymedian, data)
+        ans$idx_update <- tsbox::copy_class(ans$idx_update, data)
       }
     }
   }

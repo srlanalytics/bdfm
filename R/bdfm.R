@@ -75,7 +75,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
   }else if (ID == "pc_long") {
     long <- apply(Y,2,function(e) sum(is.finite(e)))
     long <- long>=median(long)
-    PC <- PrinComp(Y[,long], m)
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
     if(sum(long)<m){
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
     }
@@ -163,12 +163,19 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     B <- Parms$B
     q <- Parms$Q
     H <- as.matrix(Parms$H[-(1:m), ])
-    R <- diag(c(Parms$R[-(1:m)]))
+    R <- diag(c(Parms$R[-(1:m)]), nrow = k-m, ncol = k-m)
+    
+    Y <- Y[, -(1:m), drop = FALSE] #drop components used to identify model
 
     Est <- DSmooth(
       B = B, Jb = Jb, q = q, H = H, R = R,
-      Y = Y[, -(1:m), drop = FALSE], freq = freq[-(1:m)], LD = LD[-(1:m)]
+      Y = Y, freq = freq[-(1:m)], LD = LD[-(1:m)]
     )
+    
+    #Format output a bit
+    rownames(H) <- colnames(Y)
+    R <- diag(R)
+    names(R) <- colnames(Y)
 
     BIC <- log(n_obs) * (m * p + m^2 + k * m + k) - 2 * Est$Lik
 
@@ -198,6 +205,11 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     R <- diag(c(Parms$R), k, k)
 
     Est <- DSmooth(B = B, Jb = Jb, q = q, H = H, R = R, Y = Y, freq = freq, LD = LD)
+    
+    #Format output a bit
+    rownames(H) <- colnames(Y)
+    R <- diag(R)
+    names(R) <- colnames(Y)
 
     BIC <- log(n_obs) * (m * p + m^2 + k * m + k) - 2 * Est$Lik
 

@@ -1,6 +1,7 @@
-# m <- 3
+# m <- 2
 # p <- "auto"
 # freq <- "auto"
+# method = "bayesian"
 # Bp <- NULL
 # preD <- 1
 # lam_B = 0
@@ -9,12 +10,14 @@
 # lam_H = 0
 # obs_df = NULL
 # ID = "pc_long"
-# store_idx = 2
+# store_idx = 1
 # reps = 1000
 # burn = 500
 # verbose = T
 # tol = .01
 # FC = 3
+# # logs = NULL
+# # diffs = NULL
 # logs = c( 2,  4,  5,  8,  9, 10, 11, 12, 15, 16, 17, 21, 22)
 # diffs = c(2, 4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)
 # outlier_threshold <- 4
@@ -22,7 +25,7 @@
 
 dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs, freq, preD,
                      Bp, lam_B, trans_df, Hp, lam_H, obs_df, ID,
-                     store_idx, reps, burn, verbose, tol) {
+                     store_idx, reps, burn, verbose, tol, return_intermediates) {
 
   #-------Data processing-------------------------
 
@@ -40,9 +43,9 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     p <- max(freq)
   }
 
-  if (FC == "auto"){
-    FC <- max(freq)
-  }
+  # if (FC == "auto"){
+  #   FC <- max(freq)
+  # }
 
   # add forecast periods
   if (FC > 0) {
@@ -99,6 +102,10 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     ID <- standardize_index(ID, Y)
   }
 
+  if (length(unique(freq)) != 1 && method != "bayesian") {
+    stop("Mixed freqeuncy models are only supported for Bayesian estimation")
+  }
+
   if (method == "bayesian") {
     est <- bdfm(
       Y = Y, m = m, p = p, Bp = Bp,
@@ -119,13 +126,57 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     )
   }
 
+  # any reason why est$Kstore is in such a strange form? why not simple lists?
+  # SL: These objects are arma::field<mat> in the Rcpp code, which works much better
+  # than a list internally. As I understand it, in R it is in fact already a list, just
+  # one in which all the objects are matrices.
+
+  # k_list <- lapply(seq(NROW(est$Kstore)), function(i) est$Kstore[i, 1, drop = FALSE][[1]])
+  # pe_list <- lapply(seq(NROW(est$PEstore)), function(i) est$PEstore[i, 1, drop = FALSE][[1]])
+  # gain_list <- lapply(k_list, function(e) t(e[1:m, , drop = FALSE]))
+
+  names_list <- lapply(seq(NROW(Y)), function(i) names(Y[i, ])[is.finite(Y[i, ])])
+
+  factor_update <- Map(
+    function(g, pe, nm) {
+      x <- g * (matrix(1, NROW(g), 1) %x% t(pe))
+      colnames(x) <- nm
+      x
+    },
+    g = est$Kstore,
+    pe = est$PEstore,
+    nm = names_list
+  )
+
+  est$Kstore  <- NULL # this is huge and no longer needed, so drop it
+  est$PEstore <- NULL
+
+  # get updates to store_idx if specified
+  if(!is.null(store_idx)){
+    idx_loading <- est$H[store_idx,,drop=FALSE]%*%J_MF(freq[store_idx], m = m, ld = LD[store_idx], sA = NCOL(est$Jb))
+    idx_scale <- if (scale) y_scale[store_idx]/100 else 1
+    idx_update <- lapply(factor_update, function(x) as.matrix(idx_scale * (idx_loading %*% x)) )
+    # same structure as data: missing values as NA
+    idx_update <- lapply(idx_update, function(e){
+      tmp <- setNames(rep(NA, k), colnames(Y))
+      tmp[colnames(e)] <- e
+      return(tmp)
+    })
+    est$idx_update <- do.call(rbind, idx_update)
+  }
+
+  est$factor_update <- lapply(factor_update, function(e) e[1:m,]) #return this instead of gain and prediction error far more useful!
+
   # undo scaling
   if(scale){
     est$values <- (matrix(1, nrow(est$values), 1) %x% t(y_scale)) * (est$values / 100) + (matrix(1, nrow(est$values), 1) %x% t(y_center))
+    est$R2     <- 1 - est$R/10000
     if(!is.null(store_idx) && method == "bayesian"){
       est$Ystore <- est$Ystore*(y_scale[store_idx]/100) + y_center[store_idx]
       est$Ymedain <- est$Ymedian*(y_scale[store_idx]/100) + y_center[store_idx]
     }
+  }else{
+    est$R2 <- 1 - est$R/apply(X = Y, MARGIN = 2, FUN = var, na.rm = TRUE)
   }
 
   # undo differences
@@ -144,6 +195,11 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
       est$Ymedain <- exp(est$Ymedain)
       est$Ystore  <- exp(est$Ystore)
     }
+  }
+
+  if (length(unique(freq))>1 && !return_intermediates){
+    est$values[,which(freq != 1)] <- do.call(cbind, lapply(X = which(freq != 1), FUN = drop_intermediates,
+                                                           freq = freq, Y_raw = Y, vals = est$values))
   }
 
   # adjusted series: align 'values' with original series
