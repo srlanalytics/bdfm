@@ -78,8 +78,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
       ID = identification, store_idx = store_idx, reps = reps,
       burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates
     )
-    colnames(ans$values) <- colnames(data)
-    ans$dates <- NULL
+
   } else {
     # no requirement for tsbox if data is ts or mts
     if (inherits(data, "ts")) {
@@ -106,16 +105,17 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
 
     # re-apply time series properties and colnames from input
     ans$values <- ts(ans$values, start = data_tsp[1], frequency = data_tsp[3])
+    ans$adjusted <- ts(ans$adjusted, start = data_tsp[1], frequency = data_tsp[3])
     ans$factors <- ts(ans$factors, start = data_tsp[1], frequency = data_tsp[3])
     if (!is.null(store_idx)) {
       ans$Ymedian <- ts(ans$Ymedian, start = data_tsp[1], frequency = data_tsp[3])
       ans$idx_update <- ts(ans$idx_update, start = data_tsp[1], frequency = data_tsp[3])
     }
-    colnames(ans$values) <- colnames(data)
 
     # put values back into original class (other than ts)
     if (!inherits(data, "ts")) {
       ans$values <- tsbox::copy_class(ans$values, data)
+      ans$adjusted <- tsbox::copy_class(ans$adjusted, data)
       ans$factors <- tsbox::copy_class(ans$factors, data, preserve.mode = FALSE)
       if (!is.null(store_idx)) {
         ans$Ymedian <- tsbox::copy_class(ans$Ymedian, data)

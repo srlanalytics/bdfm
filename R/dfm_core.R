@@ -29,6 +29,9 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
 
   #-------Data processing-------------------------
 
+  data <- Y   # will rename to 'data' later on
+  data_orig <- Y
+
   k <- NCOL(Y) # number of series
 
   # frequency
@@ -202,8 +205,10 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
                                                            freq = freq, Y_raw = Y, vals = est$values))
   }
 
+  colnames(est$values) <- colnames(data)
+
   # adjusted series: align 'values' with original series
-  est$adjusted <- align_with_benchmark(est$values, Y)
+  est$adjusted <- align_with_benchmark(est$values, data_orig)
 
   return(est)
 }
