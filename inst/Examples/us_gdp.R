@@ -37,7 +37,7 @@ ts.plot(m$Hstore[1,1,])
 print(m)
 
 # how did observed variables contribute to the nowcast update in January 2018?
-window(m$idx_update, start = c(2018, 1), end = c(2018, 1))
+window(m$idx_update, start = c(2018, 12), end = c(2018, 12))
 
 # Fill in missing values in the econ_us data set using estimated values
 # Note that this is already done for differenced series as level observations are not replaced by estimated values
