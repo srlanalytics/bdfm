@@ -108,6 +108,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
     ans$factors <- ts(ans$factors, start = data_tsp[1], frequency = data_tsp[3])
     if (!is.null(store_idx)) {
       ans$Ymedian <- ts(ans$Ymedian, start = data_tsp[1], frequency = data_tsp[3])
+      ans$idx_update <- ts(ans$idx_update, start = data_tsp[1], frequency = data_tsp[3])
     }
     colnames(ans$values) <- colnames(data)
 
@@ -117,6 +118,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = "auto",
       ans$factors <- tsbox::copy_class(ans$factors, data, preserve.mode = FALSE)
       if (!is.null(store_idx)) {
         ans$Ymedian <- tsbox::copy_class(ans$Ymedian, data)
+        ans$idx_update <- tsbox::copy_class(ans$idx_update, data)
       }
     }
   }
