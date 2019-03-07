@@ -164,14 +164,16 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     q <- Parms$Q
     H <- as.matrix(Parms$H[-(1:m), ])
     R <- diag(c(Parms$R[-(1:m)]), nrow = k-m, ncol = k-m)
-    
+
     Y <- Y[, -(1:m), drop = FALSE] #drop components used to identify model
 
     Est <- DSmooth(
       B = B, Jb = Jb, q = q, H = H, R = R,
       Y = Y, freq = freq[-(1:m)], LD = LD[-(1:m)]
     )
-    
+
+    stopifnot(!all(is.na(Est$Ys)))
+
     #Format output a bit
     rownames(H) <- colnames(Y)
     R <- diag(R)
@@ -205,7 +207,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     R <- diag(c(Parms$R), k, k)
 
     Est <- DSmooth(B = B, Jb = Jb, q = q, H = H, R = R, Y = Y, freq = freq, LD = LD)
-    
+
     #Format output a bit
     rownames(H) <- colnames(Y)
     R <- diag(R)
