@@ -5,6 +5,10 @@ QuickReg <- function(X, Y) {
     .Call('_bdfm_QuickReg', PACKAGE = 'bdfm', X, Y)
 }
 
+UVreg <- function(x, y, itc = TRUE) {
+    .Call('_bdfm_UVreg', PACKAGE = 'bdfm', x, y, itc)
+}
+
 comp_form <- function(B) {
     .Call('_bdfm_comp_form', PACKAGE = 'bdfm', B)
 }

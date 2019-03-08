@@ -37,9 +37,17 @@ standardize_index <- function(x, Y) {
     out <- unlist(sapply(x, FUN = grep, colnames(Y)))
   } else if (is.numeric(x)) {
     out <- x
+  } else if (is.logical(x)){
+    if(length(x)!=NCOL(Y)){
+      stop("If argument '", argname,
+           "' is logical, its length must equal the number of columns in the input data",
+           call. = FALSE
+      )
+    }
+    out <- which(x)
   } else {
     stop("Argument '", argname,
-      "' must be either a character (string) vector or numeric index values",
+      "' must be either a character (string) vector, a logical vector, or numeric index values",
       call. = FALSE
     )
   }

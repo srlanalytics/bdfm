@@ -6,7 +6,7 @@
 #' @param forecasts number of periods ahead to forecasts
 #' @param method character, method to be used
 #' @param scale scale data before estimation (True/False)?
-#' @param logs names or index values of series which should be entered in log levels
+#' @param logs names or index values of series which should be entered in logs (and potentially differenced)
 #' @param diffs names or index values of series which should be differenced
 #' @param outlier_threshold drop observations more than x standard deviations from the mean
 #' @param frequency_mix 'auto' or numeric, number of high frequency periods in observation if data is mixed frequency
@@ -48,7 +48,7 @@
 #' summary(m)
 #' @useDynLib bdfm
 dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
-                method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
+                method = c("bayesian", "ml", "pc"), scale = TRUE, logs = "auto_logs", diffs = "auto_difference",
                 outlier_threshold = 4, frequency_mix = "auto", pre_differenced = NULL,
                 trans_prior = NULL, trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
                 obs_df = NULL, identification = "pc_long",

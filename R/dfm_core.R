@@ -52,6 +52,25 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     tmp <- matrix(NA, FC, k)
     Y <- rbind(Y, tmp)
   }
+  
+  if(logs == "auto_logs" || diffs == "auto_difference"){
+    do_log_diff <- should_log_diff(Y)
+    if(logs == "auto_logs"){
+      logs <- do_log_diff[1,]
+    }
+    if(diffs == "auto_difference"){
+      diffs <- do_log_diff[2,]
+    }
+  }
+  
+  if(is.logical(logs)){
+    if(!any(logs)) logs <- NULL
+  }
+  
+  if(is.logical(diffs)){
+    if(!any(diffs)) diffs <- NULL
+  }
+    
 
   # logs
   if (!is.null(logs)) {
@@ -197,6 +216,7 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     }
   }
   
+  #Return intermediate values of low frequency data?
   if (length(unique(freq))>1 && !return_intermediates){
     est$values[,which(freq != 1)] <- do.call(cbind, lapply(X = which(freq != 1), FUN = drop_intermediates, 
                                                            freq = freq, Y_raw = Y, vals = est$values))
