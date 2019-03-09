@@ -49,16 +49,16 @@ ts.plot(Est$values[,1])
 ## Full Input
 
 ```r
-Est <- dfm(Y, factors = 1, lags = 2, forecast = 0,
-                method = c("bayesian", "ml", "pc"),
-                frequency_mix = NULL, differences = NULL,
-                B_prior = NULL, lam_B = 0, H_prior = NULL, lam_H = 0, nu_q = 0,
-                nu_r = NULL, identification = "PC_full", intercept = TRUE,
-                store_idx = NULL, reps = 1000, burn = 500, loud = FALSE,
-                EM_tolerance = 0.01)
+Est <- dfm(data, factors = 1, lags = "auto", forecasts = 0,
+                method = c("bayesian", "ml", "pc"), scale = TRUE, logs = "auto_logs", diffs = "auto_difference",
+                outlier_threshold = 4, frequency_mix = "auto", pre_differenced = NULL,
+                trans_prior = NULL, trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
+                obs_df = NULL, identification = "pc_long",
+                store_idx = NULL, reps = 1000, burn = 500, verbose = interactive(),
+                tol = 0.01, return_intermediates = FALSE)
 ```
 
-`Y`           Input data
+`data`        Input data
 
 `factors`     Number of factors
 
@@ -68,21 +68,31 @@ Est <- dfm(Y, factors = 1, lags = 2, forecast = 0,
 
 `method`      One of `'bayesian'`, `'ml'`, or `'pc'`
 
+`scale`       Should data be scaled before estimation?
+
+`logs`        which series should be log(differenced)?
+
+`diffs`       which series should be differenced?
+
+`outlier_threshold` Drop outliers above this number of standard deviations
+
 `frequency_mix` If mixed frequency, vector containing the number of high frequency periods in each series
+
+`pre_differenced` Data which is differenced but not internally via diffs (only important for mixed frequency data)
 
 `differences`    If mixed frequency, vector with 0 for level data or 1 for differenced data. 
 
-`B_prior`     Prior on transtion equation (default is to shrink values towards zero)
+`trans_prior`     Prior on transtion equation (default is to shrink values towards zero)
 
-`lam_B`       Prior tightness on transition equation
+`trans_shrink`   Prior tightness on transition equation
 
-`H_prior`    Prior on loadings/observation equation (default is zero)
+ `trabs_df`      Prior "degrees of freedom" for transition equation (i.e. shrink covariance of shocks towards zero), scalar
 
-`lam_H`      Prior tightness on loadings, scalar
+ `obs_prior`    Prior on loadings/observation equation (default is zero) 
 
- `nu_q`      Prior "degrees of freedom" for transition equation (i.e. shrink covariance of shocks towards zero), scalar
+ `obs_shrink`   Prior tightness on loadings, scalar
 
-`nu_r`       Vector, prior "degrees of freedom" for observation equation (i.e. shrink covariance of shocks towards zero)
+ `obs_df`       Vector, prior "degrees of freedom" for observation equation (i.e. shrink covariance of shocks towards zero)
 
 ```identification```        Model identification technique. 
 
@@ -94,9 +104,11 @@ Est <- dfm(Y, factors = 1, lags = 2, forecast = 0,
 
 `burn`      Number of iterations to burn in MCMC draws
 
-`loud`     logical, print status of estimation
+`verbose`   print status of estimation
 
 `EM_tollerance` If estimation is ML, tollerance for converstion of EM algorithm
+
+`return_intermediates`  For mixed frequency data, should intermediate estimates of low frequency data be included in output?
 
 ## Full Output (Bayesian Estimation)
 
@@ -124,9 +136,9 @@ Est <- dfm(Y, factors = 1, lags = 2, forecast = 0,
 
 ```Rstore```  Full posterior distribution for ```R```
 
-```Kstore```  Kalman gain at each period
+```factor_update```  News contribution of each series to each factor in each period
 
-```PEstore``` Prediction error at each period
+```idx_update``` If `store_idx` is specified, news contribution of each series to `store_idx` in each period
 
 ```Lik```     Likelihood (for posterior median)
 

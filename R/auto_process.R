@@ -5,9 +5,9 @@ log_diff <- function(y){
   rmdr  <- median(which(is.finite(y))%%fq)
   indx  <- seq(1, length(y))%%fq == rmdr
   y <- y[indx]
-  ts_reg <- UVreg(x = y[-length(y)], y = y[-1], itc = F)
+  ts_reg <- UVreg(x = y[-length(y)], y = y[-1], itc = FALSE)
   
-  take_log  <- (ts_reg$B - ts_reg$sd)>1 && !any(y<0, na.rm = T)
+  take_log  <- (ts_reg$B - ts_reg$sd)>1 && !any(y<0, na.rm = TRUE)
   take_diff <- !(ts_reg$B + 2*ts_reg$sd)<1
   
   return(c(take_log, take_diff))
