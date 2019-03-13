@@ -117,7 +117,7 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     store_idx <- standardize_index(store_idx, Y)
   }
 
-  if(!ID%in%c("pc_full", "pc_sub", "pc_long", "name")){
+  if(!ID%in%c("pc_wide", "pc_long", "name")){
     ID <- standardize_index(ID, Y)
   }
 
