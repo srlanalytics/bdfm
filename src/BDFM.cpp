@@ -720,7 +720,7 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
 
   // specifying difuse-ish initial values
   mat P0, P1, S, C;
-  P0  = 100*eye<mat>(sA,sA);
+  P0  = 1*eye<mat>(sA,sA);
   P1  = P0;
 
   //Declairing variables for the filter
@@ -793,7 +793,7 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
     r.row(t-1) = trans(PEstr(t-1))*Sstr(t-1)*Hstr(t-1) + r.row(t)*L;
   }
 
-  Zs.row(0)   = r.row(0)*100*eye<mat>(sA,sA);
+  Zs.row(0)   = r.row(0)*1*eye<mat>(sA,sA);
 
   //Forward again
   for(uword t = 0; t<T-1; t++){
@@ -895,6 +895,30 @@ arma::field<arma::mat> Identify(arma::mat X,
   H_vec  = H_vec*diagmat(sign(diagvec(H2*H_vec))); //enforce that diagonals must be positive
   mat Thet = X_vec*diagmat(sqrt(X_val))*trans(X_vec)*H_vec;
   mat ThetI = trans(H_vec)*X_vec*diagmat(1/sqrt(X_val))*trans(X_vec);
+  
+  arma::field<arma::mat> Out(2);
+  Out(0) = Thet;
+  Out(1) = ThetI;
+  
+  return(Out);
+}
+
+// [[Rcpp::export]]
+arma::field<arma::mat> identify(arma::mat X,
+                                arma::mat q){
+  mat Sig_X;
+  Sig_X = (trans(X)*X)/(100*X.n_rows);
+  Sig_X = (trans(Sig_X)+Sig_X)/2;
+  mat X_vec, Q_vec;
+  vec X_val, Q_val;
+  eig_sym(X_val, X_vec, Sig_X);
+  mat ThetI = trans(X_vec)*diagmat(1/sqrt(X_val))*trans(X_vec);
+  mat Q = ThetI*q*trans(ThetI);
+  Q  = (Q + trans(Q))/2;
+  eig_sym(Q_val, Q_vec, Q);
+  Q_vec = Q_vec*diagmat(sign(trans(Q_vec)*ThetI*trans(X.row(0)))); //enforce that period 0 factors must be positive
+  mat Thet = X_vec*diagmat(sqrt(X_val))*trans(X_vec)*Q_vec;
+  ThetI = trans(Q_vec)*ThetI;
   
   arma::field<arma::mat> Out(2);
   Out(0) = Thet;
@@ -1040,7 +1064,7 @@ List EstDFM(      arma::mat B,     // transition matrix
         Beta  = mvrnrm(1, mu, V_1*R(j));
         H.row(j) = trans(Beta.col(0));
       }
-    } else if(ID == "factors" || ID == "shocks") {
+    } else if(ID == "factors" || ID == "shocks" || "orthogonal") {
       for(uword j=0; j<k; j++){ //loop over variables
         Yt   = Ytmp.col(j);
         ind  = find_finite(Yt);   //find non-missing values
@@ -1106,6 +1130,11 @@ List EstDFM(      arma::mat B,     // transition matrix
     }
     else if(ID == "shocks"){
       id = Identify(q, H, ID = "shocks");
+      H  = H*id(0);
+      q  = id(1)*q*trans(id(1));
+      B  = id(1)*B*kron(eye<mat>(pB,pB), id(0));
+    }else if(ID == "orthogonal"){
+      id = identify(Zsim.cols(0,m-1), q);
       H  = H*id(0);
       q  = id(1)*q*trans(id(1));
       B  = id(1)*B*kron(eye<mat>(pB,pB), id(0));
@@ -1200,7 +1229,7 @@ List EstDFM(      arma::mat B,     // transition matrix
         Beta  = mvrnrm(1, mu, V_1*R(j));
         H.row(j) = trans(Beta.col(0));
       }
-    } else if(ID == "factors" || ID == "shocks") {
+    } else if(ID == "factors" || ID == "shocks" || ID == "orthogonal") {
       for(uword j=0; j<k; j++){ //loop over variables
         Yt   = Ytmp.col(j);
         ind  = find_finite(Yt);   //find non-missing values
@@ -1266,6 +1295,11 @@ List EstDFM(      arma::mat B,     // transition matrix
     }
     else if(ID == "shocks"){
       id = Identify(q, H, ID = "shocks");
+      H  = H*id(0);
+      q  = id(1)*q*trans(id(1));
+      B  = id(1)*B*kron(eye<mat>(pB,pB), id(0));
+    }else if(ID == "orthogonal"){
+      id = identify(Zsim.cols(0,m-1), q);
       H  = H*id(0);
       q  = id(1)*q*trans(id(1));
       B  = id(1)*B*kron(eye<mat>(pB,pB), id(0));

@@ -138,17 +138,20 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     }
   }
   
-  ID = "factors"
+  ID = "orthogonal"
 
   Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, 
                   H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y,
                   freq = freq, LD = LD, store_Y = store_Y, store_idx = store_idx,
                   reps = reps, burn = burn, verbose = verbose, ID = ID)
   
-  ts.plot(Parms$Hstore[15,1,])
+  ts.plot(Parms$Hstore[1,1,])
   ts.plot(Parms$Qstore[2,2,])
   ts.plot(Parms$Bstore[2,2,])
   ts.plot(Parms$Rstore[1,])
+  
+  Parms$Qstore[,,234]
+  Parms$Bstore[,,234]
   
   t(Parms$Hstore[,,502])%*%Parms$Hstore[,,502]
   
@@ -157,6 +160,9 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
   X <- Parms$Zsim[,1:m]
   
   ts.plot(X)
+  
+  
+  head(X)
   
   t(X)%*%X/nrow(X)
   
