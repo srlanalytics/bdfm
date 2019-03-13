@@ -9,7 +9,7 @@
 # Hp = NULL
 # lam_H = 0
 # obs_df = NULL
-# ID = "pc_long"
+# ID = "factors"
 # store_idx = 1
 # reps = 1000
 # burn = 500
@@ -117,7 +117,7 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     store_idx <- standardize_index(store_idx, Y)
   }
 
-  if(!ID%in%c("pc_full", "pc_sub", "pc_long", "name")){
+  if(!ID%in%c("pc_full", "pc_sub", "pc_long", "name", "factors", "shocks")){
     ID <- standardize_index(ID, Y)
   }
 

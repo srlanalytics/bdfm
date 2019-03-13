@@ -45,22 +45,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     }
     freq <- c(rep(1, m), freq)
     LD <- c(rep(0, m), LD)
-  } else if (ID == "pc_sub") {
-    Ysub <- Y_sub(Y) # submatrix of Y with complete data, i.e. no missing values
-    if(NCOL(Ysub)<m){
-      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
-    }
-    PC <- PrinComp(Ysub$Ysub, m)
-    tmp <- matrix(NA, r, m)
-    tmp[Ysub$ind, ] <- PC$components
-    Y <- cbind(tmp, Y)
-    k <- k + m
-    if (!is.null(nu_r)) {
-      nu_r <- c(rep(0, m), nu_r)
-    }
-    freq <- c(rep(1, m), freq)
-    LD <- c(rep(0, m), LD)
-  } else if (ID == "pc_full") {
+  } else if (ID == "pc_wide") {
     PC <- PrinComp(Y, m)
     Y <- cbind(PC$components, Y)
     k <- k + m
@@ -70,7 +55,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     freq <- c(rep(1, m), freq)
     LD <- c(rep(0, m), LD)
     if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to pc_sub.")
+      stop("Every period contains missing data. Try setting ID to pc_long.")
     }
   }else if (ID == "pc_long") {
     long <- apply(Y,2,function(e) sum(is.finite(e)))
@@ -86,23 +71,9 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     }
     freq <- c(rep(1, m), freq)
     LD <- c(rep(0, m), LD)
-    if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to pc_sub.")
-    }
-  } else if (ID != "name") {
-    warning(paste(ID, "not a valid identification string or index vector, defaulting to pc_full"))
-    ID <- "pc_full"
-    PC <- PrinComp(Y, m)
-    Y <- cbind(PC$components, Y)
-    k <- k + m
-    if (!is.null(nu_r)) {
-      nu_r <- c(rep(0, m), nu_r)
-    }
-    freq <- c(rep(1, m), freq)
-    LD <- c(rep(0, m), LD)
-    if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to pc_sub.")
-    }
+  } else if (!ID%in%c("name", "factors", "shocks")) {
+    warning(paste(ID, "not a valid identification string or index vector, defaulting to 'factors'"))
+    ID <- "factors"
   }
 
   # Format Priors
@@ -122,14 +93,24 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
   # ---------------------------------------------
 
 
-  H <- matrix(0, k, m)
-  H[1:m, 1:m] <- diag(1, m, m)
-  # for variables not used to normalize
-  if (k > m) {
-    xx <- as.matrix(Y[, 1:m])
-    yy <- as.matrix(Y[, -(1:m)])
-    tmp <- t(QuickReg(xx, yy))
-    H[-(1:m), ] <- tmp
+  if(ID%in%c("factors", "shocks")){
+    long <- apply(Y,2,function(e) sum(is.finite(e)))
+    long <- long>=median(long)
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
+    if(sum(long)<m){
+      stop("Number of factors is too great for selected identification routine.")
+    }
+    H <- t(QuickReg(PC$components, Y))
+  }else{
+    H <- matrix(0, k, m)
+    H[1:m, 1:m] <- diag(1, m, m)
+    # for variables not used to normalize
+    if (k > m) {
+      xx <- as.matrix(Y[, 1:m])
+      yy <- as.matrix(Y[, -(1:m)])
+      tmp <- t(QuickReg(xx, yy))
+      H[-(1:m), ] <- tmp
+    }
   }
 
   Rvec <- rep(1, k) # arbitrary initial guess
@@ -156,10 +137,54 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
       store_idx <- store_idx - 1
     }
   }
+  
+  ID = "factors"
 
-  Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, freq = freq, LD = LD, store_Y = store_Y, store_idx = store_idx, reps = reps, burn = burn, verbose = verbose)
+  Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, 
+                  H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y,
+                  freq = freq, LD = LD, store_Y = store_Y, store_idx = store_idx,
+                  reps = reps, burn = burn, verbose = verbose, ID = ID)
+  
+  ts.plot(Parms$Hstore[15,1,])
+  ts.plot(Parms$Qstore[2,2,])
+  ts.plot(Parms$Bstore[2,2,])
+  ts.plot(Parms$Rstore[1,])
+  
+  t(Parms$Hstore[,,502])%*%Parms$Hstore[,,502]
+  
+  ts.plot(Y)
+  
+  X <- Parms$Zsim[,1:m]
+  
+  ts.plot(X)
+  
+  t(X)%*%X/nrow(X)
+  
+  id <- Identify(X = X, H = H, ID = "factors")
+  
+  H2 <- H%*%id[[1]]
+  X2 <- X%*%t(id[[2]])
+  q2 <- id[[2]]%*%q%*%t(id[[2]])
+  B2 <- id[[2]]%*%B%*%(diag(1,3,3)%x%id[[1]])
+  
+  t(H2)%*%H2
+  t(X2)%*%X2/nrow(X2)
+  id[[1]]%*%id[[2]]
 
-  if (ID %in% c("pc_sub", "pc_full", "pc_long") || is.numeric(ID)) {
+  
+  Est <- DSmooth(B = B, Jb = Jb, q = q, H = H, R = diag(Rvec), Y = Y, freq = freq, LD = LD)
+  
+  Est$Lik
+  
+  X2 <- Est$Z[,1:m]
+  
+  ts.plot(X2)
+  
+  t(X2)%*%X2/nrow(X2)
+  
+  
+  
+  if (ID %in% c("pc_wide", "pc_long") || is.numeric(ID)) {
     B <- Parms$B
     q <- Parms$Q
     H <- as.matrix(Parms$H[-(1:m), ])

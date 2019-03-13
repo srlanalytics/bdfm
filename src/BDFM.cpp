@@ -718,9 +718,9 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
   qq(span(0,m-1),span(0,m-1)) = q;
   sp_mat Q(qq);
 
-  // specifying difuse initial values
+  // specifying difuse-ish initial values
   mat P0, P1, S, C;
-  P0  = 100000*eye<mat>(sA,sA);
+  P0  = 100*eye<mat>(sA,sA);
   P1  = P0;
 
   //Declairing variables for the filter
@@ -793,7 +793,7 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
     r.row(t-1) = trans(PEstr(t-1))*Sstr(t-1)*Hstr(t-1) + r.row(t)*L;
   }
 
-  Zs.row(0)   = r.row(0)*100000*eye<mat>(sA,sA);
+  Zs.row(0)   = r.row(0)*100*eye<mat>(sA,sA);
 
   //Forward again
   for(uword t = 0; t<T-1; t++){
@@ -875,6 +875,35 @@ arma::field<arma::mat> FSimMF(    arma::mat B,     // companion form of transiti
 }
 
 // [[Rcpp::export]]
+arma::field<arma::mat> Identify(arma::mat X,
+                          arma::mat H,
+                          std::string ID = "factors"){
+  mat Sig_X;
+  if(ID == "factors"){
+    Sig_X = (trans(X)*X)/(100*X.n_rows);
+    Sig_X = (trans(Sig_X)+Sig_X)/2;
+  }else if(ID == "shocks"){
+    Sig_X = (trans(X)+X)/2; //force symetry
+  }
+  mat X_vec, H_vec;
+  vec X_val, H_val;
+  eig_sym(X_val, X_vec, Sig_X);
+  mat H2 = H*X_vec*diagmat(sqrt(X_val))*trans(X_vec);
+  mat Sig_H  = trans(H2)*H2;
+  Sig_H  = (trans(Sig_H) + Sig_H)/2;
+  eig_sym(H_val, H_vec, Sig_H);
+  H_vec  = H_vec*diagmat(sign(diagvec(H2*H_vec))); //enforce that diagonals must be positive
+  mat Thet = X_vec*diagmat(sqrt(X_val))*trans(X_vec)*H_vec;
+  mat ThetI = trans(H_vec)*X_vec*diagmat(1/sqrt(X_val))*trans(X_vec);
+  
+  arma::field<arma::mat> Out(2);
+  Out(0) = Thet;
+  Out(1) = ThetI;
+  
+  return(Out);
+}
+
+// [[Rcpp::export]]
 List EstDFM(      arma::mat B,     // transition matrix
                   arma::mat Bp,    // prior for B
                   arma::sp_mat Jb, // aggrigations for transition matrix
@@ -893,7 +922,8 @@ List EstDFM(      arma::mat B,     // transition matrix
                   arma::uword store_idx = 0, // index to store distribution of predicted values
                   arma::uword reps = 1000, //repetitions
                   arma::uword burn = 500,
-                  bool verbose = false){ //burn in periods
+                  bool verbose = false,
+                  std::string ID = "factors"  ){ //burn in periods
 
   // preliminaries
 
@@ -904,6 +934,7 @@ List EstDFM(      arma::mat B,     // transition matrix
   uword k  = H.n_rows;
   uword sA    = m*p; // size A matrix
   uword sB    = B.n_cols; // columns of transition matrix B
+  uword pB    = sB/m;
   mat Lam_B   = lam_B*eye<mat>(sB,sB);
   mat Lam_H   = lam_H*eye<mat>(m,m);
 
@@ -931,7 +962,7 @@ List EstDFM(      arma::mat B,     // transition matrix
     Y_median = zeros<vec>(Y.n_rows);
   }
   List Out;
-  field<mat> FSim;
+  field<mat> FSim, id;
 
   vec eigval;
   mat eigvec;
@@ -940,6 +971,8 @@ List EstDFM(      arma::mat B,     // transition matrix
 
   mat Ytmp = Y;
   Ytmp.shed_rows(0,p-1); //shed initial values to match Z
+  
+  // --------------------- Burn Loop -------------------------------------------------------
 
   for(uword rep = 0; rep<burn; rep++){
 
@@ -968,43 +1001,67 @@ List EstDFM(      arma::mat B,     // transition matrix
     // -------- Sample Parameters given Factors -------
 
     // For H, M, and R
-
-    //For observations used to normalize
-    for(uword j=0; j<m; j++){ //loop over variables
-      Yt   = Ytmp.col(j);
-      ind  = find_finite(Yt);   //find non-missing values
-      yy   = Yt(ind);         //LHS variable
-      Jh = J_MF(freq(j), m, LD(j), sA);
-      xx = Zsim.rows(ind)*trans(Jh);
-      V_1   = trans(xx)*xx+Lam_H;
-      V_1   = (trans(V_1)+V_1)/2;
-      V_1   = inv_sympd(V_1);
-      mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
-      scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
-      R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
-      Beta  = mvrnrm(1, mu, V_1*R(j));
-      Ht.row(j) = trans(Beta.col(0));
-      //H.row(j) = trans(Beta.col(0));
-    }
-
-    //Rotate and scale the factors to fit our normalization for H
-    Zsim     = Zsim*kron(eye<mat>(p,p),trans(Ht));
-
-    //For observations not used to normalize
-    for(uword j=m; j<k; j++){ //loop over variables
-      Yt   = Ytmp.col(j);
-      ind  = find_finite(Yt);   //find non-missing values
-      yy   = Yt(ind);         //LHS variable
-      Jh = J_MF(freq(j), m, LD(j), sA);
-      xx = Zsim.rows(ind)*trans(Jh);
-      V_1   = trans(xx)*xx+Lam_H;
-      V_1   = (trans(V_1)+V_1)/2;
-      V_1   = inv_sympd(V_1);
-      mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
-      scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
-      R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
-      Beta  = mvrnrm(1, mu, V_1*R(j));
-      H.row(j) = trans(Beta.col(0));
+    
+    if(ID == "name"){
+      //For observations used to normalize
+      for(uword j=0; j<m; j++){ //loop over variables
+        Yt   = Ytmp.col(j);
+        ind  = find_finite(Yt);   //find non-missing values
+        yy   = Yt(ind);         //LHS variable
+        Jh = J_MF(freq(j), m, LD(j), sA);
+        xx = Zsim.rows(ind)*trans(Jh);
+        V_1   = trans(xx)*xx+Lam_H;
+        V_1   = (trans(V_1)+V_1)/2;
+        V_1   = inv_sympd(V_1);
+        mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
+        scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
+        R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
+        Beta  = mvrnrm(1, mu, V_1*R(j));
+        Ht.row(j) = trans(Beta.col(0));
+        //H.row(j) = trans(Beta.col(0));
+      }
+      
+      //Rotate and scale the factors to fit our normalization for H
+      Zsim     = Zsim*kron(eye<mat>(p,p),trans(Ht));
+      
+      //For observations not used to normalize
+      for(uword j=m; j<k; j++){ //loop over variables
+        Yt   = Ytmp.col(j);
+        ind  = find_finite(Yt);   //find non-missing values
+        yy   = Yt(ind);         //LHS variable
+        Jh = J_MF(freq(j), m, LD(j), sA);
+        xx = Zsim.rows(ind)*trans(Jh);
+        V_1   = trans(xx)*xx+Lam_H;
+        V_1   = (trans(V_1)+V_1)/2;
+        V_1   = inv_sympd(V_1);
+        mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
+        scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
+        R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
+        Beta  = mvrnrm(1, mu, V_1*R(j));
+        H.row(j) = trans(Beta.col(0));
+      }
+    } else if(ID == "factors" || ID == "shocks") {
+      for(uword j=0; j<k; j++){ //loop over variables
+        Yt   = Ytmp.col(j);
+        ind  = find_finite(Yt);   //find non-missing values
+        yy   = Yt(ind);         //LHS variable
+        Jh = J_MF(freq(j), m, LD(j), sA);
+        xx = Zsim.rows(ind)*trans(Jh);
+        V_1   = trans(xx)*xx+Lam_H;
+        V_1   = (trans(V_1)+V_1)/2;
+        V_1   = inv_sympd(V_1);
+        mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
+        scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
+        R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
+        Beta  = mvrnrm(1, mu, V_1*R(j));
+        H.row(j) = trans(Beta.col(0));
+        
+        // id = Identify(Zsim.cols(0,m-1), H, ID = "factors");
+        // H  = H*id(0);
+        // Zsim     = Zsim*kron(eye<mat>(p,p),trans(id(1)));
+      }
+    } else {
+      throw("Invalid identification string");
     }
 
     // For B and q
@@ -1040,7 +1097,31 @@ List EstDFM(      arma::mat B,     // transition matrix
       }
       count_reps = count_reps+1;
     } while(ev>1);
+    
+    if(ID == "factors"){
+      id = Identify(Zsim.cols(0,m-1), H, ID = "factors");
+      H  = H*id(0);
+      q  = id(1)*q*trans(id(1));
+      B  = id(1)*B*kron(eye<mat>(pB,pB), id(0));
+    }
+    else if(ID == "shocks"){
+      id = Identify(q, H, ID = "shocks");
+      H  = H*id(0);
+      q  = id(1)*q*trans(id(1));
+      B  = id(1)*B*kron(eye<mat>(pB,pB), id(0));
+    }
+    
   }
+  
+  // Out["id0"] = id(0);
+  // Out["id1"] = id(1);
+  // Out["q"]   = q;
+  // Out["B"]   = B;
+  // Out["H"]   = H;
+  // Out["yy"]  = yy;
+  // 
+  // return(Out);
+  
 
   // ------------------ Sampling Loop ------------------------------------
 
@@ -1077,44 +1158,70 @@ List EstDFM(      arma::mat B,     // transition matrix
 
     // -------- Sample Parameters given Factors
 
+    // For H and R
+
     // For H, M, and R
 
-    //For observations used to normalize
-    for(uword j=0; j<m; j++){ //loop over variables
-      Yt   = Ytmp.col(j);
-      ind  = find_finite(Yt);   //find non-missing values
-      yy   = Yt(ind);         //LHS variable
-      Jh = J_MF(freq(j), m, LD(j), sA);
-      xx = Zsim.rows(ind)*trans(Jh);
-      V_1   = trans(xx)*xx+Lam_H;
-      V_1   = (trans(V_1)+V_1)/2;
-      V_1   = inv_sympd(V_1);
-      mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
-      scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
-      R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
-      Beta  = mvrnrm(1, mu, V_1*R(j));
-      Ht.row(j) = trans(Beta.col(0));
-      //H.row(j) = trans(Beta.col(0));
-    }
+    if(ID == "name"){
+      //For observations used to normalize
+      for(uword j=0; j<m; j++){ //loop over variables
+        Yt   = Ytmp.col(j);
+        ind  = find_finite(Yt);   //find non-missing values
+        yy   = Yt(ind);         //LHS variable
+        Jh = J_MF(freq(j), m, LD(j), sA);
+        xx = Zsim.rows(ind)*trans(Jh);
+        V_1   = trans(xx)*xx+Lam_H;
+        V_1   = (trans(V_1)+V_1)/2;
+        V_1   = inv_sympd(V_1);
+        mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
+        scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
+        R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
+        Beta  = mvrnrm(1, mu, V_1*R(j));
+        Ht.row(j) = trans(Beta.col(0));
+        //H.row(j) = trans(Beta.col(0));
+      }
 
-    //Rotate and scale the factors to fit our normalization for H
-    Zsim     = Zsim*kron(eye<mat>(p,p),trans(Ht));
+      //Rotate and scale the factors to fit our normalization for H
+      Zsim     = Zsim*kron(eye<mat>(p,p),trans(Ht));
 
-    //For observations not used to normalize
-    for(uword j=m; j<k; j++){ //loop over variables
-      Yt   = Ytmp.col(j);
-      ind  = find_finite(Yt);   //find non-missing values
-      yy   = Yt(ind);         //LHS variable
-      Jh = J_MF(freq(j), m, LD(j), sA);
-      xx = Zsim.rows(ind)*trans(Jh);
-      V_1   = trans(xx)*xx+Lam_H;
-      V_1   = (trans(V_1)+V_1)/2;
-      V_1   = inv_sympd(V_1);
-      mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
-      scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
-      R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
-      Beta  = mvrnrm(1, mu, V_1*R(j));
-      H.row(j) = trans(Beta.col(0));
+      //For observations not used to normalize
+      for(uword j=m; j<k; j++){ //loop over variables
+        Yt   = Ytmp.col(j);
+        ind  = find_finite(Yt);   //find non-missing values
+        yy   = Yt(ind);         //LHS variable
+        Jh = J_MF(freq(j), m, LD(j), sA);
+        xx = Zsim.rows(ind)*trans(Jh);
+        V_1   = trans(xx)*xx+Lam_H;
+        V_1   = (trans(V_1)+V_1)/2;
+        V_1   = inv_sympd(V_1);
+        mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
+        scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
+        R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
+        Beta  = mvrnrm(1, mu, V_1*R(j));
+        H.row(j) = trans(Beta.col(0));
+      }
+    } else if(ID == "factors" || ID == "shocks") {
+      for(uword j=0; j<k; j++){ //loop over variables
+        Yt   = Ytmp.col(j);
+        ind  = find_finite(Yt);   //find non-missing values
+        yy   = Yt(ind);         //LHS variable
+        Jh = J_MF(freq(j), m, LD(j), sA);
+        xx = Zsim.rows(ind)*trans(Jh);
+        V_1   = trans(xx)*xx+Lam_H;
+        V_1   = (trans(V_1)+V_1)/2;
+        V_1   = inv_sympd(V_1);
+        mu    = V_1*(trans(xx)*yy+Lam_H*trans(Hp.row(j)));
+        scl   = 1 + as_scalar(trans(yy-xx*mu)*(yy-xx*mu)+trans(mu-trans(Hp.row(j)))*Lam_H*(mu-trans(Hp.row(j)))); // prior scale is the 1, + as_scalar(junk) comes from the posterior
+        R(j)  = invchisq(nu_r(j)+yy.n_elem,scl); //Draw for r
+        Beta  = mvrnrm(1, mu, V_1*R(j));
+        H.row(j) = trans(Beta.col(0));
+      }
+      
+      // id = Identify(Zsim.cols(0,m-1), H, ID = "factors");
+      // H  = H*id(0);
+      // Zsim     = Zsim*kron(eye<mat>(p,p),trans(id(1)));
+    } else {
+      throw("Invalid identification string");
     }
 
     // For B and q
@@ -1138,18 +1245,31 @@ List EstDFM(      arma::mat B,     // transition matrix
       Beta  = mvrnrm(1,mu,V_1); //Draw for B
       B     = reshape(Beta,m,sB); //recovering original dimensions
       // Check wheter B is stationary and reject if not
-      aa    = comp_form(B); //
+      aa      = comp_form(B); //
       eig_gen(eigval_cx, eigvec_cx, aa);
-      ev    = as_scalar(max(abs(eigval_cx)));
+      ev     = as_scalar(max(abs(eigval_cx)));
       Rcpp::checkUserInterrupt();
       if(count_reps == 10000){
         Rcpp::Rcout << "Draws Non-Stationary" << endl;
       }
-      if(count_reps == 30000){
-        throw("Draws Non-Stationary" || B.has_nan()); //break program if still no stationary draws
+      if(count_reps == 30000 || B.has_nan()){
+        throw("Draws Non-Stationary"); //break program if still no stationary draws
       }
       count_reps = count_reps+1;
     } while(ev>1);
+    
+    if(ID == "factors"){
+      id = Identify(Zsim.cols(0,m-1), H, ID = "factors");
+      H  = H*id(0);
+      q  = id(1)*q*trans(id(1));
+      B  = id(1)*B*kron(eye<mat>(pB,pB), id(0));
+    }
+    else if(ID == "shocks"){
+      id = Identify(q, H, ID = "shocks");
+      H  = H*id(0);
+      q  = id(1)*q*trans(id(1));
+      B  = id(1)*B*kron(eye<mat>(pB,pB), id(0));
+    }
 
     Bstore.slice(rep) = B;
     Qstore.slice(rep) = q;
