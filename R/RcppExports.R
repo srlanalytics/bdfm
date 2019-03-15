@@ -57,6 +57,10 @@ FSimMF <- function(B, Jb, q, H, R, Y, freq, LD) {
     .Call('_bdfm_FSimMF', PACKAGE = 'bdfm', B, Jb, q, H, R, Y, freq, LD)
 }
 
+Identify <- function(H, q) {
+    .Call('_bdfm_Identify', PACKAGE = 'bdfm', H, q)
+}
+
 EstDFM <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y = FALSE, store_idx = 0L, reps = 1000L, burn = 500L, verbose = FALSE) {
     .Call('_bdfm_EstDFM', PACKAGE = 'bdfm', B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y, store_idx, reps, burn, verbose)
 }

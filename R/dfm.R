@@ -34,6 +34,7 @@
 #'   is the log likelihood from this iteration and Lik0 is the likelihood from
 #'   the previous iteration.
 #' @param return_intermediates if data is mixed frequency, should estimation return intermediate values of low frequency variables
+#' @param orthogonal_shocks Return a rotation of the model with orthogonal shocks and factors
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats dnorm na.omit ts var approx frequency is.ts loess median model.matrix na.exclude predict setNames start
@@ -76,7 +77,8 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates
+      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates,
+      orthogonal_shocks = orthogonal_shocks
     )
     colnames(ans$values) <- colnames(data)
     ans$dates <- NULL
@@ -101,7 +103,8 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates
+      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates,
+      orthogonal_shocks = orthogonal_shocks
     )
 
     # re-apply time series properties and colnames from input

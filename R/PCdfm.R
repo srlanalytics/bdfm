@@ -1,5 +1,7 @@
+#' @importFrom Matrix Diagonal
 PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
-                  nu_q = 0, nu_r = NULL, ID = "pc_sub", reps = 1000, burn = 500) {
+                  nu_q = 0, nu_r = NULL, ID = "pc_sub", reps = 1000, 
+                  burn = 500, orthogonal_shocks = FALSE) {
 
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
@@ -91,6 +93,13 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
   q <- Best$q
 
   Jb <- Matrix::Diagonal(m * p)
+  
+  if(orthogonal_shocks){ #if we want to return a model with orthogonal shocks, rotate the parameters
+    id <- Identify(H,q)
+    H  <- H%*%id[[1]]
+    B  <- id[[2]]%*%B%*%(diag(1,p,p)%x%id[[1]])
+    q  <- id[[2]]%*%q%*%t(id[[2]])
+  }
 
   Est <- DSmooth(
     B = B, Jb = Jb, q = q, H = H, R = R,

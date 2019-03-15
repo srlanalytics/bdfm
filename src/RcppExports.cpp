@@ -209,6 +209,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Identify
+arma::field<arma::mat> Identify(arma::mat H, arma::mat q);
+RcppExport SEXP _bdfm_Identify(SEXP HSEXP, SEXP qSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type H(HSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type q(qSEXP);
+    rcpp_result_gen = Rcpp::wrap(Identify(H, q));
+    return rcpp_result_gen;
+END_RCPP
+}
 // EstDFM
 List EstDFM(arma::mat B, arma::mat Bp, arma::sp_mat Jb, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, arma::uvec freq, arma::uvec LD, bool store_Y, arma::uword store_idx, arma::uword reps, arma::uword burn, bool verbose);
 RcppExport SEXP _bdfm_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP JbSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP freqSEXP, SEXP LDSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP verboseSEXP) {
@@ -303,6 +315,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bdfm_DSmooth", (DL_FUNC) &_bdfm_DSmooth, 8},
     {"_bdfm_DSMF", (DL_FUNC) &_bdfm_DSMF, 8},
     {"_bdfm_FSimMF", (DL_FUNC) &_bdfm_FSimMF, 8},
+    {"_bdfm_Identify", (DL_FUNC) &_bdfm_Identify, 2},
     {"_bdfm_EstDFM", (DL_FUNC) &_bdfm_EstDFM, 19},
     {"_bdfm_Ksmoother", (DL_FUNC) &_bdfm_Ksmoother, 5},
     {"_bdfm_KestExact", (DL_FUNC) &_bdfm_KestExact, 8},

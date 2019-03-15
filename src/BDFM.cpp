@@ -875,6 +875,30 @@ arma::field<arma::mat> FSimMF(    arma::mat B,     // companion form of transiti
 }
 
 // [[Rcpp::export]]
+arma::field<arma::mat> Identify(arma::mat H,
+                                arma::mat q){
+  mat Sig_H;
+  Sig_H = (trans(H)*H)/(H.n_rows);
+  Sig_H = (trans(Sig_H)+Sig_H)/2;
+  mat H_vec, Q_vec;
+  vec H_val, Q_val;
+  eig_sym(H_val, H_vec, Sig_H);
+  mat PhiI = trans(H_vec)*diagmat(sqrt(H_val))*trans(H_vec);
+  mat Q = PhiI*q*trans(PhiI);
+  Q  = (Q + trans(Q))/2;
+  eig_sym(Q_val, Q_vec, Q);
+  Q_vec = Q_vec*diagmat(sign(Q_vec)); //enforce that diagonals must be positive
+  mat Phi = H_vec*diagmat(1/sqrt(H_val))*trans(H_vec)*Q_vec;
+  PhiI = trans(Q_vec)*PhiI;
+  
+  arma::field<arma::mat> Out(2);
+  Out(0) = Phi;
+  Out(1) = PhiI;
+  
+  return(Out);
+}
+
+// [[Rcpp::export]]
 List EstDFM(      arma::mat B,     // transition matrix
                   arma::mat Bp,    // prior for B
                   arma::sp_mat Jb, // aggrigations for transition matrix
