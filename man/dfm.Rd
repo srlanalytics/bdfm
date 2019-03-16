@@ -12,7 +12,7 @@ dfm(data, factors = 1, lags = "auto", forecasts = 0,
   trans_df = 0, obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
   identification = "pc_long", store_idx = NULL, reps = 1000,
   burn = 500, verbose = interactive(), tol = 0.01,
-  return_intermediates = FALSE)
+  return_intermediates = FALSE, orthogonal_shocks = FALSE)
 }
 \arguments{
 \item{data}{data in matrix format with time in rows}
@@ -72,6 +72,8 @@ is the log likelihood from this iteration and Lik0 is the likelihood from
 the previous iteration.}
 
 \item{return_intermediates}{if data is mixed frequency, should estimation return intermediate values of low frequency variables}
+
+\item{orthogonal_shocks}{Return a rotation of the model with orthogonal shocks and factors}
 }
 \description{
 Estimate dynamic factor model

@@ -74,6 +74,7 @@ MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE, orthogonal_shocks = FALS
   }
   
   Jb <- Matrix::Diagonal(m * p)
+  Ydm <- Y - matrix(1, r, 1) %x% t(itc)
   
   Smth <- DSmooth(B, Jb =  Jb, q, H, R, Y = Ydm, freq = rep(1, k), LD = rep(0, k))
   
@@ -91,7 +92,6 @@ MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE, orthogonal_shocks = FALS
     H = H,
     R = R,
     A = A,
-    HJ = HJ,
     itc = itc,
     Kstore = Smth$Kstr,
     PEstore = Smth$PEstr

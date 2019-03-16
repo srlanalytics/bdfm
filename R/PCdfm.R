@@ -24,12 +24,7 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
     }
     PC <- PrinComp(Y[, ID], m)
     X  <- PC$components
-  } else if (ID == "pc_sub") {
-    Ysub <- Y_sub(Y) # submatrix of Y with complete data, i.e. no missing values
-    PC <- PrinComp(Ysub$Ysub, m)
-    X <- matrix(NA, r, m)
-    X[Ysub$ind, ] <- PC$components
-  } else if (ID == "pc_full") {
+  } else if (ID == "pc_wide") {
     PC <- PrinComp(Y, m)
     X  <- PC$components
     if (!any(!is.na(PC$components))) {
@@ -43,17 +38,16 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
     }
     X <- PC$components
-    if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to 'pc_sub'.")
-    }
   }else{
-    warning(paste(ID, "not a valid identification string or index vector, defaulting to pc_full"))
-    ID <- "pc_full"
-    PC <- PrinComp(Y, m)
-    X  <- PC$components
-    if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to 'pc_sub'.")
+    warning(paste(ID, "not a valid identification string or index vector, defaulting to pc_long"))
+    ID <- "pc_long"
+    long <- apply(Y,2,function(e) sum(is.finite(e)))
+    long <- long>=median(long)
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
+    if(sum(long)<m){
+      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
     }
+    X <- PC$components
   }
 
   # Format Priors
