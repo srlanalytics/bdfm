@@ -114,6 +114,8 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
     R = R,
     values = Est$Ys,
     factors = Est$Z[, 1:m],
+    unsmoothed_factors = Est$Zz[, 1:m],
+    predicted_factors  = Est$Zp[, 1:m],
     Qstore = Best$Qstore, # lets us look at full distribution
     Bstore = Best$Bstore,
     Rstore = Hest$Rstore,

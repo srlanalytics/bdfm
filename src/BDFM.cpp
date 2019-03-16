@@ -594,9 +594,9 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
   field<mat> Kstr(T); //store Kalman gain
   field<vec> PEstr(T); //store prediction error
   field<mat> Hstr(T), Sstr(T); //store H and S^-1
-  mat VarY, Z(T,sA,fill::zeros), Zs(T,sA,fill::zeros), Lik, K, Rn, Si, tmp_mat;
+  mat VarY, Zp(T+1,sA,fill::zeros), Z(T,sA,fill::zeros), Zs(T,sA,fill::zeros), Lik, K, Rn, Si, tmp_mat;
   sp_mat Hn;
-  vec PE, Yt, Yn, Yp, Zp(sA,fill::zeros);
+  vec PE, Yt, Yn, Yp;
   uvec ind, indM;
   double tmp;
   double tmpp;
@@ -614,7 +614,7 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
     Yn     = Yt(ind);
     // if nothing is observed
     if(Yn.is_empty()){
-      Z.row(t) = trans(Zp);
+      Z.row(t) = Zp.row(t);
       P0       = P1;
       Hstr(t)  = trans(zippo_sA);
       Sstr(t)  = zippo;
@@ -626,7 +626,7 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
       Hstr(t)   = Hn; //Store for smoothing
       Rn        = R.rows(ind);  //rows of R corresponding to observations
       Rn        = Rn.cols(ind); //cols of R corresponding to observations
-      Yp        = Hn*Zp; //prediction step for Y
+      Yp        = Hn*Zp.row(t); //prediction step for Y
       S         = Hn*P1*trans(Hn)+Rn; //variance of Yp
       S         = symmatu((S+trans(S))/2); //enforce pos. semi. def.
       Si        = inv_sympd(S); //invert S
@@ -635,19 +635,19 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
       PE        = Yn-Yp; // prediction error
       PEstr(t)  = PE; //store prediction error
       Kstr(t)   = K;  //store Kalman gain
-      Z.row(t)  = trans(Zp+K*PE); //updating step for Z
+      Z.row(t)  = trans(Zp.row(t)+K*PE); //updating step for Z
       P0        = P1-P1*trans(Hn)*Si*Hn*P1; // variance Z(t+1)|Y(1:t+1)
       P0        = symmatu((P0+trans(P0))/2); //enforce pos semi def
       log_det(tmp,tmpp,S); //calculate log determinant of S for the likelihood
       Lik    = -.5*tmp-.5*trans(PE)*Si*PE+Lik; //calculate log likelihood
     }
     // Prediction for next period
-    Zp  = A*trans(Z.row(t)); //prediction for Z(t+1) +itcZ
+    Zp.row(t+1)  = A*trans(Z.row(t)); //prediction for Z(t+1) +itcZ
     //ZP.row(t) = trans(Zp);
     P1     = A*P0*trans(A)+Q; //variance Z(t+1)|Y(1:t)
     P1     = symmatu((P1+trans(P1))/2); //enforce pos semi def
   }
-
+  Zp.shed_row(T);
 
   //Smoothing following Durbin Koopman 2001/2012
   mat r(T+1,sA,fill::zeros);
@@ -673,6 +673,7 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
   Out["Lik"]  = Lik;
   Out["Zz"]   = Z;
   Out["Z"]    = Zs;
+  Out["Zp"]   = Zp;
   Out["Kstr"] = Kstr;
   Out["PEstr"]= PEstr;
   Out["r"]    = r;

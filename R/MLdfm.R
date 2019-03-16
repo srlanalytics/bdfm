@@ -87,6 +87,8 @@ MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE, orthogonal_shocks = FALS
     values = Smth$Ys + matrix(1, r, 1) %x% t(itc),
     Lik = Smth$Lik,
     factors = Smth$Z[, 1:m],
+    unsmoothed_factors = Est$Zz[, 1:m],
+    predicted_factors  = Est$Zp[, 1:m],
     B = B,
     Q = Q,
     H = H,

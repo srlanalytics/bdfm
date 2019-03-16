@@ -1,4 +1,4 @@
-# m <- 2
+# m <- 1
 # p <- "auto"
 # freq <- "auto"
 # method = "bayesian"
@@ -22,7 +22,7 @@
 # diffs = c(2, 4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)
 # outlier_threshold <- 4
 # scale = TRUE
-# orthogonal_shocks = TRUE
+# orthogonal_shocks = F
 
 dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = "auto_logs", 
                      outlier_threshold = 4, diffs = "auto_difference", freq = "auto", preD = NULL,
