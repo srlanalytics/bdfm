@@ -6,30 +6,6 @@ NumNA <- function(y) {
   length(which(is.na(y)))
 }
 
-Y_sub <- function(Y) {
-  # lots of ways to select a full submatrix of the data... this is one idea
-  Ysub <- na.omit(Y)
-  obs_old <- nrow(Ysub) * ncol(Ysub)
-  miss_rows <- apply(Y, MARGIN = 2, FUN = NumNA)
-  dims <- dim(na.omit(Y[, -which(miss_rows == max(miss_rows))]))
-  obs_new <- dims[1] * dims[2]
-  if (obs_new < obs_old) {
-    ind <- apply(Y, MARGIN = 1, FUN = AnyNA)
-    Ysub <- Y[!ind, ]
-  }
-  while (obs_new > obs_old || obs_old == 0) {
-    obs_old <- obs_new
-    miss_rows <- apply(Y, MARGIN = 2, FUN = NumNA)
-    Y <- Y[, -which(miss_rows == max(miss_rows))]
-    ind <- apply(Y, MARGIN = 1, FUN = AnyNA) # indexes of Y that do not correspond to Ysub
-    Ysub <- Y[!ind, ]
-    # Ysub      <- na.omit(Y)
-    obs_new <- nrow(Ysub) * ncol(Ysub)
-    # print(dim(Ysub))
-  }
-  return(list(Ysub = Ysub, ind = !ind))
-}
-
 # convert string to numeric index value
 standardize_index <- function(x, Y) {
   argname <- deparse(substitute(x))
@@ -37,9 +13,17 @@ standardize_index <- function(x, Y) {
     out <- unlist(sapply(x, FUN = grep, colnames(Y)))
   } else if (is.numeric(x)) {
     out <- x
+  } else if (is.logical(x)){
+    if(length(x)!=NCOL(Y)){
+      stop("If argument '", argname,
+           "' is logical, its length must equal the number of columns in the input data",
+           call. = FALSE
+      )
+    }
+    out <- which(x)
   } else {
     stop("Argument '", argname,
-      "' must be either a character (string) vector or numeric index values",
+      "' must be either a character (string) vector, a logical vector, or numeric index values",
       call. = FALSE
     )
   }

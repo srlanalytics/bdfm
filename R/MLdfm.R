@@ -1,5 +1,5 @@
 #' @importFrom Matrix Matrix Diagonal sparseMatrix
-MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE) {
+MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE, orthogonal_shocks = FALSE) {
   Y <- as.matrix(Y)
   r <- nrow(Y)
   k <- ncol(Y)
@@ -50,19 +50,33 @@ MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE) {
   }
 
   # Final Estimates
-  if (m * p == 1) {
-    A <- sparseMatrix(i = 1, j = 1, x = c(A[1, 1]), dims = c(1, 1), symmetric = FALSE, triangular = FALSE, giveCsparse = TRUE)
-    Q <- sparseMatrix(i = 1, j = 1, x = c(Q[1, 1]), dims = c(1, 1), symmetric = FALSE, triangular = FALSE, giveCsparse = TRUE)
+  # if (m * p == 1) {
+  #   A <- sparseMatrix(i = 1, j = 1, x = c(A[1, 1]), dims = c(1, 1), symmetric = FALSE, triangular = FALSE, giveCsparse = TRUE)
+  #   Q <- sparseMatrix(i = 1, j = 1, x = c(Q[1, 1]), dims = c(1, 1), symmetric = FALSE, triangular = FALSE, giveCsparse = TRUE)
+  # }
+  # else {
+  #   A <- A[1:(m * p), 1:(m * p)]
+  #   Q <- Q[1:(m * p), 1:(m * p)]
+  # }
+  # Ydm <- Y - matrix(1, r, 1) %x% t(itc)
+  # HJ <- sparseMatrix(i = rep(1:k, m), j = (1:m) %x% rep(1, k), x = c(H), dims = c(k, m * p), symmetric = FALSE, triangular = FALSE, giveCsparse = TRUE)
+  # 
+  # Smth <- Ksmoother(A, Q, HJ, R, Ydm)
+  
+  B  <- A[1:m, 1:(m * p)]
+  q  <- Q[1:m,1:m]
+  
+  if(orthogonal_shocks){ #if we want to return a model with orthogonal shocks, rotate the parameters
+    id <- Identify(H,q)
+    H  <- H%*%id[[1]]
+    B  <- id[[2]]%*%B%*%(diag(1,p,p)%x%id[[1]])
+    q  <- id[[2]]%*%q%*%t(id[[2]])
   }
-  else {
-    A <- A[1:(m * p), 1:(m * p)]
-    Q <- Q[1:(m * p), 1:(m * p)]
-  }
+  
+  Jb <- Matrix::Diagonal(m * p)
   Ydm <- Y - matrix(1, r, 1) %x% t(itc)
-  HJ <- sparseMatrix(i = rep(1:k, m), j = (1:m) %x% rep(1, k), x = c(H), dims = c(k, m * p), symmetric = FALSE, triangular = FALSE, giveCsparse = TRUE)
-
-  Smth <- Ksmoother(A, Q, HJ, R, Ydm)
-  B <- A[1:m, 1:(m * p)]
+  
+  Smth <- DSmooth(B, Jb =  Jb, q, H, R, Y = Ydm, freq = rep(1, k), LD = rep(0, k))
   
   #Format output a bit
   rownames(H) <- colnames(Y)
@@ -73,12 +87,13 @@ MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE) {
     values = Smth$Ys + matrix(1, r, 1) %x% t(itc),
     Lik = Smth$Lik,
     factors = Smth$Z[, 1:m],
+    unsmoothed_factors = Est$Zz[, 1:m],
+    predicted_factors  = Est$Zp[, 1:m],
     B = B,
     Q = Q,
     H = H,
     R = R,
     A = A,
-    HJ = HJ,
     itc = itc,
     Kstore = Smth$Kstr,
     PEstore = Smth$PEstr

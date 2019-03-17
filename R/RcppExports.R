@@ -5,6 +5,10 @@ QuickReg <- function(X, Y) {
     .Call('_bdfm_QuickReg', PACKAGE = 'bdfm', X, Y)
 }
 
+UVreg <- function(x, y, itc = TRUE) {
+    .Call('_bdfm_UVreg', PACKAGE = 'bdfm', x, y, itc)
+}
+
 comp_form <- function(B) {
     .Call('_bdfm_comp_form', PACKAGE = 'bdfm', B)
 }
@@ -51,6 +55,10 @@ DSMF <- function(B, Jb, q, H, R, Y, freq, LD) {
 
 FSimMF <- function(B, Jb, q, H, R, Y, freq, LD) {
     .Call('_bdfm_FSimMF', PACKAGE = 'bdfm', B, Jb, q, H, R, Y, freq, LD)
+}
+
+Identify <- function(H, q) {
+    .Call('_bdfm_Identify', PACKAGE = 'bdfm', H, q)
 }
 
 EstDFM <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y = FALSE, store_idx = 0L, reps = 1000L, burn = 500L, verbose = FALSE) {

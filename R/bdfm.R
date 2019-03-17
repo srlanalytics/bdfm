@@ -1,4 +1,4 @@
-bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq, LD, reps, burn, verbose) {
+bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq, LD, reps, burn, verbose, orthogonal_shocks) {
 
   # Preliminaries
   Y <- as.matrix(Y)
@@ -35,7 +35,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
 
   if (is.numeric(ID)) {
     if(length(ID)<m){
-      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
+      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_wide'")
     }
     PC <- PrinComp(Y[, ID], m)
     Y <- cbind(PC$components, Y)
@@ -45,22 +45,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     }
     freq <- c(rep(1, m), freq)
     LD <- c(rep(0, m), LD)
-  } else if (ID == "pc_sub") {
-    Ysub <- Y_sub(Y) # submatrix of Y with complete data, i.e. no missing values
-    if(NCOL(Ysub)<m){
-      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
-    }
-    PC <- PrinComp(Ysub$Ysub, m)
-    tmp <- matrix(NA, r, m)
-    tmp[Ysub$ind, ] <- PC$components
-    Y <- cbind(tmp, Y)
-    k <- k + m
-    if (!is.null(nu_r)) {
-      nu_r <- c(rep(0, m), nu_r)
-    }
-    freq <- c(rep(1, m), freq)
-    LD <- c(rep(0, m), LD)
-  } else if (ID == "pc_full") {
+  } else if (ID == "pc_wide") {
     PC <- PrinComp(Y, m)
     Y <- cbind(PC$components, Y)
     k <- k + m
@@ -70,14 +55,14 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     freq <- c(rep(1, m), freq)
     LD <- c(rep(0, m), LD)
     if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to pc_sub.")
+      stop("Every period contains missing data. Try setting ID to pc_long.")
     }
   }else if (ID == "pc_long") {
     long <- apply(Y,2,function(e) sum(is.finite(e)))
     long <- long>=median(long)
     PC <- PrinComp(Y[,long, drop = FALSE], m)
     if(sum(long)<m){
-      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
+      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_wide'")
     }
     Y <- cbind(PC$components, Y)
     k <- k + m
@@ -90,9 +75,14 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
       stop("Every period contains missing data. Try setting ID to pc_sub.")
     }
   } else if (ID != "name") {
-    warning(paste(ID, "not a valid identification string or index vector, defaulting to pc_full"))
-    ID <- "pc_full"
-    PC <- PrinComp(Y, m)
+    warning(paste(ID, "is not a valid identification string or index vector, defaulting to pc_long"))
+    ID <- "pc_long"
+    long <- apply(Y,2,function(e) sum(is.finite(e)))
+    long <- long>=median(long)
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
+    if(sum(long)<m){
+      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_wide'")
+    }
     Y <- cbind(PC$components, Y)
     k <- k + m
     if (!is.null(nu_r)) {
@@ -150,7 +140,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     store_Y <- FALSE
   } else {
     store_Y <- TRUE
-    if (ID %in% c("pc_sub", "pc_full", "pc_long") || is.numeric(ID)) {
+    if (ID %in% c("pc_wide", "pc_long") || is.numeric(ID)) {
       store_idx <- store_idx + m - 1 # -1 due to zero indexing in C++
     } else {
       store_idx <- store_idx - 1
@@ -159,13 +149,20 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
 
   Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, freq = freq, LD = LD, store_Y = store_Y, store_idx = store_idx, reps = reps, burn = burn, verbose = verbose)
 
-  if (ID %in% c("pc_sub", "pc_full", "pc_long") || is.numeric(ID)) {
+  if (ID %in% c("pc_wide", "pc_long") || is.numeric(ID)) {
     B <- Parms$B
     q <- Parms$Q
     H <- as.matrix(Parms$H[-(1:m), ])
     R <- diag(c(Parms$R[-(1:m)]), nrow = k-m, ncol = k-m)
 
     Y <- Y[, -(1:m), drop = FALSE] #drop components used to identify model
+    
+    if(orthogonal_shocks){ #if we want to return a model with orthogonal shocks, rotate the parameters
+      id <- Identify(H,q)
+      H  <- H%*%id[[1]]
+      B  <- id[[2]]%*%B%*%(diag(1,p,p)%x%id[[1]])
+      q  <- id[[2]]%*%q%*%t(id[[2]])
+    }
 
     Est <- DSmooth(
       B = B, Jb = Jb, q = q, H = H, R = R,
@@ -189,6 +186,8 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
       Jb = Jb,
       values = Est$Ys, # + matrix(1, r, 1) %x% t(itc),
       factors = Est$Z[, 1:m],
+      unsmoothed_factors = Est$Zz[, 1:m],
+      predicted_factors  = Est$Zp[, 1:m],
       Qstore = Parms$Qstore,
       Bstore = Parms$Bstore,
       Hstore = Parms$Hstore[-(1:m), , , drop = FALSE],
@@ -205,6 +204,13 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     q <- Parms$Q
     H <- Parms$H
     R <- diag(c(Parms$R), k, k)
+    
+    if(orthogonal_shocks){ #if we want to return a model with orthogonal shocks, rotate the parameters
+      id <- Identify(H,q)
+      H  <- H%*%id[[1]]
+      B  <- id[[2]]%*%B%*%(diag(1,p,p)%x%id[[1]])
+      q  <- id[[2]]%*%q%*%t(id[[2]])
+    }
 
     Est <- DSmooth(B = B, Jb = Jb, q = q, H = H, R = R, Y = Y, freq = freq, LD = LD)
 
@@ -223,6 +229,8 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
       Jb = Jb,
       values = Est$Ys, # + matrix(1, r, 1) %x% t(itc),
       factors = Est$Z[, 1:m],
+      unsmoothed_factors = Est$Zz[, 1:m],
+      predicted_factors  = Est$Zp[, 1:m],
       Qstore = Parms$Qstore, # lets us look at full distribution
       Bstore = Parms$Bstore,
       Hstore = Parms$Hstore,
