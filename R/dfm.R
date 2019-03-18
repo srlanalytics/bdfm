@@ -68,9 +68,14 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
   if (any(class(data) %in% tsobjs) && !requireNamespace("tsbox")) {
     stop('"tsbox" is needed to support non ts-time-series. To install: \n\n  install.packages("tsbox")', call. = FALSE)
   }
+  
 
   # non time series
   if (!any(class(data) %in% c(tsobjs, "ts", "mts")) && is.matrix(data)) {
+    all_NA <- apply(X = data, MARGIN = 2, FUN = AllNA)
+    if(any(all_NA)){
+      stop(paste(colnames(data)[all_NA], collapse=", "), " contain no observations. Remove these series before estimation.")
+    }
     ans <- dfm_core(
       Y = data, m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, outlier_threshold = outlier_threshold, freq = frequency_mix,
@@ -96,6 +101,11 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
     }
 
     attr(data_unclassed, "tsp") <- NULL
+    
+    all_NA <- apply(X = data_unclassed, MARGIN = 2, FUN = AllNA)
+    if(any(all_NA)){
+      stop(paste(colnames(data_unclassed)[all_NA], collapse=", "), " contain no observations. Remove these series before estimation.")
+    }
 
     ans <- dfm_core(
       Y = as.matrix(data_unclassed), m = factors, p = lags, FC = forecasts, method = method,

@@ -1,5 +1,9 @@
 AnyNA <- function(y) {
-  any(is.na(y))
+  any(!is.finite(y))
+}
+
+AllNA <- function(y) {
+  all(!is.finite(y))
 }
 
 NumNA <- function(y) {
