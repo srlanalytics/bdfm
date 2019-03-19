@@ -224,6 +224,13 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     est$values[,which(freq != 1)] <- do.call(cbind, lapply(X = which(freq != 1), FUN = drop_intermediates, 
                                                            freq = freq, Y_raw = Y, vals = est$values))
   }
+  
+  est$freq  <- freq
+  est$logs  <- logs
+  est$diffs <- diffs
+  est$scale <- scale
+  est$outlier_threshold <- outlier_threshold
+  est$differences <- LD
 
   return(est)
 }
