@@ -51,30 +51,50 @@ arma::mat QuickReg(arma::mat X,
 //Quick univariate regression omitting missing values
 // [[Rcpp::export]]
 List UVreg(arma::vec x,
-           arma::vec y,
-           bool itc = true){
+           arma::vec y){
   uvec ind = find_nonfinite(x);
   ind = unique( join_cols(ind, find_nonfinite(y)));
   for(uword k = ind.n_elem; k>0; k--){
     x.shed_row(ind(k-1));
     y.shed_row(ind(k-1));
   }
-  mat X;
-  if(itc){
-    X = join_rows(ones<colvec>(x.n_elem),x);
-  }else{
-    X = x;
-  }
-  mat Xi = inv_sympd(trans(X)*X);
-  mat B = Xi*(trans(X)*y);
-  vec u = y-X*B;
-  mat V = (as_scalar(trans(u)*u)/(y.n_elem - B.n_elem))*Xi;
-  vec sd = sqrt(V.diag());
+  double xi = 1/as_scalar(trans(x)*x);
+  double B = xi*as_scalar(trans(x)*y);
+  vec u = y-B*x;
+  double sd = sqrt((as_scalar(trans(u)*u)/(y.n_elem - 1))*xi);
   List Out;
   Out["B"]  = B;
   Out["sd"] = sd;
   return(Out);
 }
+
+// //Quick univariate regression omitting missing values
+// // [[Rcpp::export]]
+// List UVreg(arma::vec x,
+//            arma::vec y,
+//            bool itc = true){
+//   uvec ind = find_nonfinite(x);
+//   ind = unique( join_cols(ind, find_nonfinite(y)));
+//   for(uword k = ind.n_elem; k>0; k--){
+//     x.shed_row(ind(k-1));
+//     y.shed_row(ind(k-1));
+//   }
+//   mat X;
+//   if(itc){
+//     X = join_rows(ones<colvec>(x.n_elem),x);
+//   }else{
+//     X = x;
+//   }
+//   mat Xi = inv_sympd(trans(X)*X);
+//   mat B = Xi*(trans(X)*y);
+//   vec u = y-X*B;
+//   mat V = (as_scalar(trans(u)*u)/(y.n_elem - B.n_elem))*Xi;
+//   vec sd = sqrt(V.diag());
+//   List Out;
+//   Out["B"]  = B;
+//   Out["sd"] = sd;
+//   return(Out);
+// }
 
 // // [[Rcpp::export]]
 // arma::uword MonthDays(double year,
