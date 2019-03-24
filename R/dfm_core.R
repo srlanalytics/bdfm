@@ -24,8 +24,8 @@
 # scale = TRUE
 # orthogonal_shocks = F
 
-dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = "auto_logs",
-                     outlier_threshold = 4, diffs = "auto_difference", freq = "auto", preD = NULL,
+dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = "auto",
+                     outlier_threshold = 4, diffs = "auto", freq = "auto", preD = NULL,
                      Bp = NULL, lam_B = 0, trans_df = 0, Hp = NULL, lam_H = 0, obs_df = NULL, ID = "pc_long",
                      store_idx = NULL, reps = 1000, burn = 500, verbose = TRUE,
                      tol = 0.01, return_intermediates = FALSE, orthogonal_shocks = FALSE) {
@@ -59,12 +59,12 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     Y <- rbind(Y, tmp)
   }
 
-  if(logs == "auto_logs" || diffs == "auto_difference"){
+  if(logs == "auto" || diffs == "auto"){
     do_log_diff <- should_log_diff(Y)
-    if(logs == "auto_logs"){
+    if(logs == "auto"){
       logs <- do_log_diff[1,]
     }
-    if(diffs == "auto_difference"){
+    if(diffs == "auto"){
       diffs <- do_log_diff[2,]
     }
   }

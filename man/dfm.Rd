@@ -5,9 +5,8 @@
 \title{Estimate dynamic factor model}
 \usage{
 dfm(data, factors = 1, lags = "auto", forecasts = 0,
-  method = c("bayesian", "ml", "pc"), scale = TRUE,
-  logs = "auto_logs", diffs = "auto_difference",
-  outlier_threshold = 4, frequency_mix = "auto",
+  method = c("bayesian", "ml", "pc"), scale = TRUE, logs = "auto",
+  diffs = "auto", outlier_threshold = 4, frequency_mix = "auto",
   pre_differenced = NULL, trans_prior = NULL, trans_shrink = 0,
   trans_df = 0, obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
   identification = "pc_long", store_idx = NULL, reps = 1000,
