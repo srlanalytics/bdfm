@@ -1,5 +1,7 @@
+#' @importFrom Matrix Diagonal
 PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
-                  nu_q = 0, nu_r = NULL, ID = "pc_sub", reps = 1000, burn = 500) {
+                  nu_q = 0, nu_r = NULL, ID = "pc_sub", reps = 1000, 
+                  burn = 500, orthogonal_shocks = FALSE) {
 
   # ----------- Preliminaries -----------------
   Y <- as.matrix(Y)
@@ -22,12 +24,7 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
     }
     PC <- PrinComp(Y[, ID], m)
     X  <- PC$components
-  } else if (ID == "pc_sub") {
-    Ysub <- Y_sub(Y) # submatrix of Y with complete data, i.e. no missing values
-    PC <- PrinComp(Ysub$Ysub, m)
-    X <- matrix(NA, r, m)
-    X[Ysub$ind, ] <- PC$components
-  } else if (ID == "pc_full") {
+  } else if (ID == "pc_wide") {
     PC <- PrinComp(Y, m)
     X  <- PC$components
     if (!any(!is.na(PC$components))) {
@@ -41,17 +38,16 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
     }
     X <- PC$components
-    if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to 'pc_sub'.")
-    }
   }else{
-    warning(paste(ID, "not a valid identification string or index vector, defaulting to pc_full"))
-    ID <- "pc_full"
-    PC <- PrinComp(Y, m)
-    X  <- PC$components
-    if (!any(!is.na(PC$components))) {
-      stop("Every period contains missing data. Try setting ID to 'pc_sub'.")
+    warning(paste(ID, "not a valid identification string or index vector, defaulting to pc_long"))
+    ID <- "pc_long"
+    long <- apply(Y,2,function(e) sum(is.finite(e)))
+    long <- long>=median(long)
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
+    if(sum(long)<m){
+      stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
     }
+    X <- PC$components
   }
 
   # Format Priors
@@ -91,6 +87,13 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
   q <- Best$q
 
   Jb <- Matrix::Diagonal(m * p)
+  
+  if(orthogonal_shocks){ #if we want to return a model with orthogonal shocks, rotate the parameters
+    id <- Identify(H,q)
+    H  <- H%*%id[[1]]
+    B  <- id[[2]]%*%B%*%(diag(1,p,p)%x%id[[1]])
+    q  <- id[[2]]%*%q%*%t(id[[2]])
+  }
 
   Est <- DSmooth(
     B = B, Jb = Jb, q = q, H = H, R = R,
@@ -111,6 +114,8 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
     R = R,
     values = Est$Ys,
     factors = Est$Z[, 1:m],
+    unsmoothed_factors = Est$Zz[, 1:m],
+    predicted_factors  = Est$Zp[, 1:m],
     Qstore = Best$Qstore, # lets us look at full distribution
     Bstore = Best$Bstore,
     Rstore = Hest$Rstore,

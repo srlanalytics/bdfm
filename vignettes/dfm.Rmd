@@ -46,13 +46,10 @@ data[,c(1,2,5)] <- log(data[,c(1,2,5)])
 data <- diff(data)
 
 ```
-As previously mentioned, small values can result in inaccurate estimations. It's therefore a good idea to scale up the data.
+As previously mentioned, small values can result in inaccurate estimations. It's therefore a good idea to scale up the data; this is done by default but can be turned off by setting `scale = FALSE`. 
 
-[TODO: The package should take care of technical stuff, not the user. If scaling is a good idea, we should do it by default, and unscale at the end. With an option to turn it of => This isn't so obvious to deal with. What I've done is put together very simple `scale()` and `unscale()` functions to make this step as easy as possible.]
+[TODO: The package should take care of technical stuff, not the user. If scaling is a good idea, we should do it by default, and unscale at the end. With an option to turn it of => This isn't so obvious to deal with. What I've done is put together very simple `scale()` and `unscale()` functions to make this step as easy as possible. DONE]
 
-```{r echo = T}
-# data <- bdfm::scale(data)
-```
 We can then estimate our DFM. A model with one factor is a good way to create an index of the data, in this case a small index of monthly real activity in the U.S.
 
 [TODO: heuristics for factors, lags? => Output currently includes BIC which can be used to evaluate models]
@@ -66,7 +63,7 @@ And finally, we can look a this index against the scaled observed series.
 ts.plot(cbind(data, est$factors), col = c(rep("steelblue", 5), "red"), lwd = c(rep(1,5),2))
 ```
 
-If we want the forecast in the original units, we can use the `unscale()` function:
+Forecasts are automatically converted to the original units.
 
 ```{r echo = T}
 raw_forecast <- predict(est)

@@ -6,7 +6,7 @@
 #' @param forecasts number of periods ahead to forecasts
 #' @param method character, method to be used
 #' @param scale scale data before estimation (True/False)?
-#' @param logs names or index values of series which should be entered in log levels
+#' @param logs names or index values of series which should be entered in logs (and potentially differenced)
 #' @param diffs names or index values of series which should be differenced
 #' @param outlier_threshold drop observations more than x standard deviations from the mean
 #' @param frequency_mix 'auto' or numeric, number of high frequency periods in observation if data is mixed frequency
@@ -34,6 +34,7 @@
 #'   is the log likelihood from this iteration and Lik0 is the likelihood from
 #'   the previous iteration.
 #' @param return_intermediates if data is mixed frequency, should estimation return intermediate values of low frequency variables
+#' @param orthogonal_shocks Return a rotation of the model with orthogonal shocks and factors
 #' @export
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats dnorm na.omit ts var approx frequency is.ts loess median model.matrix na.exclude predict setNames start
@@ -48,12 +49,12 @@
 #' summary(m)
 #' @useDynLib bdfm
 dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
-                method = c("bayesian", "ml", "pc"), scale = TRUE, logs = NULL, diffs = NULL,
+                method = c("bayesian", "ml", "pc"), scale = TRUE, logs = "auto_logs", diffs = "auto_difference",
                 outlier_threshold = 4, frequency_mix = "auto", pre_differenced = NULL,
                 trans_prior = NULL, trans_shrink = 0, trans_df = 0, obs_prior = NULL, obs_shrink = 0,
                 obs_df = NULL, identification = "pc_long",
                 store_idx = NULL, reps = 1000, burn = 500, verbose = interactive(),
-                tol = 0.01, return_intermediates = FALSE) {
+                tol = 0.01, return_intermediates = FALSE, orthogonal_shocks = FALSE) {
 
   call <- match.call
 
@@ -67,16 +68,22 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
   if (any(class(data) %in% tsobjs) && !requireNamespace("tsbox")) {
     stop('"tsbox" is needed to support non ts-time-series. To install: \n\n  install.packages("tsbox")', call. = FALSE)
   }
+  
 
   # non time series
   if (!any(class(data) %in% c(tsobjs, "ts", "mts")) && is.matrix(data)) {
+    all_NA <- apply(X = data, MARGIN = 2, FUN = AllNA)
+    if(any(all_NA)){
+      stop(paste(colnames(data)[all_NA], collapse=", "), " contain no observations. Remove these series before estimation.")
+    }
     ans <- dfm_core(
       Y = data, m = factors, p = lags, FC = forecasts, method = method,
       scale = scale, logs = logs, diffs = diffs, outlier_threshold = outlier_threshold, freq = frequency_mix,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates
+      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates,
+      orthogonal_shocks = orthogonal_shocks
     )
 
   } else {
@@ -93,6 +100,11 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
     }
 
     attr(data_unclassed, "tsp") <- NULL
+    
+    all_NA <- apply(X = data_unclassed, MARGIN = 2, FUN = AllNA)
+    if(any(all_NA)){
+      stop(paste(colnames(data_unclassed)[all_NA], collapse=", "), " contain no observations. Remove these series before estimation.")
+    }
 
     ans <- dfm_core(
       Y = as.matrix(data_unclassed), m = factors, p = lags, FC = forecasts, method = method,
@@ -100,7 +112,8 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, store_idx = store_idx, reps = reps,
-      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates
+      burn = burn, verbose = verbose, tol = tol, return_intermediates = return_intermediates,
+      orthogonal_shocks = orthogonal_shocks
     )
 
     # re-apply time series properties and colnames from input

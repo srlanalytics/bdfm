@@ -1,4 +1,4 @@
-# m <- 2
+# m <- 1
 # p <- "auto"
 # freq <- "auto"
 # method = "bayesian"
@@ -22,10 +22,13 @@
 # diffs = c(2, 4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24)
 # outlier_threshold <- 4
 # scale = TRUE
+# orthogonal_shocks = F
 
-dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs, freq, preD,
-                     Bp, lam_B, trans_df, Hp, lam_H, obs_df, ID,
-                     store_idx, reps, burn, verbose, tol, return_intermediates) {
+dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = "auto_logs", 
+                     outlier_threshold = 4, diffs = "auto_difference", freq = "auto", preD = NULL,
+                     Bp = NULL, lam_B = 0, trans_df = 0, Hp = NULL, lam_H = 0, obs_df = NULL, ID = "pc_long",
+                     store_idx = NULL, reps = 1000, burn = 500, verbose = TRUE,
+                     tol = 0.01, return_intermediates = FALSE, orthogonal_shocks = FALSE) {
 
   #-------Data processing-------------------------
 
@@ -55,6 +58,25 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     tmp <- matrix(NA, FC, k)
     Y <- rbind(Y, tmp)
   }
+  
+  if(logs == "auto_logs" || diffs == "auto_difference"){
+    do_log_diff <- should_log_diff(Y)
+    if(logs == "auto_logs"){
+      logs <- do_log_diff[1,]
+    }
+    if(diffs == "auto_difference"){
+      diffs <- do_log_diff[2,]
+    }
+  }
+  
+  if(is.logical(logs)){
+    if(!any(logs)) logs <- NULL
+  }
+  
+  if(is.logical(diffs)){
+    if(!any(diffs)) diffs <- NULL
+  }
+    
 
   # logs
   if (!is.null(logs)) {
@@ -101,7 +123,7 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     store_idx <- standardize_index(store_idx, Y)
   }
 
-  if(!ID%in%c("pc_full", "pc_sub", "pc_long", "name")){
+  if(all(!ID%in%c("pc_wide", "pc_long", "name"))){
     ID <- standardize_index(ID, Y)
   }
 
@@ -114,18 +136,18 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
       Y = Y, m = m, p = p, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = trans_df, nu_r = obs_df,
       ID = ID, store_idx = store_idx, freq = freq, LD = LD, reps = reps,
-      burn = burn, verbose = verbose
+      burn = burn, verbose = verbose, orthogonal_shocks = orthogonal_shocks
     )
   } else if (method == "ml") {
     est <- MLdfm(
       Y = Y, m = m, p = p, tol = tol,
-      verbose = verbose
+      verbose = verbose, orthogonal_shocks = orthogonal_shocks
     )
   } else if (method == "pc") {
     est <- PCdfm(
       Y, m = m, p = p, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = trans_df, nu_r = obs_df,
-      ID = ID, reps = reps, burn = burn
+      ID = ID, reps = reps, burn = burn, orthogonal_shocks = orthogonal_shocks
     )
   }
 
@@ -200,10 +222,19 @@ dfm_core <- function(Y, m, p, FC, method, scale, logs, outlier_threshold, diffs,
     }
   }
 
+  
+  #Return intermediate values of low frequency data?
   if (length(unique(freq))>1 && !return_intermediates){
     est$values[,which(freq != 1)] <- do.call(cbind, lapply(X = which(freq != 1), FUN = drop_intermediates,
                                                            freq = freq, Y_raw = Y, vals = est$values))
   }
+  
+  est$freq  <- freq
+  est$logs  <- logs
+  est$diffs <- diffs
+  est$scale <- scale
+  est$outlier_threshold <- outlier_threshold
+  est$differences <- LD
 
   colnames(est$values) <- colnames(data)
 

@@ -48,6 +48,54 @@ arma::mat QuickReg(arma::mat X,
   return(B);
 }
 
+//Quick univariate regression omitting missing values
+// [[Rcpp::export]]
+List UVreg(arma::vec x,
+           arma::vec y){
+  uvec ind = find_nonfinite(x);
+  ind = unique( join_cols(ind, find_nonfinite(y)));
+  for(uword k = ind.n_elem; k>0; k--){
+    x.shed_row(ind(k-1));
+    y.shed_row(ind(k-1));
+  }
+  double xi = 1/as_scalar(trans(x)*x);
+  double B = xi*as_scalar(trans(x)*y);
+  vec u = y-B*x;
+  double sd = sqrt((as_scalar(trans(u)*u)/(y.n_elem - 1))*xi);
+  List Out;
+  Out["B"]  = B;
+  Out["sd"] = sd;
+  return(Out);
+}
+
+// //Quick univariate regression omitting missing values
+// // [[Rcpp::export]]
+// List UVreg(arma::vec x,
+//            arma::vec y,
+//            bool itc = true){
+//   uvec ind = find_nonfinite(x);
+//   ind = unique( join_cols(ind, find_nonfinite(y)));
+//   for(uword k = ind.n_elem; k>0; k--){
+//     x.shed_row(ind(k-1));
+//     y.shed_row(ind(k-1));
+//   }
+//   mat X;
+//   if(itc){
+//     X = join_rows(ones<colvec>(x.n_elem),x);
+//   }else{
+//     X = x;
+//   }
+//   mat Xi = inv_sympd(trans(X)*X);
+//   mat B = Xi*(trans(X)*y);
+//   vec u = y-X*B;
+//   mat V = (as_scalar(trans(u)*u)/(y.n_elem - B.n_elem))*Xi;
+//   vec sd = sqrt(V.diag());
+//   List Out;
+//   Out["B"]  = B;
+//   Out["sd"] = sd;
+//   return(Out);
+// }
+
 // // [[Rcpp::export]]
 // arma::uword MonthDays(double year,
 //                       double month){
@@ -566,14 +614,14 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
   field<mat> Kstr(T); //store Kalman gain
   field<vec> PEstr(T); //store prediction error
   field<mat> Hstr(T), Sstr(T); //store H and S^-1
-  mat VarY, Z(T,sA,fill::zeros), Zs(T,sA,fill::zeros), Lik, K, Rn, Si, tmp_mat;
+  mat VarY, ZP(T+1,sA,fill::zeros), Z(T,sA,fill::zeros), Zs(T,sA,fill::zeros), Lik, K, Rn, Si, tmp_mat;
   sp_mat Hn;
-  vec PE, Yt, Yn, Yp, Zp(sA,fill::zeros);
+  vec PE, Yt, Yn, Yp;
   uvec ind, indM;
   double tmp;
   double tmpp;
   Lik << 0;
-  //vec Zp(sA, fill::zeros); //initialize to zero --- more or less arbitrary due to difuse variance
+  vec Zp(sA, fill::zeros); //initialize to zero --- more or less arbitrary due to difuse variance
 
   mat zippo(1,1,fill::zeros);
   mat zippo_sA(sA,1);
@@ -615,11 +663,11 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
     }
     // Prediction for next period
     Zp  = A*trans(Z.row(t)); //prediction for Z(t+1) +itcZ
-    //ZP.row(t) = trans(Zp);
+    ZP.row(t+1) = trans(Zp);
     P1     = A*P0*trans(A)+Q; //variance Z(t+1)|Y(1:t)
     P1     = symmatu((P1+trans(P1))/2); //enforce pos semi def
   }
-
+  ZP.shed_row(T);
 
   //Smoothing following Durbin Koopman 2001/2012
   mat r(T+1,sA,fill::zeros);
@@ -645,6 +693,7 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
   Out["Lik"]  = Lik;
   Out["Zz"]   = Z;
   Out["Z"]    = Zs;
+  Out["Zp"]   = ZP;
   Out["Kstr"] = Kstr;
   Out["PEstr"]= PEstr;
   Out["r"]    = r;
@@ -847,6 +896,30 @@ arma::field<arma::mat> FSimMF(    arma::mat B,     // companion form of transiti
 }
 
 // [[Rcpp::export]]
+arma::field<arma::mat> Identify(arma::mat H,
+                                arma::mat q){
+  mat Sig_H;
+  Sig_H = (trans(H)*H)/(H.n_rows);
+  Sig_H = (trans(Sig_H)+Sig_H)/2;
+  mat H_vec, Q_vec;
+  vec H_val, Q_val;
+  eig_sym(H_val, H_vec, Sig_H);
+  mat PhiI = trans(H_vec)*diagmat(sqrt(H_val))*trans(H_vec);
+  mat Q = PhiI*q*trans(PhiI);
+  Q  = (Q + trans(Q))/2;
+  eig_sym(Q_val, Q_vec, Q);
+  Q_vec = Q_vec*diagmat(sign(Q_vec)); //enforce that diagonals must be positive
+  mat Phi = H_vec*diagmat(1/sqrt(H_val))*trans(H_vec)*Q_vec;
+  PhiI = trans(Q_vec)*PhiI;
+  
+  arma::field<arma::mat> Out(2);
+  Out(0) = Phi;
+  Out(1) = PhiI;
+  
+  return(Out);
+}
+
+// [[Rcpp::export]]
 List EstDFM(      arma::mat B,     // transition matrix
                   arma::mat Bp,    // prior for B
                   arma::sp_mat Jb, // aggrigations for transition matrix
@@ -1007,7 +1080,7 @@ List EstDFM(      arma::mat B,     // transition matrix
       if(count_reps == 10000){
         Rcpp::Rcout << "Draws Non-Stationary" << endl;
       }
-      if(count_reps == 30000){
+      if(count_reps == 30000 || B.has_nan()){
         throw("Draws Non-Stationary"); //break program if still no stationary draws
       }
       count_reps = count_reps+1;
@@ -1118,7 +1191,7 @@ List EstDFM(      arma::mat B,     // transition matrix
         Rcpp::Rcout << "Draws Non-Stationary" << endl;
       }
       if(count_reps == 30000){
-        throw("Draws Non-Stationary"); //break program if still no stationary draws
+        throw("Draws Non-Stationary" || B.has_nan()); //break program if still no stationary draws
       }
       count_reps = count_reps+1;
     } while(ev>1);
