@@ -68,7 +68,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
   if (any(class(data) %in% tsobjs) && !requireNamespace("tsbox")) {
     stop('"tsbox" is needed to support non ts-time-series. To install: \n\n  install.packages("tsbox")', call. = FALSE)
   }
-  
+
 
   # non time series
   if (!any(class(data) %in% c(tsobjs, "ts", "mts")) && is.matrix(data)) {
@@ -101,7 +101,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
     }
 
     attr(data_unclassed, "tsp") <- NULL
-    
+
     all_NA <- apply(X = data_unclassed, MARGIN = 2, FUN = AllNA)
     if(any(all_NA)){
       stop(paste(colnames(data_unclassed)[all_NA], collapse=", "), " contain no observations. Remove these series before estimation.")
@@ -119,6 +119,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
 
     # re-apply time series properties and colnames from input
     ans$values <- ts(ans$values, start = data_tsp[1], frequency = data_tsp[3])
+    ans$adjusted <- ts(ans$adjusted, start = data_tsp[1], frequency = data_tsp[3])
     ans$factors <- ts(ans$factors, start = data_tsp[1], frequency = data_tsp[3])
     if (!is.null(store_idx)) {
       ans$Ymedian <- ts(ans$Ymedian, start = data_tsp[1], frequency = data_tsp[3])
@@ -129,6 +130,7 @@ dfm <- function(data, factors = 1, lags = "auto", forecasts = 0,
     # put values back into original class (other than ts)
     if (!inherits(data, "ts")) {
       ans$values <- tsbox::copy_class(ans$values, data)
+      ans$adjusted <- tsbox::copy_class(ans$adjusted, data)
       ans$factors <- tsbox::copy_class(ans$factors, data, preserve.mode = FALSE)
       if (!is.null(store_idx)) {
         ans$Ymedian <- tsbox::copy_class(ans$Ymedian, data)
