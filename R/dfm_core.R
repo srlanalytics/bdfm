@@ -59,15 +59,31 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     Y <- rbind(Y, tmp)
   }
 
-  if(logs == "auto" || diffs == "auto"){
+
+  if((!is.null(logs) && logs == "auto") || (!is.null(diffs) && diffs == "auto")){
+    # parse_named_vector <- function(x, name = deparse(substitute(x))) {
+    #   z <- paste(paste0("  ", names(x), " = ", x), collapse = ",\n")
+    #   paste0(name, " = c(\n", z, "\n)")
+    # }
+    parse_vector <- function(x, name = deparse(substitute(x))) {
+      x.char <- names(x)[x]
+      if (length(x.char) == 0) return(paste0(name, " = NULL"))
+      z <- paste(paste0("  \"", x.char, "\""), collapse = ",\n")
+      paste0(name, " = c(\n", z, "\n)")
+    }
     do_log_diff <- should_log_diff(Y)
+    if (verbose) message("auto log/diff detection, with:")
     if(logs == "auto"){
       logs <- do_log_diff[1,]
+      if (verbose) message(parse_vector(logs), if (diffs == "auto") ",")
     }
     if(diffs == "auto"){
       diffs <- do_log_diff[2,]
+      if (verbose) message(parse_vector(diffs))
     }
   }
+
+
 
   if(is.logical(logs)){
     if(!any(logs)) logs <- NULL
