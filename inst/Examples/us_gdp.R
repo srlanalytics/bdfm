@@ -19,7 +19,7 @@ library(bdfm)
 #   "CPILFESL",
 #   "ICSA"
 # )
-# 
+#
 # diffs <- setdiff(colnames(econ_us), c("A191RL1Q225SBEA", "USSLIND"))
 
 # Forecasts should ALWAYS be made using store_idx if we are interested in forcasting
@@ -39,4 +39,16 @@ window(m$idx_update, start = c(2018, 12), end = c(2018, 12))
 # Note that this is already done for differenced series as level observations are not replaced by estimated values
 Y_fill <- econ_us
 Y_fill[!is.finite(Y_fill)] <- m$values[1:NROW(Y_fill), ][!is.finite(Y_fill)]
+
+
+# Comparison of NA filling by substitution (above) and (adjustement)
+# [does not work at the moment, as predict(m) is off.]
+x <- ts_pick(econ_us, "JTSJOL")
+x_subst <- ts_pick(Y_fill, "JTSJOL")
+x_adj <- ts_pick(m$adjusted, "JTSJOL")
+
+ts_c(x, x_subst, x_adj)
+
+
+
 
