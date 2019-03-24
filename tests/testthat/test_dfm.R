@@ -38,3 +38,12 @@ test_that("dfm works with ml, pc method", {
 
 })
 
+
+
+
+test_that("forecast > 0 works", {
+  dfm(cbind(mdeaths, fdeaths), factors = 2, lags = 3, forecast = 3)
+
+  # dfm(mdeaths, factors = 2, lags = 3, forecast = 3)  # Fix
+})
+
