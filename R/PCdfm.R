@@ -33,20 +33,20 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
   } else if (ID == "pc_long") {
     long <- apply(Y,2,function(e) sum(is.finite(e)))
     long <- long>=median(long)
-    PC <- PrinComp(Y[,long, drop = FALSE], m)
     if(sum(long)<m){
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
     }
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
     X <- PC$components
   }else{
     warning(paste(ID, "not a valid identification string or index vector, defaulting to pc_long"))
     ID <- "pc_long"
     long <- apply(Y,2,function(e) sum(is.finite(e)))
     long <- long>=median(long)
-    PC <- PrinComp(Y[,long, drop = FALSE], m)
     if(sum(long)<m){
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
     }
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
     X <- PC$components
   }
 

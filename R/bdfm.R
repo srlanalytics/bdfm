@@ -60,10 +60,10 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
   }else if (ID == "pc_long") {
     long <- apply(Y,2,function(e) sum(is.finite(e)))
     long <- long>=median(long)
-    PC <- PrinComp(Y[,long, drop = FALSE], m)
     if(sum(long)<m){
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_wide'")
     }
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
     Y <- cbind(PC$components, Y)
     k <- k + m
     if (!is.null(nu_r)) {
@@ -79,10 +79,10 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     ID <- "pc_long"
     long <- apply(Y,2,function(e) sum(is.finite(e)))
     long <- long>=median(long)
-    PC <- PrinComp(Y[,long, drop = FALSE], m)
     if(sum(long)<m){
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_wide'")
     }
+    PC <- PrinComp(Y[,long, drop = FALSE], m)
     Y <- cbind(PC$components, Y)
     k <- k + m
     if (!is.null(nu_r)) {
