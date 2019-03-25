@@ -8,7 +8,7 @@ log_diff <- function(y){
   ts_reg <- UVreg(x = y[-length(y)] - mean(y, na.rm = TRUE), y = y[-1] - mean(y, na.rm = TRUE))
   
   take_log  <- (ts_reg$B - ts_reg$sd)>1 && !any(y<0, na.rm = TRUE)
-  take_diff <- !(ts_reg$B + 2*ts_reg$sd)<1
+  take_diff <- !(ts_reg$B + 3*ts_reg$sd)<1
   
   return(c(take_log, take_diff))
 }
