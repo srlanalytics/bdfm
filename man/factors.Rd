@@ -2,13 +2,16 @@
 % Please edit documentation in R/dfm-methods.R
 \name{factors}
 \alias{factors}
-\title{extractor function for factors}
+\alias{adjusted}
+\title{Extractor Functions for Dynamic Factor Models}
 \usage{
 factors(x)
+
+adjusted(x)
 }
 \arguments{
 \item{x}{obeject of class `"dfm"`}
 }
 \description{
-extractor function for factors
+Extractor Functions for Dynamic Factor Models
 }

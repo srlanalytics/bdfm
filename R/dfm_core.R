@@ -24,13 +24,16 @@
 # scale = TRUE
 # orthogonal_shocks = F
 
-dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = "auto_logs", 
+dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = "auto_logs",
                      outlier_threshold = 4, diffs = "auto_difference", freq = "auto", preD = NULL,
                      Bp = NULL, lam_B = 0, trans_df = 0, Hp = NULL, lam_H = 0, obs_df = NULL, ID = "pc_long",
                      store_idx = NULL, reps = 1000, burn = 500, verbose = TRUE,
                      tol = 0.01, return_intermediates = FALSE, orthogonal_shocks = FALSE) {
 
   #-------Data processing-------------------------
+
+  data <- Y   # will rename to 'data' later on
+  data_orig <- Y
 
   k <- NCOL(Y) # number of series
 
@@ -55,7 +58,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     tmp <- matrix(NA, FC, k)
     Y <- rbind(Y, tmp)
   }
-  
+
   if(logs == "auto_logs" || diffs == "auto_difference"){
     do_log_diff <- should_log_diff(Y)
     if(logs == "auto_logs"){
@@ -65,15 +68,15 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
       diffs <- do_log_diff[2,]
     }
   }
-  
+
   if(is.logical(logs)){
     if(!any(logs)) logs <- NULL
   }
-  
+
   if(is.logical(diffs)){
     if(!any(diffs)) diffs <- NULL
   }
-    
+
 
   # logs
   if (!is.null(logs)) {
@@ -152,13 +155,12 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   # SL: These objects are arma::field<mat> in the Rcpp code, which works much better
   # than a list internally. As I understand it, in R it is in fact already a list, just
   # one in which all the objects are matrices.
-  
   # k_list <- lapply(seq(NROW(est$Kstore)), function(i) est$Kstore[i, 1, drop = FALSE][[1]])
   # pe_list <- lapply(seq(NROW(est$PEstore)), function(i) est$PEstore[i, 1, drop = FALSE][[1]])
   # gain_list <- lapply(k_list, function(e) t(e[1:m, , drop = FALSE]))
-  
+
   names_list <- lapply(seq(NROW(Y)), function(i) names(Y[i, ])[is.finite(Y[i, ])])
-  
+
   factor_update <- Map(
     function(g, pe, nm) {
       x <- g * (matrix(1, NROW(g), 1) %x% t(pe))
@@ -169,10 +171,10 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     pe = est$PEstore,
     nm = names_list
   )
-  
+
   est$Kstore  <- NULL # this is huge and no longer needed, so drop it
   est$PEstore <- NULL
-  
+
   # get updates to store_idx if specified
   if(!is.null(store_idx)){
     idx_loading <- est$H[store_idx,,drop=FALSE]%*%J_MF(freq[store_idx], m = m, ld = LD[store_idx], sA = NCOL(est$Jb))
@@ -186,7 +188,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     })
     est$idx_update <- do.call(rbind, idx_update)
   }
-  
+
   est$factor_update <- lapply(factor_update, function(e) e[1:m,]) #return this instead of gain and prediction error far more useful!
 
   # undo scaling
@@ -218,13 +220,13 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
       est$Ystore  <- exp(est$Ystore)
     }
   }
-  
+
   #Return intermediate values of low frequency data?
   if (length(unique(freq))>1 && !return_intermediates){
-    est$values[,which(freq != 1)] <- do.call(cbind, lapply(X = which(freq != 1), FUN = drop_intermediates, 
+    est$values[,which(freq != 1)] <- do.call(cbind, lapply(X = which(freq != 1), FUN = drop_intermediates,
                                                            freq = freq, Y_raw = Y, vals = est$values))
   }
-  
+
   est$freq  <- freq
   est$logs  <- logs
   est$diffs <- diffs
@@ -232,5 +234,37 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   est$outlier_threshold <- outlier_threshold
   est$differences <- LD
 
+  colnames(est$values) <- colnames(data)
+
+  # adjusted series: align 'values' with original series
+  est$adjusted <- align_with_benchmark(est$values, data_orig)
+
   return(est)
 }
+
+
+# benchmark <- fdeaths
+# benchmark[c(1:10, 20:25)] <- NA
+# tsbox::ts_plot(mdeaths, fdeaths, aligned = align_with_benchmark(x, benchmark))
+align_with_benchmark <- function(x, benchmark) {
+
+  nfct <- NROW(x) - NROW(benchmark)
+  if (nfct > 0) {
+    benchmark <- rbind(benchmark, matrix(NA_real_, ncol = NCOL(benchmark), nrow = nfct))
+  }
+  stopifnot(identical(NROW(x), NROW(benchmark)))
+
+  if (NCOL(x) > 1) {  # multivariate mode
+    stopifnot(identical(dim(x), dim(benchmark)))
+    z <- x
+    for (i in 1:NCOL(x)) {
+      z[, i] <- align_with_benchmark(x[, i], benchmark[, i])
+    }
+    return(z)
+  }
+
+  dff <- benchmark - x
+  dff_approx <- na_appox(dff)
+  x + dff_approx
+}
+

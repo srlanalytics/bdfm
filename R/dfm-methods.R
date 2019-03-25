@@ -1,11 +1,20 @@
 
-#' extractor function for factors
+#' Extractor Functions for Dynamic Factor Models
+#'
 #' @param x obeject of class `"dfm"`
 #' @export
 factors <- function(x) {
   stopifnot(inherits(x, "dfm"))
   x$factors
 }
+
+#' @name factors
+#' @export
+adjusted <- function(x) {
+  stopifnot(inherits(x, "dfm"))
+  x$factors
+}
+
 
 # methods
 #' @export
