@@ -24,8 +24,8 @@
 # scale = TRUE
 # orthogonal_shocks = F
 
-dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = "auto_logs",
-                     outlier_threshold = 4, diffs = "auto_difference", freq = "auto", preD = NULL,
+dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = "auto",
+                     outlier_threshold = 4, diffs = "auto", freq = "auto", preD = NULL,
                      Bp = NULL, lam_B = 0, trans_df = 0, Hp = NULL, lam_H = 0, obs_df = NULL, ID = "pc_long",
                      store_idx = NULL, reps = 1000, burn = 500, verbose = TRUE,
                      tol = 0.01, return_intermediates = FALSE, orthogonal_shocks = FALSE) {
@@ -59,15 +59,31 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     Y <- rbind(Y, tmp)
   }
 
-  if(logs == "auto_logs" || diffs == "auto_difference"){
-    do_log_diff <- should_log_diff(Y)
-    if(logs == "auto_logs"){
-      logs <- do_log_diff[1,]
+
+  if((!is.null(logs) && logs == "auto") || (!is.null(diffs) && diffs == "auto")){
+    # parse_named_vector <- function(x, name = deparse(substitute(x))) {
+    #   z <- paste(paste0("  ", names(x), " = ", x), collapse = ",\n")
+    #   paste0(name, " = c(\n", z, "\n)")
+    # }
+    parse_vector <- function(x, name = deparse(substitute(x))) {
+      x.char <- names(x)[x]
+      if (length(x.char) == 0) return(paste0(name, " = NULL"))
+      z <- paste(paste0("  \"", x.char, "\""), collapse = ",\n")
+      paste0(name, " = c(\n", z, "\n)")
     }
-    if(diffs == "auto_difference"){
+    do_log_diff <- should_log_diff(Y)
+    if (verbose) message("auto log/diff detection, with:")
+    if(logs == "auto"){
+      logs <- do_log_diff[1,]
+      if (verbose) message(parse_vector(logs), if (diffs == "auto") ",")
+    }
+    if(diffs == "auto"){
       diffs <- do_log_diff[2,]
+      if (verbose) message(parse_vector(diffs))
     }
   }
+
+
 
   if(is.logical(logs)){
     if(!any(logs)) logs <- NULL
