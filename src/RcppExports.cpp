@@ -19,14 +19,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // UVreg
-List UVreg(arma::vec x, arma::vec y);
-RcppExport SEXP _bdfm_UVreg(SEXP xSEXP, SEXP ySEXP) {
+List UVreg(arma::vec x, arma::vec y, arma::uword rm_outlier);
+RcppExport SEXP _bdfm_UVreg(SEXP xSEXP, SEXP ySEXP, SEXP rm_outlierSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(UVreg(x, y));
+    Rcpp::traits::input_parameter< arma::uword >::type rm_outlier(rm_outlierSEXP);
+    rcpp_result_gen = Rcpp::wrap(UVreg(x, y, rm_outlier));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -301,7 +302,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_bdfm_QuickReg", (DL_FUNC) &_bdfm_QuickReg, 2},
-    {"_bdfm_UVreg", (DL_FUNC) &_bdfm_UVreg, 2},
+    {"_bdfm_UVreg", (DL_FUNC) &_bdfm_UVreg, 3},
     {"_bdfm_comp_form", (DL_FUNC) &_bdfm_comp_form, 1},
     {"_bdfm_mvrnrm", (DL_FUNC) &_bdfm_mvrnrm, 3},
     {"_bdfm_rinvwish", (DL_FUNC) &_bdfm_rinvwish, 3},
