@@ -51,20 +51,34 @@ arma::mat QuickReg(arma::mat X,
 //Quick univariate regression omitting missing values
 // [[Rcpp::export]]
 List UVreg(arma::vec x,
-           arma::vec y){
+           arma::vec y,
+           arma::uword rm_outlier = 0){
+  
+  double xi, B, sig2, sd;
+  vec u;
   uvec ind = find_nonfinite(x);
   ind = unique( join_cols(ind, find_nonfinite(y)));
   for(uword k = ind.n_elem; k>0; k--){
     x.shed_row(ind(k-1));
     y.shed_row(ind(k-1));
   }
-  double xi = 1/as_scalar(trans(x)*x);
-  double B = xi*as_scalar(trans(x)*y);
-  vec u = y-B*x;
-  double sd = sqrt((as_scalar(trans(u)*u)/(y.n_elem - 1))*xi);
+  for(uword j = 0; j <= rm_outlier; j++){
+    xi = 1/as_scalar(trans(x)*x);
+    B = xi*as_scalar(trans(x)*y);
+    u = y-B*x;
+    sig2 = as_scalar(trans(u)*u)/(y.n_elem - 1);
+    ind = find(abs(u)>5*sqrt(sig2));
+    for(uword k = ind.n_elem; k>0; k--){
+      x.shed_row(ind(k-1));
+      y.shed_row(ind(k-1));
+    }
+  }
+  sd = sqrt((sig2)*xi);
+
   List Out;
   Out["B"]  = B;
   Out["sd"] = sd;
+  Out["u"] = u;
   return(Out);
 }
 
@@ -93,6 +107,7 @@ List UVreg(arma::vec x,
 //   List Out;
 //   Out["B"]  = B;
 //   Out["sd"] = sd;
+//   Out["u2"] = square(u);
 //   return(Out);
 // }
 
