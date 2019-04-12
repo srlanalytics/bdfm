@@ -62,19 +62,23 @@ List UVreg(arma::vec x,
     x.shed_row(ind(k-1));
     y.shed_row(ind(k-1));
   }
-  for(uword j = 0; j <= rm_outlier; j++){
-    xi = 1/as_scalar(trans(x)*x);
-    B = xi*as_scalar(trans(x)*y);
-    u = y-B*x;
-    sig2 = as_scalar(trans(u)*u)/(y.n_elem - 1);
+  xi = 1/as_scalar(trans(x)*x);
+  B = xi*as_scalar(trans(x)*y);
+  u = y-B*x;
+  sig2 = as_scalar(trans(u)*u)/(y.n_elem - 1);
+  for(uword j = 0; j < rm_outlier; j++){
     ind = find(abs(u)>5*sqrt(sig2));
     for(uword k = ind.n_elem; k>0; k--){
       x.shed_row(ind(k-1));
       y.shed_row(ind(k-1));
     }
+    xi = 1/as_scalar(trans(x)*x);
+    B = xi*as_scalar(trans(x)*y);
+    u = y-B*x;
+    sig2 = as_scalar(trans(u)*u)/(y.n_elem - 1);
   }
   sd = sqrt((sig2)*xi);
-
+  
   List Out;
   Out["B"]  = B;
   Out["sd"] = sd;
