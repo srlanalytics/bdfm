@@ -720,7 +720,7 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
   return(Out);
 }
 
-//Disturbance smoothing for uniform frequency models --- output is only smoothed factors for simulations
+//Disturbance smoothing --- output is only smoothed factors for simulations
 // [[Rcpp::export]]
 arma::mat DSMF(           arma::mat B,     // companion form of transition matrix
                           arma::sp_mat Jb, // helper matrix for transition equation

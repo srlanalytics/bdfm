@@ -1,6 +1,6 @@
 #' @importFrom Matrix Diagonal
 PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
-                  nu_q = 0, nu_r = NULL, ID = "pc_sub", reps = 1000, 
+                  nu_q = 0, nu_r = NULL, ID = "pc_long", reps = 1000, 
                   burn = 500, orthogonal_shocks = FALSE) {
 
   # ----------- Preliminaries -----------------
