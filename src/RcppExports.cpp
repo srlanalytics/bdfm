@@ -6,90 +6,65 @@
 
 using namespace Rcpp;
 
-// QuickReg
-arma::mat QuickReg(arma::mat X, arma::mat Y);
-RcppExport SEXP _bdfm_QuickReg(SEXP XSEXP, SEXP YSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
-    rcpp_result_gen = Rcpp::wrap(QuickReg(X, Y));
-    return rcpp_result_gen;
-END_RCPP
-}
-// UVreg
-List UVreg(arma::vec x, arma::vec y, arma::uword rm_outlier);
-RcppExport SEXP _bdfm_UVreg(SEXP xSEXP, SEXP ySEXP, SEXP rm_outlierSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type rm_outlier(rm_outlierSEXP);
-    rcpp_result_gen = Rcpp::wrap(UVreg(x, y, rm_outlier));
-    return rcpp_result_gen;
-END_RCPP
-}
-// comp_form
-arma::mat comp_form(arma::mat B);
-RcppExport SEXP _bdfm_comp_form(SEXP BSEXP) {
+// EstDFM
+List EstDFM(arma::mat B, arma::mat Bp, arma::sp_mat Jb, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, arma::uvec freq, arma::uvec LD, bool store_Y, arma::uword store_idx, arma::uword reps, arma::uword burn, bool verbose);
+RcppExport SEXP _bdfm_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP JbSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP freqSEXP, SEXP LDSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type B(BSEXP);
-    rcpp_result_gen = Rcpp::wrap(comp_form(B));
+    Rcpp::traits::input_parameter< arma::mat >::type Bp(BpSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type Jb(JbSEXP);
+    Rcpp::traits::input_parameter< double >::type lam_B(lam_BSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type q(qSEXP);
+    Rcpp::traits::input_parameter< double >::type nu_q(nu_qSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type H(HSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Hp(HpSEXP);
+    Rcpp::traits::input_parameter< double >::type lam_H(lam_HSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type R(RSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type nu_r(nu_rSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type freq(freqSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type LD(LDSEXP);
+    Rcpp::traits::input_parameter< bool >::type store_Y(store_YSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type store_idx(store_idxSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type reps(repsSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type burn(burnSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(EstDFM(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y, store_idx, reps, burn, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
-// mvrnrm
-arma::mat mvrnrm(int n, arma::vec mu, arma::mat Sigma);
-RcppExport SEXP _bdfm_mvrnrm(SEXP nSEXP, SEXP muSEXP, SEXP SigmaSEXP) {
+// Ksmoother
+List Ksmoother(arma::sp_mat A, arma::sp_mat Q, arma::sp_mat HJ, arma::mat R, arma::mat Y);
+RcppExport SEXP _bdfm_Ksmoother(SEXP ASEXP, SEXP QSEXP, SEXP HJSEXP, SEXP RSEXP, SEXP YSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Sigma(SigmaSEXP);
-    rcpp_result_gen = Rcpp::wrap(mvrnrm(n, mu, Sigma));
+    Rcpp::traits::input_parameter< arma::sp_mat >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type Q(QSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type HJ(HJSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type R(RSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
+    rcpp_result_gen = Rcpp::wrap(Ksmoother(A, Q, HJ, R, Y));
     return rcpp_result_gen;
 END_RCPP
 }
-// rinvwish
-arma::cube rinvwish(int n, int v, arma::mat S);
-RcppExport SEXP _bdfm_rinvwish(SEXP nSEXP, SEXP vSEXP, SEXP SSEXP) {
+// KestExact
+List KestExact(arma::sp_mat A, arma::sp_mat Q, arma::mat H, arma::mat R, arma::mat Y, arma::vec itc, arma::uword m, arma::uword p);
+RcppExport SEXP _bdfm_KestExact(SEXP ASEXP, SEXP QSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP, SEXP itcSEXP, SEXP mSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< int >::type v(vSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
-    rcpp_result_gen = Rcpp::wrap(rinvwish(n, v, S));
-    return rcpp_result_gen;
-END_RCPP
-}
-// invchisq
-double invchisq(double nu, double scale);
-RcppExport SEXP _bdfm_invchisq(SEXP nuSEXP, SEXP scaleSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type nu(nuSEXP);
-    Rcpp::traits::input_parameter< double >::type scale(scaleSEXP);
-    rcpp_result_gen = Rcpp::wrap(invchisq(nu, scale));
-    return rcpp_result_gen;
-END_RCPP
-}
-// stack_obs
-arma:: mat stack_obs(arma::mat nn, arma::uword p, arma::uword r);
-RcppExport SEXP _bdfm_stack_obs(SEXP nnSEXP, SEXP pSEXP, SEXP rSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type nn(nnSEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::sp_mat >::type Q(QSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type H(HSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type R(RSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type itc(itcSEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type m(mSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type p(pSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type r(rSEXP);
-    rcpp_result_gen = Rcpp::wrap(stack_obs(nn, p, r));
+    rcpp_result_gen = Rcpp::wrap(KestExact(A, Q, H, R, Y, itc, m, p));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -221,93 +196,98 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// EstDFM
-List EstDFM(arma::mat B, arma::mat Bp, arma::sp_mat Jb, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, arma::uvec freq, arma::uvec LD, bool store_Y, arma::uword store_idx, arma::uword reps, arma::uword burn, bool verbose);
-RcppExport SEXP _bdfm_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP JbSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP freqSEXP, SEXP LDSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP verboseSEXP) {
+// QuickReg
+arma::mat QuickReg(arma::mat X, arma::mat Y);
+RcppExport SEXP _bdfm_QuickReg(SEXP XSEXP, SEXP YSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
+    rcpp_result_gen = Rcpp::wrap(QuickReg(X, Y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// UVreg
+List UVreg(arma::vec x, arma::vec y, arma::uword rm_outlier);
+RcppExport SEXP _bdfm_UVreg(SEXP xSEXP, SEXP ySEXP, SEXP rm_outlierSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::uword >::type rm_outlier(rm_outlierSEXP);
+    rcpp_result_gen = Rcpp::wrap(UVreg(x, y, rm_outlier));
+    return rcpp_result_gen;
+END_RCPP
+}
+// comp_form
+arma::mat comp_form(arma::mat B);
+RcppExport SEXP _bdfm_comp_form(SEXP BSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type B(BSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Bp(BpSEXP);
-    Rcpp::traits::input_parameter< arma::sp_mat >::type Jb(JbSEXP);
-    Rcpp::traits::input_parameter< double >::type lam_B(lam_BSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type q(qSEXP);
-    Rcpp::traits::input_parameter< double >::type nu_q(nu_qSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type H(HSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Hp(HpSEXP);
-    Rcpp::traits::input_parameter< double >::type lam_H(lam_HSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type R(RSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type nu_r(nu_rSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< arma::uvec >::type freq(freqSEXP);
-    Rcpp::traits::input_parameter< arma::uvec >::type LD(LDSEXP);
-    Rcpp::traits::input_parameter< bool >::type store_Y(store_YSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type store_idx(store_idxSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type reps(repsSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type burn(burnSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(EstDFM(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, store_Y, store_idx, reps, burn, verbose));
+    rcpp_result_gen = Rcpp::wrap(comp_form(B));
     return rcpp_result_gen;
 END_RCPP
 }
-// Ksmoother
-List Ksmoother(arma::sp_mat A, arma::sp_mat Q, arma::sp_mat HJ, arma::mat R, arma::mat Y);
-RcppExport SEXP _bdfm_Ksmoother(SEXP ASEXP, SEXP QSEXP, SEXP HJSEXP, SEXP RSEXP, SEXP YSEXP) {
+// mvrnrm
+arma::mat mvrnrm(int n, arma::vec mu, arma::mat Sigma);
+RcppExport SEXP _bdfm_mvrnrm(SEXP nSEXP, SEXP muSEXP, SEXP SigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::sp_mat >::type A(ASEXP);
-    Rcpp::traits::input_parameter< arma::sp_mat >::type Q(QSEXP);
-    Rcpp::traits::input_parameter< arma::sp_mat >::type HJ(HJSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type R(RSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
-    rcpp_result_gen = Rcpp::wrap(Ksmoother(A, Q, HJ, R, Y));
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Sigma(SigmaSEXP);
+    rcpp_result_gen = Rcpp::wrap(mvrnrm(n, mu, Sigma));
     return rcpp_result_gen;
 END_RCPP
 }
-// KestExact
-List KestExact(arma::sp_mat A, arma::sp_mat Q, arma::mat H, arma::mat R, arma::mat Y, arma::vec itc, arma::uword m, arma::uword p);
-RcppExport SEXP _bdfm_KestExact(SEXP ASEXP, SEXP QSEXP, SEXP HSEXP, SEXP RSEXP, SEXP YSEXP, SEXP itcSEXP, SEXP mSEXP, SEXP pSEXP) {
+// rinvwish
+arma::cube rinvwish(int n, int v, arma::mat S);
+RcppExport SEXP _bdfm_rinvwish(SEXP nSEXP, SEXP vSEXP, SEXP SSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::sp_mat >::type A(ASEXP);
-    Rcpp::traits::input_parameter< arma::sp_mat >::type Q(QSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type H(HSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type R(RSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type itc(itcSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type m(mSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type v(vSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
+    rcpp_result_gen = Rcpp::wrap(rinvwish(n, v, S));
+    return rcpp_result_gen;
+END_RCPP
+}
+// invchisq
+double invchisq(double nu, double scale);
+RcppExport SEXP _bdfm_invchisq(SEXP nuSEXP, SEXP scaleSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type nu(nuSEXP);
+    Rcpp::traits::input_parameter< double >::type scale(scaleSEXP);
+    rcpp_result_gen = Rcpp::wrap(invchisq(nu, scale));
+    return rcpp_result_gen;
+END_RCPP
+}
+// stack_obs
+arma:: mat stack_obs(arma::mat nn, arma::uword p, arma::uword r);
+RcppExport SEXP _bdfm_stack_obs(SEXP nnSEXP, SEXP pSEXP, SEXP rSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type nn(nnSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(KestExact(A, Q, H, R, Y, itc, m, p));
-    return rcpp_result_gen;
-END_RCPP
-}
-// KSeas
-List KSeas(arma::mat B, double q, arma::mat M, double r, arma::mat Y, arma::mat N);
-RcppExport SEXP _bdfm_KSeas(SEXP BSEXP, SEXP qSEXP, SEXP MSEXP, SEXP rSEXP, SEXP YSEXP, SEXP NSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type B(BSEXP);
-    Rcpp::traits::input_parameter< double >::type q(qSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type M(MSEXP);
-    Rcpp::traits::input_parameter< double >::type r(rSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type N(NSEXP);
-    rcpp_result_gen = Rcpp::wrap(KSeas(B, q, M, r, Y, N));
+    Rcpp::traits::input_parameter< arma::uword >::type r(rSEXP);
+    rcpp_result_gen = Rcpp::wrap(stack_obs(nn, p, r));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_bdfm_QuickReg", (DL_FUNC) &_bdfm_QuickReg, 2},
-    {"_bdfm_UVreg", (DL_FUNC) &_bdfm_UVreg, 3},
-    {"_bdfm_comp_form", (DL_FUNC) &_bdfm_comp_form, 1},
-    {"_bdfm_mvrnrm", (DL_FUNC) &_bdfm_mvrnrm, 3},
-    {"_bdfm_rinvwish", (DL_FUNC) &_bdfm_rinvwish, 3},
-    {"_bdfm_invchisq", (DL_FUNC) &_bdfm_invchisq, 2},
-    {"_bdfm_stack_obs", (DL_FUNC) &_bdfm_stack_obs, 3},
+    {"_bdfm_EstDFM", (DL_FUNC) &_bdfm_EstDFM, 19},
+    {"_bdfm_Ksmoother", (DL_FUNC) &_bdfm_Ksmoother, 5},
+    {"_bdfm_KestExact", (DL_FUNC) &_bdfm_KestExact, 8},
     {"_bdfm_J_MF", (DL_FUNC) &_bdfm_J_MF, 4},
     {"_bdfm_PrinComp", (DL_FUNC) &_bdfm_PrinComp, 2},
     {"_bdfm_BReg", (DL_FUNC) &_bdfm_BReg, 8},
@@ -316,10 +296,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bdfm_DSMF", (DL_FUNC) &_bdfm_DSMF, 8},
     {"_bdfm_FSimMF", (DL_FUNC) &_bdfm_FSimMF, 8},
     {"_bdfm_Identify", (DL_FUNC) &_bdfm_Identify, 2},
-    {"_bdfm_EstDFM", (DL_FUNC) &_bdfm_EstDFM, 19},
-    {"_bdfm_Ksmoother", (DL_FUNC) &_bdfm_Ksmoother, 5},
-    {"_bdfm_KestExact", (DL_FUNC) &_bdfm_KestExact, 8},
-    {"_bdfm_KSeas", (DL_FUNC) &_bdfm_KSeas, 6},
+    {"_bdfm_QuickReg", (DL_FUNC) &_bdfm_QuickReg, 2},
+    {"_bdfm_UVreg", (DL_FUNC) &_bdfm_UVreg, 3},
+    {"_bdfm_comp_form", (DL_FUNC) &_bdfm_comp_form, 1},
+    {"_bdfm_mvrnrm", (DL_FUNC) &_bdfm_mvrnrm, 3},
+    {"_bdfm_rinvwish", (DL_FUNC) &_bdfm_rinvwish, 3},
+    {"_bdfm_invchisq", (DL_FUNC) &_bdfm_invchisq, 2},
+    {"_bdfm_stack_obs", (DL_FUNC) &_bdfm_stack_obs, 3},
     {NULL, NULL, 0}
 };
 
