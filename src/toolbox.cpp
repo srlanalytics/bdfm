@@ -330,9 +330,24 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
   qq(span(0,m-1),span(0,m-1)) = q;
   sp_mat Q(qq);
   
-  // specifying difuse initial values
+  //Using the long run variance
   mat P0, P1, S, C;
-  P0  = 100000*eye<mat>(sA,sA); //difuse initial factor variance
+  double max_diff = 1;
+  tmp_sp = Q;
+  sp_mat P_new(sA,sA);
+  sp_mat P_old(sA,sA);
+  sp_mat P_diff;
+  for(uword j = 0; j<1000; j++){
+    P_new = tmp_sp + P_new;
+    tmp_sp = A*tmp_sp*trans(A);
+    P_diff = abs(P_new - P_old);
+    max_diff = P_diff.max();
+    P_old = P_new;
+    if(max_diff>1e-5){
+      break;
+    }
+  }
+  P0  = P_new; //long run variance
   P1  = P0;
   
   //Declairing variables for the filter
@@ -404,7 +419,7 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
     r.row(t-1) = trans(PEstr(t-1))*Sstr(t-1)*Hstr(t-1) + r.row(t)*L;
   }
   
-  Zs.row(0)   = r.row(0)*100000*eye<mat>(sA,sA);
+  Zs.row(0)   = r.row(0)*P_new;
   
   //Forward again
   for(uword t = 0; t<T-1; t++){
@@ -464,9 +479,24 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
   qq(span(0,m-1),span(0,m-1)) = q;
   sp_mat Q(qq);
   
-  // specifying difuse initial values
+  //Using the long run variance
   mat P0, P1, S, C;
-  P0  = 100000*eye<mat>(sA,sA);
+  double max_diff = 1;
+  tmp_sp = Q;
+  sp_mat P_new(sA,sA);
+  sp_mat P_old(sA,sA);
+  sp_mat P_diff;
+  for(uword j = 0; j<1000; j++){
+    P_new = tmp_sp + P_new;
+    tmp_sp = A*tmp_sp*trans(A);
+    P_diff = abs(P_new - P_old);
+    max_diff = P_diff.max();
+    P_old = P_new;
+    if(max_diff>1e-5){
+      break;
+    }
+  }
+  P0  = P_new; //long run variance
   P1  = P0;
   
   //Declairing variables for the filter
@@ -539,7 +569,7 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
     r.row(t-1) = trans(PEstr(t-1))*Sstr(t-1)*Hstr(t-1) + r.row(t)*L;
   }
   
-  Zs.row(0)   = r.row(0)*100000*eye<mat>(sA,sA);
+  Zs.row(0)   = r.row(0)*P_new;
   
   //Forward again
   for(uword t = 0; t<T-1; t++){
