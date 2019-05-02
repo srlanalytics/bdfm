@@ -4,7 +4,7 @@ author: "Seth Leonard, Christoph Sax"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Bayesian Dynamic Factor Models}
+  %\VignetteIndexEntry{Introduction to the DFM Package}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -80,7 +80,7 @@ Est <- dfm(data, factors = 1, lags = "auto", forecasts = 0,
 
 `pre_differenced` Data which is differenced but not internally via diffs (only important for mixed frequency data)
 
-`differences`    If mixed frequency, vector with 0 for level data or 1 for differenced data. 
+`differences`    If mixed frequency, vector with 0 for level data or 1 for differenced data.
 
 `trans_prior`     Prior on transtion equation (default is to shrink values towards zero)
 
@@ -88,13 +88,13 @@ Est <- dfm(data, factors = 1, lags = "auto", forecasts = 0,
 
  `trabs_df`      Prior "degrees of freedom" for transition equation (i.e. shrink covariance of shocks towards zero), scalar
 
- `obs_prior`    Prior on loadings/observation equation (default is zero) 
+ `obs_prior`    Prior on loadings/observation equation (default is zero)
 
  `obs_shrink`   Prior tightness on loadings, scalar
 
  `obs_df`       Vector, prior "degrees of freedom" for observation equation (i.e. shrink covariance of shocks towards zero)
 
-```identification```        Model identification technique. 
+```identification```        Model identification technique.
 
 `intercept` logical, estimate intercept term
 
