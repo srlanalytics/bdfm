@@ -618,7 +618,7 @@ arma::field<arma::mat> FSimMF(    arma::mat B,     // companion form of transiti
   
   //Declairing variables for the forward recursion
   mat Z(T+1,sA), Yd(T,k);
-  sp_mat Hn, Mn;
+  sp_mat Hn;
   vec x, yt, yd(k), eps;
   uvec ind;
   Z.row(0) = trans(z0);
