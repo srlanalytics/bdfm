@@ -408,7 +408,7 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
     r.row(t-1) = trans(PEstr(t-1))*Sstr(t-1)*Hstr(t-1) + r.row(t)*L;
   }
   
-  Zs.row(0)   = r.row(0)*P_new;
+  Zs.row(0)   = r.row(0)*Pi;
   
   //Forward again
   for(uword t = 0; t<T-1; t++){
@@ -547,7 +547,7 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
     r.row(t-1) = trans(PEstr(t-1))*Sstr(t-1)*Hstr(t-1) + r.row(t)*L;
   }
   
-  Zs.row(0)   = r.row(0)*P_new;
+  Zs.row(0)   = r.row(0)*Pi;
   
   //Forward again
   for(uword t = 0; t<T-1; t++){
