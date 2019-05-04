@@ -332,22 +332,11 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
   
   //Using the long run variance
   mat P0, P1, S, C;
-  double max_diff = 1;
-  tmp_sp = Q;
-  sp_mat P_new(sA,sA);
-  sp_mat P_old(sA,sA);
-  sp_mat P_diff;
-  for(uword j = 0; j<1000; j++){
-    P_new = tmp_sp + P_new;
-    tmp_sp = A*tmp_sp*trans(A);
-    P_diff = abs(P_new - P_old);
-    max_diff = P_diff.max();
-    P_old = P_new;
-    if(max_diff>1e-5){
-      break;
-    }
-  }
-  P0  = P_new; //long run variance
+  mat XX(eye<mat>(sA*sA, sA*sA) - kron(A,A));
+  mat vQ(reshape(Q, sA*sA, 1));
+  mat tmp_P = solve(XX, vQ);
+  mat Pi(reshape(tmp_P, sA, sA));
+  P0  = Pi; //long run variance
   P1  = P0;
   
   //Declairing variables for the filter
@@ -481,22 +470,11 @@ arma::mat DSMF(           arma::mat B,     // companion form of transition matri
   
   //Using the long run variance
   mat P0, P1, S, C;
-  double max_diff = 1;
-  tmp_sp = Q;
-  sp_mat P_new(sA,sA);
-  sp_mat P_old(sA,sA);
-  sp_mat P_diff;
-  for(uword j = 0; j<1000; j++){
-    P_new = tmp_sp + P_new;
-    tmp_sp = A*tmp_sp*trans(A);
-    P_diff = abs(P_new - P_old);
-    max_diff = P_diff.max();
-    P_old = P_new;
-    if(max_diff>1e-5){
-      break;
-    }
-  }
-  P0  = P_new; //long run variance
+  mat XX(eye<mat>(sA*sA, sA*sA) - kron(A,A));
+  mat vQ(reshape(Q, sA*sA, 1));
+  mat tmp_P = solve(XX, vQ);
+  mat Pi(reshape(tmp_P, sA, sA));
+  P0  = Pi; //long run variance
   P1  = P0;
   
   //Declairing variables for the filter
