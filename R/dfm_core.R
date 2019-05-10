@@ -213,7 +213,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     est$R2     <- 1 - est$R/10000
     if(!is.null(store_idx) && method == "bayesian"){
       est$Ystore <- est$Ystore*(y_scale[store_idx]/100) + y_center[store_idx]
-      est$Ymedain <- est$Ymedian*(y_scale[store_idx]/100) + y_center[store_idx]
+      est$Ymedian <- est$Ymedian*(y_scale[store_idx]/100) + y_center[store_idx]
     }
   }else{
     est$R2 <- 1 - est$R/apply(X = Y, MARGIN = 2, FUN = var, na.rm = TRUE)
@@ -223,7 +223,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   if (!is.null(diffs)) {
     est$values[,diffs] <- sapply(diffs, FUN = level, fq = freq, Y_lev = Y_lev, vals = est$values)
     if(!is.null(store_idx) && method == "bayesian" && store_idx%in%diffs){
-      est$Ymedain <- level_simple(est$Ymedain, y_lev = Y_lev[,store_idx], fq = freq[store_idx])
+      est$Ymedian <- level_simple(est$Ymedian, y_lev = Y_lev[,store_idx], fq = freq[store_idx])
       est$Ystore  <- apply(est$Ystore, MARGIN = 2, FUN = level_simple, y_lev = Y_lev[,store_idx], fq = freq[store_idx])
     }
   }
@@ -232,7 +232,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   if (!is.null(logs)) {
     est$values[,logs] <- exp(est$values[,logs])
     if(!is.null(store_idx) && method == "bayesian" && store_idx%in%logs){
-      est$Ymedain <- exp(est$Ymedain)
+      est$Ymedian <- exp(est$Ymedian)
       est$Ystore  <- exp(est$Ystore)
     }
   }
