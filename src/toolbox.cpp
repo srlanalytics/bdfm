@@ -589,16 +589,32 @@ arma::field<arma::mat> FSimMF(    arma::mat B,     // companion form of transiti
   vec mu_E(m,fill::zeros);
   mat Eps = trans(mvrnrm(T,mu_Eps,R));
   mat E   = trans(mvrnrm(T,mu_E,q));
+  mat Eburn = trans(mvrnrm(100,mu_E,q));
   
   mat Q  = kron(eye<mat>(p,p), q);
-  vec Z0(sA,fill::zeros);
-  mat z0 = mvrnrm(1,Z0,Q); // Difuse initial conditions so not so important
   
   //Declairing variables for the forward recursion
-  mat Z(T+1,sA), Yd(T,k);
+  mat Z(T+1,sA, fill::zeros), Yd(T,k);
+  vec z0(sA, fill::zeros);
   sp_mat Hn, Mn;
   vec x, yt, yd(k), eps;
   uvec ind;
+  
+  //Forward Recursion Burn In
+  if(p>1){
+    for(uword t=0; t<100; t++) {
+      //next period factors
+      x      = B*Jb*z0 + trans(Eburn.row(t)); //prediction for Z(t+1)
+      z0(span(m,sA-1)) = z0.subvec(0,sA-m-1);
+      z0(span(0,m-1)) = x;
+    }
+  }else{
+    for(uword t=0; t<100; t++) {
+      //next period factors
+      z0      = B*Jb*z0 + trans(Eburn.row(t)); //prediction for Z(t+1)
+    }
+  }
+  
   Z.row(0) = trans(z0);
   
   //Forward Recursion
