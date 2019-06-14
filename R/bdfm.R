@@ -1,4 +1,4 @@
-bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq, LD, reps, burn, verbose, orthogonal_shocks) {
+bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, keep_posterior, freq, LD, reps, burn, verbose, orthogonal_shocks) {
 
   # Preliminaries
   Y <- as.matrix(Y)
@@ -135,21 +135,21 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
   if (is.null(Hp)) {
     Hp <- matrix(0, k, m)
   }
-  if (is.null(store_idx)) {
-    store_idx <- 0
+  if (is.null(keep_posterior)) {
+    keep_posterior <- 0
     store_Y <- FALSE
   } else {
     store_Y <- TRUE
     if (ID %in% c("pc_wide", "pc_long") || is.numeric(ID)) {
-      store_idx <- store_idx + m - 1 # -1 due to zero indexing in C++
+      keep_posterior <- keep_posterior + m - 1 # -1 due to zero indexing in C++
     } else {
-      store_idx <- store_idx - 1
+      keep_posterior <- keep_posterior - 1
     }
   }
 
-  Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, 
-                  lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, freq = freq, LD = LD, store_Y = store_Y, 
-                  store_idx = store_idx, reps = reps, burn = burn, verbose = verbose)
+  Parms <- EstDFM(B = B_in, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp,
+                  lam_H = lam_H, R = Rvec, nu_r = nu_r, Y = Y, freq = freq, LD = LD, store_Y = store_Y,
+                  store_idx = keep_posterior, reps = reps, burn = burn, verbose = verbose)
 
   if (ID %in% c("pc_wide", "pc_long") || is.numeric(ID)) {
     B <- Parms$B
@@ -158,7 +158,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     R <- diag(c(Parms$R[-(1:m)]), nrow = k-m, ncol = k-m)
 
     Y <- Y[, -(1:m), drop = FALSE] #drop components used to identify model
-    
+
     if(orthogonal_shocks){ #if we want to return a model with orthogonal shocks, rotate the parameters
       id <- Identify(H,q)
       H  <- H%*%id[[1]]
@@ -206,7 +206,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
     q <- Parms$Q
     H <- Parms$H
     R <- diag(c(Parms$R), k, k)
-    
+
     if(orthogonal_shocks){ #if we want to return a model with orthogonal shocks, rotate the parameters
       id <- Identify(H,q)
       H  <- H%*%id[[1]]
@@ -249,6 +249,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
 }
 
 
+
 #' MCMC Routine for Bayesian Dynamic Factor Models
 #'
 #' \code{Cppbdfm} is the core C++ function for estimating a linear-Gaussian
@@ -278,7 +279,6 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, store_idx, freq,
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
 #' @param verbose print status of function during evaluation.
-#' @export
 #' @importFrom Rcpp evalCpp
 #' @useDynLib bdfm
 Cppbdfm <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, verbose = FALSE) {
