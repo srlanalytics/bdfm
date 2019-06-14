@@ -9,7 +9,7 @@ Authors@R: c(
   )
 Description: Estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother. Maximum likelihood estimation via Watson and Engle (1983) and 2-step estimation via principal components is also supported. Input data may be mixed frequency, noisy, have missing values, or ragged edges with different start or end dates.
 BugReports: https://github.com/srlanalytics/bdfm
-License: MIT
+License: MIT + file LICENSE
 Imports:
   Rcpp (>= 0.12.13),
   RcppArmadillo (>= 0.7.900.2.0),

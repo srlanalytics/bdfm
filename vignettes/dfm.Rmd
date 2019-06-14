@@ -46,7 +46,7 @@ data[,c(1,2,5)] <- log(data[,c(1,2,5)])
 data <- diff(data)
 
 ```
-As previously mentioned, small values can result in inaccurate estimations. It's therefore a good idea to scale up the data; this is done by default but can be turned off by setting `scale = FALSE`. 
+As previously mentioned, small values can result in inaccurate estimations. It's therefore a good idea to scale up the data; this is done by default but can be turned off by setting `scale = FALSE`.
 
 [TODO: The package should take care of technical stuff, not the user. If scaling is a good idea, we should do it by default, and unscale at the end. With an option to turn it of => This isn't so obvious to deal with. What I've done is put together very simple `scale()` and `unscale()` functions to make this step as easy as possible. DONE]
 
@@ -154,9 +154,9 @@ While this is not a formal test, things here look pretty good, so there is proba
 
 ## Full Posterior Distributions of Predicted Values
 
-If we are using a dynamic factor model to predict a certain variable, such as a nowcast of industrial production, it is far better to use the full distribution of predicted values for our series of interest. The full posterior distribution is of course interesting in its own right, but it will also tend to be more accurate then predicted values estimated using posterior medians for parameters. This is due to the fact that the posterior median for predicted values of a series is more robust to non-stationary parameter draws and under identification. However, the full distribution of fitted or predicted values can be very large. In the current example with 5 observed series, 322 observations, and 1000 draws, storing the distribution of every series would require storing 1.6 million elements. For bigger data sets, obviously this number would increase. Therefore the package `bdfm` will store posterior distributions for only one series of interest, specified by setting the input `store_idx` to the index value of the series of interest. By default, `store_idx = NULL` and no posterior distributions of observables are stored. We can store the distribution of predicted scaled and centered industrial production (the first series in our data set) by re-estimating the model as follows:
+If we are using a dynamic factor model to predict a certain variable, such as a nowcast of industrial production, it is far better to use the full distribution of predicted values for our series of interest. The full posterior distribution is of course interesting in its own right, but it will also tend to be more accurate then predicted values estimated using posterior medians for parameters. This is due to the fact that the posterior median for predicted values of a series is more robust to non-stationary parameter draws and under identification. However, the full distribution of fitted or predicted values can be very large. In the current example with 5 observed series, 322 observations, and 1000 draws, storing the distribution of every series would require storing 1.6 million elements. For bigger data sets, obviously this number would increase. Therefore the package `bdfm` will store posterior distributions for only one series of interest, specified by setting the input `keep_posterior` to the index value of the series of interest. By default, `keep_posterior = NULL` and no posterior distributions of observables are stored. We can store the distribution of predicted scaled and centered industrial production (the first series in our data set) by re-estimating the model as follows:
 ```{r echo = T}
-est <- dfm(data, factors = 1, lags = 3, store_idx = 1)
+est <- dfm(data, factors = 1, lags = 3, keep_posterior = 1)
 median_parameters <- mean((est$values[,1] - data[,1])^2, na.rm = T)
 median_draw       <- mean((est$Ymedian[,1] - data[,1])^2, na.rm = T)
 cat("MSE for estimate using median parameters:", median_parameters, "\n")
