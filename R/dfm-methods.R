@@ -8,13 +8,6 @@ factors <- function(x) {
   x$factors
 }
 
-#' @name factors
-#' @export
-adjusted <- function(x) {
-  stopifnot(inherits(x, "dfm"))
-  x$factors
-}
-
 
 # methods
 #' @export
