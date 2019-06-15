@@ -1,8 +1,24 @@
 
 #' Extractor Functions for Dynamic Factor Models
 #'
+#' `predict` extracts the predicted values of model. `adjusted` returns the
+#' orginal series with the predicted values subsituted if missing. `factors`
+#' return the factor(s) of the model.
+#'
 #' @param x obeject of class `"dfm"`
 #' @export
+#' @examples
+#' \dontrun{
+#' # predict vs. adjusted
+#' library(tsbox)
+#' dta0 <- ts_seas(cbind(mdeaths, fdeaths))  # seasonally adjust
+#' dta <- dta0
+#' dta[1:10, 2] <- NA
+#'
+#' m <- dfm(dta)
+#' ts_plot(predict(m)[, 'fdeaths'], dta0[, 'fdeaths'])
+#' ts_plot(adjusted(m)[, 'fdeaths'], dta0[, 'fdeaths'])
+#' }
 factors <- function(x) {
   stopifnot(inherits(x, "dfm"))
   x$factors
@@ -16,65 +32,11 @@ adjusted <- function(x) {
   x$adjusted
 }
 
-# methods
+#' @name factors
 #' @export
 #' @method predict dfm
-predict.dfm <- function(object, newdata = NULL, return_intermediates = FALSE, ...) {
-  if(is.null(newdata)){
-    return(object$values)
-  }else{
-    if(NCOL(object$values) != NCOL(newdata)){
-      stop("'newdata' must include the same observable series as the original model was fitted with.")
-    }
-
-    # logs
-    if (!is.null(object$logs)) {
-      newdata[, object$logs] <- log(newdata[, object$logs])
-    }
-
-    # differences
-    if (!is.null(object$diffs)) {
-      newdata_lev <- newdata
-      newdata[, object$diffs] <- sapply(object$diffs, mf_diff, fq = object$freq, Y = newdata)
-    }
-
-    # drop outliers
-    newdata[abs(scale(newdata)) > object$outlier_threshold] <- NA
-
-    #scale
-    if (object$scale) {
-      newdata <- 100*scale(newdata)
-      y_scale  <- attr(newdata, "scaled:scale")
-      y_center <- attr(newdata, "scaled:center")
-    }
-
-    est <- DSmooth(object$B, object$Jb, object$q, object$H, diag(object$R), newdata, object$freq, object$differences)
-
-    if(object$scale){
-      est$Ys <- (matrix(1, nrow(est$Ys), 1) %x% t(y_scale)) * (est$Ys / 100) + (matrix(1, nrow(est$Ys), 1) %x% t(y_center))
-    }
-
-    # undo differences
-    if (!is.null(object$diffs)) {
-      est$Ys[,object$diffs] <- sapply(object$diffs, FUN = level, fq = object$freq, Y_lev = newdata_lev, vals = est$Ys)
-    }
-
-    # undo logs
-    if (!is.null(object$logs)) {
-      est$Ys[,object$logs] <- exp(est$Ys[,object$logs])
-    }
-
-    #Return intermediate values of low frequency data?
-    if (length(unique(object$freq))>1 && !return_intermediates){
-      est$Ys[,which(object$freq != 1)] <- do.call(cbind, lapply(X = which(object$freq != 1), FUN = drop_intermediates,
-                                                             freq = object$freq, Y_raw = newdata, vals = est$Ys))
-    }
-
-    colnames(est$Ys) <- colnames(newdata)
-
-    return(est$Ys)
-  }
-
+predict.dfm <- function(object, ...) {
+  object$values
 }
 
 #' @export

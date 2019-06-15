@@ -10,8 +10,8 @@ dfm(data, factors = 1, lags = "auto", forecasts = 0,
   pre_differenced = NULL, trans_prior = NULL, trans_shrink = 0,
   trans_df = 0, obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
   identification = "pc_long", keep_posterior = NULL,
-  mixed_intermediates = FALSE, orthogonal_shocks = FALSE,
-  reps = 1000, burn = 500, verbose = interactive(), tol = 0.01)
+  interpolate = FALSE, orthogonal_shocks = FALSE, reps = 1000,
+  burn = 500, verbose = interactive(), tol = 0.01)
 }
 \arguments{
 \item{data}{one or multiple time series. The data to be used for estimation.
@@ -79,7 +79,7 @@ values.}
 
 \item{keep_posterior}{names or index values (see details). Series of which to keep the full posterior distribution of predicted values (method `bayesian` only). This is useful for forecasting.}
 
-\item{mixed_intermediates}{if data is mixed frequency, should estimation return intermediate values of low frequency variables}
+\item{interpolate}{logical. If data is mixed frequency, should low frequency be interpolated?}
 
 \item{orthogonal_shocks}{return a rotation of the model with orthogonal shocks and factors. This is useful ....}
 
@@ -123,12 +123,17 @@ factors(m0)                  # estimated factor
 m1 <- dfm(dta, obs_df = c("fdeaths" = 1))
 summary(m1)
 
-\donttest{
+\dontrun{
 # Forecasting U.S. GDP
 m1 <- dfm(econ_us,
   pre_differenced = "A191RL1Q225SBEA",
   keep_posterior = "A191RL1Q225SBEA"
 )
+
+# interpolating low frequency series
+dta_mixed <- econ_us[, c(1, 3)]
+predict(dfm(dta_mixed))
+predict(dfm(dta_mixed, interpolate = TRUE))
 }
 }
 \seealso{
