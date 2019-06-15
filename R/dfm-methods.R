@@ -9,6 +9,13 @@ factors <- function(x) {
 }
 
 
+#' @export
+#' @name factors
+adjusted <- function(x) {
+  stopifnot(inherits(x, "dfm"))
+  x$adjusted
+}
+
 # methods
 #' @export
 #' @method predict dfm

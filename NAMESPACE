@@ -3,6 +3,7 @@
 S3method(predict,dfm)
 S3method(print,dfm)
 S3method(summary,dfm)
+export(adjusted)
 export(dfm)
 export(factors)
 export(should_log_diff)
