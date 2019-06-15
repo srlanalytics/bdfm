@@ -232,7 +232,7 @@ By default, `keep_posterior = NULL` and no posterior distributions of observable
 We can store the distribution of predicted scaled and centered industrial production by re-estimating the model as follows:
 ```{r}
 
-est <- dfm(data, keep_posterior = "INDPRO")
+est <- dfm(econ_small, keep_posterior = "INDPRO")
 median_parameters <- mean((est$values[,1] - data[,1])^2, na.rm = T)
 median_draw       <- mean((est$Ymedian - data[,1])^2, na.rm = T)
 cat("MSE for estimate using median parameters:", median_parameters, "\n")
@@ -302,7 +302,7 @@ Because factors are under-identified, ML factor estimates will be different than
 However, fitted values should be similar.
 Forecasting using a model estimated by ML uses the same syntax the Bayesian case.
 ```{r echo = T}
-# est_ml <- dfm(data, factors = 2, lags = 3, forecast = 3, method = 'ml')
+# est_ml <- dfm(econ_small, factors = 2, lags = 3, forecast = 3, method = 'ml')
 # fct <- predict(est_ml)[,"INDPRO"]
 # print(tail(fct,4))
 
@@ -319,7 +319,7 @@ Predictive power will typically be less than models estimated by Bayesian simula
 It is not suitable for data sets with many missing values however as there is no straightforward way of estimating principal components with missing observations.
 We can estimate the simple five variable model introduced above using two step estimation and forecast three periods ahead of the last observation as follows:
 ```{r echo=T}
-# est_pc <- dfm(data, factors = 2, lags = 3, forecast = 3, method = 'pc')
+# est_pc <- dfm(econ_small, factors = 2, lags = 3, forecast = 3, method = 'pc')
 # fct <- predict(est_pc)[,"INDPRO"]
 # print(tail(fct,4))
 ```
