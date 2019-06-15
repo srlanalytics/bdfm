@@ -253,7 +253,8 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   colnames(est$values) <- colnames(data)
 
   # adjusted series: align 'values' with original series
-  est$adjusted <- align_with_benchmark(est$values, data_orig)
+  # browser()
+  est$adjusted <- substitute_in_benchmark(est$values, data_orig)
 
   return(est)
 }
@@ -282,5 +283,16 @@ align_with_benchmark <- function(x, benchmark) {
   dff <- benchmark - x
   dff_approx <- na_appox(dff)
   x + dff_approx
+}
+
+substitute_in_benchmark <- function(x, benchmark) {
+  nfct <- NROW(x) - NROW(benchmark)
+  if (nfct > 0) {
+    benchmark <- rbind(benchmark, matrix(NA_real_, ncol = NCOL(benchmark), nrow = nfct))
+  }
+  stopifnot(identical(NROW(x), NROW(benchmark)))
+
+  benchmark[is.na(benchmark)] <- x[is.na(benchmark)]
+  benchmark
 }
 
