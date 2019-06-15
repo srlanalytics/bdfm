@@ -58,7 +58,7 @@
 #'   set. Identification can also be done manually, by suppling names or index
 #'   values.
 #' @param keep_posterior names or index values (see details). Series of which to keep the full posterior distribution of predicted values (method `bayesian` only). This is useful for forecasting.
-#' @param mixed_intermediates if data is mixed frequency, should estimation return intermediate values of low frequency variables
+#' @param interpolate logical. If data is mixed frequency, should low frequency be interpolated?
 #' @param orthogonal_shocks return a rotation of the model with orthogonal shocks and factors. This is useful ....
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
@@ -89,12 +89,17 @@
 #' m1 <- dfm(dta, obs_df = c("fdeaths" = 1))
 #' summary(m1)
 #'
-#' \donttest{
+#' \dontrun{
 #' # Forecasting U.S. GDP
 #' m1 <- dfm(econ_us,
 #'   pre_differenced = "A191RL1Q225SBEA",
 #'   keep_posterior = "A191RL1Q225SBEA"
 #' )
+#'
+#' # interpolating low frequency series
+#' dta_mixed <- econ_us[, c(1, 3)]
+#' predict(dfm(dta_mixed))
+#' predict(dfm(dta_mixed, interpolate = TRUE))
 #' }
 #' @useDynLib bdfm
 dfm <- function(data,
@@ -116,7 +121,7 @@ dfm <- function(data,
                 obs_df = NULL,
                 identification = "pc_long",
                 keep_posterior = NULL,
-                mixed_intermediates = FALSE,
+                interpolate = FALSE,
                 orthogonal_shocks = FALSE,
                 reps = 1000,
                 burn = 500,
@@ -150,7 +155,7 @@ dfm <- function(data,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, keep_posterior = keep_posterior, reps = reps,
-      burn = burn, verbose = verbose, tol = tol, mixed_intermediates = mixed_intermediates,
+      burn = burn, verbose = verbose, tol = tol, interpolate = interpolate,
       orthogonal_shocks = orthogonal_shocks
     )
     colnames(ans$values) <- colnames(data)
@@ -181,7 +186,7 @@ dfm <- function(data,
       preD = pre_differenced, Bp = trans_prior, lam_B = trans_shrink, trans_df = trans_df,
       Hp = obs_prior, lam_H = obs_shrink, obs_df = obs_df,
       ID = identification, keep_posterior = keep_posterior, reps = reps,
-      burn = burn, verbose = verbose, tol = tol, mixed_intermediates = mixed_intermediates,
+      burn = burn, verbose = verbose, tol = tol, interpolate = interpolate,
       orthogonal_shocks = orthogonal_shocks
     )
 

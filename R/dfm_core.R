@@ -28,7 +28,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
                      outlier_threshold = 4, diffs = "auto", freq = "auto", preD = NULL,
                      Bp = NULL, lam_B = 0, trans_df = 0, Hp = NULL, lam_H = 0, obs_df = NULL, ID = "pc_long",
                      keep_posterior = NULL, reps = 1000, burn = 500, verbose = TRUE,
-                     tol = 0.01, mixed_intermediates = FALSE, orthogonal_shocks = FALSE) {
+                     tol = 0.01, interpolate = FALSE, orthogonal_shocks = FALSE) {
 
   #-------Data processing-------------------------
 
@@ -238,7 +238,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   }
 
   #Return intermediate values of low frequency data?
-  if (length(unique(freq))>1 && !mixed_intermediates){
+  if (length(unique(freq))>1 && !interpolate){
     est$values[,which(freq != 1)] <- do.call(cbind, lapply(X = which(freq != 1), FUN = drop_intermediates,
                                                            freq = freq, Y_raw = Y, vals = est$values))
   }
