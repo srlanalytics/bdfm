@@ -111,9 +111,9 @@ summary.dfm <- function(object, digits = max(3, getOption("digits") - 3), ...) {
   )
   cat("\n")
 
-  obs_var <- as.matrix(1 -(m$R / 10000))
+  obs_var <- as.matrix(1 -(object$R / 10000))
   colnames(obs_var) <- "Sample Fit"
-  obs_loadings <- m$H
+  obs_loadings <- object$H
   colnames(obs_loadings) <- paste0("Load (", seq(ncol(obs_loadings)), ")")
   obs <- cbind(obs_var, obs_loadings)
 
