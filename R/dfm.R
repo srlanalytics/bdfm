@@ -44,12 +44,13 @@
 #' @param trans_prior prior matrix for B in the transition equation. Default is
 #'   zeros.
 #' @param trans_shrink prior tightness on B matrix in trasition equation
-#' @param trans_df prior deg. of freedom for transition equation
+#' @param trans_df prior degree of freedom for transition equation
 #' @param obs_prior prior matrix for H (loadings) in the observation equation
 #'  Default is zeros.
 #' @param obs_shrink prior tightness on H (loadings) in the observation equation
-#' @param obs_df prior deg. of freedom for observables, entered as vector with
-#'   length equal to the number of observables.
+#' @param obs_df named vector (see details). prior degree of freedom
+#'   for observables. This is useful to give specific series a larger weight,
+#'   e.g. 1. (default 0, method `bayesian` only).
 #' @param identification  names or index values (see details), or character. Factor identification. `"pc_long"`
 #'   (default) finds series with the most observations over time, on which it uses principal components. '"pc_full"'
 #'   uses all observed series, `"pc_sub"` finds a submatrix of the data that
@@ -61,7 +62,6 @@
 #' @param orthogonal_shocks return a rotation of the model with orthogonal shocks and factors. This is useful ....
 #' @param reps number of repetitions for MCMC sampling
 #' @param burn number of iterations to burn in MCMC sampling
-
 #' @param verbose print status of function during evalutation. If ML, print
 #'   difference in likelihood at each iteration of the EM algorithm. Default is
 #'  `TRUE` in interactive mode, `FALSE` otherwise, so it does not appear, e.g., in `reprex::reprex()`.
@@ -78,13 +78,16 @@
 #' @importFrom utils head tail
 #' @examples
 #'
-#' # Imputing missing value
-#' fdeaths0 <- fdeaths
-#' fdeaths0[length(fdeaths0)] <- NA
-#' dta <- cbind(fdeaths0, mdeaths)
-#' m0 <- dfm(dta, forecasts = 2)
-#' predict(m0)  # series with imputations and forecasts
-#' summary(m0)  # summray of the model
+#' dta <- cbind(fdeaths, mdeaths)
+#'
+#' m0 <- dfm(dta, forecast = 2) # estimation with 2 period forecast
+#' predict(m0)                  # series with imputations and forecasts
+#' summary(m0)                  # summary of the model
+#' factors(m0)                  # estimated factor
+#'
+#' # informative priors: giving 'fdeaths' a higher weight
+#' m1 <- dfm(dta, obs_df = c("fdeaths" = 1))
+#' summary(m1)
 #'
 #' \donttest{
 #' # Forecasting U.S. GDP

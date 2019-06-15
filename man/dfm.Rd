@@ -59,15 +59,16 @@ zeros.}
 
 \item{trans_shrink}{prior tightness on B matrix in trasition equation}
 
-\item{trans_df}{prior deg. of freedom for transition equation}
+\item{trans_df}{prior degree of freedom for transition equation}
 
 \item{obs_prior}{prior matrix for H (loadings) in the observation equation
 Default is zeros.}
 
 \item{obs_shrink}{prior tightness on H (loadings) in the observation equation}
 
-\item{obs_df}{prior deg. of freedom for observables, entered as vector with
-length equal to the number of observables.}
+\item{obs_df}{named vector (see details). prior degree of freedom
+for observables. This is useful to give specific series a larger weight,
+e.g. 1. (default 0, method `bayesian` only).}
 
 \item{identification}{names or index values (see details), or character. Factor identification. `"pc_long"`
 (default) finds series with the most observations over time, on which it uses principal components. '"pc_full"'
@@ -111,13 +112,16 @@ unnamed vector of the same length as as the number of series in `data`.
 }
 \examples{
 
-# Imputing missing value
-fdeaths0 <- fdeaths
-fdeaths0[length(fdeaths0)] <- NA
-dta <- cbind(fdeaths0, mdeaths)
-m0 <- dfm(dta, forecasts = 2)
-predict(m0)  # series with imputations and forecasts
-summary(m0)  # summray of the model
+dta <- cbind(fdeaths, mdeaths)
+
+m0 <- dfm(dta, forecast = 2) # estimation with 2 period forecast
+predict(m0)                  # series with imputations and forecasts
+summary(m0)                  # summary of the model
+factors(m0)                  # estimated factor
+
+# informative priors: giving 'fdeaths' a higher weight
+m1 <- dfm(dta, obs_df = c("fdeaths" = 1))
+summary(m1)
 
 \donttest{
 # Forecasting U.S. GDP
