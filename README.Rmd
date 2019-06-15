@@ -38,7 +38,7 @@ remotes::install_github("srlanalytics/bdfm")
 ## Basic Use
 
 Estimate a model with one factor and two lags in the transition equation:
-```{r}
+```{r, message = FALSE}
 library(bdfm)
 dta <- cbind(fdeaths, mdeaths)
 m <- dfm(dta, forecast = 2)
