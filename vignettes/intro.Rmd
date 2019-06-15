@@ -60,7 +60,6 @@ library(bdfm)
 # MNFCTRIRSA   Manufacturers inventories:sales ratio
 # ICSA         Initial claims
 econ_small <- econ_us[, c("INDPRO","AMTMNO","WHLSLRIRSA","MNFCTRIRSA","ICSA")]
-tsbox::ts_summary(econ_small)
 ```
 
 Input data, $y_t$ in the observation equation, is the only minimum requirement to estimate a DFM using the **bdfm** package:
@@ -233,8 +232,8 @@ We can store the distribution of predicted scaled and centered industrial produc
 ```{r}
 
 est <- dfm(econ_small, keep_posterior = "INDPRO")
-median_parameters <- mean((est$values[,1] - data[,1])^2, na.rm = T)
-median_draw       <- mean((est$Ymedian - data[,1])^2, na.rm = T)
+median_parameters <- mean((est$values[,1] - econ_small[,1])^2, na.rm = T)
+median_draw       <- mean((est$Ymedian - econ_small[,1])^2, na.rm = T)
 cat("MSE for estimate using median parameters:", median_parameters, "\n")
 cat("MSE for estimate using median of draws for IP:", median_draw)
 ```
