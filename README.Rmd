@@ -69,3 +69,13 @@ plot(factors(m))
 You can find details on estimation routines and derivations in the short book
 *Practical Implementation of Factor Models*. [Free
 Download](http://srlquantitative.com)
+
+
+## Related Packages
+
+[MARSS](https://cran.r-project.org/web/packages/MARSS/index.html), [dynfactoR](https://rdrr.io/github/guilbran/dynfactoR/)
+: Offer maximum likelihood estimation only
+
+[greta](https://cran.r-project.org/web/packages/greta/index.html)
+: Uses Hamiltonian Monte Carlo simulation find posterior distributions of model parameters for whatever model the user specifies. It looks superb, but being general purpose it is much more difficult to implement DFMs than with **bdfm**.
+
