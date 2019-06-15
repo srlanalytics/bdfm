@@ -5,7 +5,8 @@
 #' orginal series with the predicted values subsituted if missing. `factors`
 #' return the factor(s) of the model.
 #'
-#' @param x obeject of class `"dfm"`
+#' @param object obeject of class `"dfm"`
+#' @param ... unused, to comply with generic
 #' @export
 #' @examples
 #' \dontrun{
@@ -19,17 +20,17 @@
 #' ts_plot(predict(m)[, 'fdeaths'], dta0[, 'fdeaths'])
 #' ts_plot(adjusted(m)[, 'fdeaths'], dta0[, 'fdeaths'])
 #' }
-factors <- function(x) {
-  stopifnot(inherits(x, "dfm"))
-  x$factors
+factors <- function(object) {
+  stopifnot(inherits(object, "dfm"))
+  object$factors
 }
 
 
 #' @export
 #' @name factors
-adjusted <- function(x) {
-  stopifnot(inherits(x, "dfm"))
-  x$adjusted
+adjusted <- function(object) {
+  stopifnot(inherits(object, "dfm"))
+  object$adjusted
 }
 
 #' @name factors
@@ -63,6 +64,7 @@ print.dfm <- function(x, ...) {
 
 #' @export
 #' @method summary dfm
+#' @importFrom stats printCoefmat
 summary.dfm <- function(object, digits = max(3, getOption("digits") - 3), ...) {
 
   cat("\nCall:\n", paste(deparse(object$call), sep = "\n", collapse = "\n"), "\n",
@@ -88,8 +90,7 @@ summary.dfm <- function(object, digits = max(3, getOption("digits") - 3), ...) {
 
   cat("\n")
   cat("Observation Equation:\n")
-  printCoefmat(obs, digits = digits, signif.stars = signif.stars,
-               na.print = "NA")
+  printCoefmat(obs, digits = digits, na.print = "NA")
 
   cat("\n")
 

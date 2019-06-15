@@ -6,14 +6,16 @@
 \alias{predict.dfm}
 \title{Extractor Functions for Dynamic Factor Models}
 \usage{
-factors(x)
+factors(object)
 
-adjusted(x)
+adjusted(object)
 
 \method{predict}{dfm}(object, ...)
 }
 \arguments{
-\item{x}{obeject of class `"dfm"`}
+\item{object}{obeject of class `"dfm"`}
+
+\item{...}{unused, to comply with generic}
 }
 \description{
 `predict` extracts the predicted values of model. `adjusted` returns the

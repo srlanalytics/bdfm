@@ -74,7 +74,10 @@ econ_us <- ts_ts(do.call(rbind, c(
 # three series (though whether it's necessary to adjust consumer sentiment is
 # debatable).
 series_sa <- c('UMCSENT', 'CSUSHPINSA', 'FRGSHPUSM649NCIS')
-econ_us_sa <- do.call(cbind, lapply(ts_tslist(econ_us[, series_sa]), function(e) seas_we(e, lags = 3)$values))
+econ_us_sa <- do.call(cbind, lapply(
+  ts_tslist(econ_us[, series_sa]),
+  function(e) seas_we(e, lags = 3)$values
+))
 window(econ_us[, series_sa], end = end(econ_us_sa)) <- econ_us_sa
 }
 
