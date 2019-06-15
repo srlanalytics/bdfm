@@ -204,6 +204,7 @@ dfm <- function(data,
     }
   }
 
+  ans$method <- method
   ans$call <- match.call()
   class(ans) <- "dfm"
   return(ans)
