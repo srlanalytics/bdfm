@@ -63,8 +63,8 @@ MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE, orthogonal_shocks = FALS
   # 
   # Smth <- Ksmoother(A, Q, HJ, R, Ydm)
   
-  B  <- A[1:m, 1:(m * p)]
-  q  <- Q[1:m,1:m]
+  B  <- matrix(A[1:m, 1:(m * p)], m, m*p)
+  q  <- as.matrix(Q[1:m,1:m])
   
   if(orthogonal_shocks){ #if we want to return a model with orthogonal shocks, rotate the parameters
     id <- Identify(H,q)
