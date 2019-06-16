@@ -42,13 +42,20 @@
 #' @param pre_differenced names or index values (see details). series entered in
 #'   differences (If series are specified in 'diffs', this is not needed.)
 #' @param trans_prior prior matrix for B in the transition equation. Default is
-#'   zeros.
-#' @param trans_shrink prior tightness on B matrix in transition equation
-#' @param trans_df prior degree of freedom for transition equation
+#'   zeros. To use a random walk prior with, for example,
+#'   m factors and p lags, set `trans_prior = cbind(diag(1,m,m), matrix(0,m,m*(p-1)))`.
+#' @param trans_shrink prior tightness on B matrix in transition equation. Used to shrink
+#'   forecast values towards the prior `trans_prior`,
+#'   which may help reduce parameter uncertainty.
+#' @param trans_df prior degrees of freedom for transition equation. 
+#'   Shrinking shocks to the trasition equation will increase the magnitude
+#'   of shocks to the observation equation dampening updates from observed series (method `bayesian` only). 
 #' @param obs_prior prior matrix for H (loadings) in the observation equation
 #'  Default is zeros.
-#' @param obs_shrink prior tightness on H (loadings) in the observation equation
-#' @param obs_df named vector (see details). prior degree of freedom
+#' @param obs_shrink prior tightness on H (loadings) in the observation equation; a greater value will shrink estimates of loadings
+#'  more aggressively towards the prior 'obs_prior'. When the prior is zero (the default value), this is an alternative
+#'  (and typically more stable) approach to dampening the impact of updates from observed series. 
+#' @param obs_df named vector (see details). prior degrees of freedom
 #'   for gamma distribution in the observation equation. This is useful to give specific series a larger weight,
 #'   e.g. 1. (default 0, method `bayesian` only).
 #' @param identification  names or index values (see details), or character. Factor identification. `"pc_long"`
