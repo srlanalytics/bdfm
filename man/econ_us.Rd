@@ -13,7 +13,7 @@ FRED
 \description{
 US Economic Data Series from \href{https://fred.stlouisfed.org}{FRED}. The latest
 version of the data can be retrieved by running the example code. You need
-FRED API Key, which can be optained
+FRED API Key, which can be obtained
 \href{https://research.stlouisfed.org/docs/api/api_key.html}{here}
 }
 \examples{
@@ -24,7 +24,7 @@ library(fredr)
 library(bdfm)
 
 # Use Sys.setenv(FRED_API_KEY = 'XXXX') to set FRED API Key.
-# Optain here: https://research.stlouisfed.org/docs/api/api_key.html
+# Obtain here: https://research.stlouisfed.org/docs/api/api_key.html
 
 series_q <- c(
   'A191RL1Q225SBEA',       # 01 Real GDP, seasonally adjusted, quarterly, annualized \% change

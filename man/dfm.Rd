@@ -57,7 +57,7 @@ differences (If series are specified in 'diffs', this is not needed.)}
 \item{trans_prior}{prior matrix for B in the transition equation. Default is
 zeros.}
 
-\item{trans_shrink}{prior tightness on B matrix in trasition equation}
+\item{trans_shrink}{prior tightness on B matrix in transition equation}
 
 \item{trans_df}{prior degree of freedom for transition equation}
 
@@ -67,14 +67,14 @@ Default is zeros.}
 \item{obs_shrink}{prior tightness on H (loadings) in the observation equation}
 
 \item{obs_df}{named vector (see details). prior degree of freedom
-for observables. This is useful to give specific series a larger weight,
+for gamma distribution in the observation equation. This is useful to give specific series a larger weight,
 e.g. 1. (default 0, method \code{bayesian} only).}
 
 \item{identification}{names or index values (see details), or character. Factor identification. \code{"pc_long"}
 (default) finds series with the most observations over time, on which it uses principal components. '"pc_full"'
 uses all observed series, \code{"pc_sub"} finds a submatrix of the data that
 maximizes the number of observations for a square (no missing values) data
-set. Identification can also be done manually, by suppling names or index
+set. Identification can also be done manually, by supplying names or index
 values.}
 
 \item{keep_posterior}{names or index values (see details). Series of which to keep the full posterior distribution of predicted values (method \code{bayesian} only). This is useful for forecasting.}
@@ -87,26 +87,23 @@ values.}
 
 \item{burn}{number of iterations to burn in MCMC sampling}
 
-\item{verbose}{print status of function during evalutation. If ML, print
+\item{verbose}{print status of function during evaluation. If ML, print
 difference in likelihood at each iteration of the EM algorithm. Default is
 \code{TRUE} in interactive mode, \code{FALSE} otherwise, so it does not appear, e.g., in \code{reprex::reprex()}.}
 
-\item{tol}{tolerance for convergence of EM algorithm (method \code{ml} only). Convergence
-criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
-is the log likelihood from this iteration and Lik0 is the likelihood from
-the previous iteration.}
+\item{tol}{tolerance for convergence of EM algorithm (method \code{ml} only).}
 }
 \description{
-Estimates a Baysian or non-Baysian dynamic factor Model. With the default
+Estimates a Bayesian or non-Bayesian dynamic factor Model. With the default
 options, \code{dfm} calls  automatic procedures that works well in many
 circumstances.
 }
 \details{
 \strong{Specifying series}: Individual series can be specified either by \emph{names}
 (recommended) or index values. An index value refers to the position of the
-series in \code{data}
+series in \code{data}.
 
-\strong{Specifying prameters for specific series}: Parameters for individual
+\strong{Specifying parameters for specific series}: Parameters for individual
 series can be specified using a \emph{named} vector (recommended) or using a
 unnamed vector of the same length as as the number of series in \code{data}.
 }

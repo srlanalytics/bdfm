@@ -21,7 +21,7 @@ This document begins with a non-technical overview of dynamic factor models incl
 The second section introduces more rigorous notation and technical details regarding estimation techniques.
 For even more detail the book *Practical Implementation of Factor Models* is available for free download at [SRLquantitative.com]{srlquantitative.com}.
 
-# Non-Technichal Overview
+# Non-Technical Overview
 
 Time series data for real world applications can be messy.
 Potential difficulties include inaccurate (noisy) observations, missing data, "ragged edge" data due to varying start and end dates for different series, and a potentially large number of parameters to estimate.
@@ -71,7 +71,7 @@ m
 ```
 
 `dfm` uses heuristics and calls automatic procedures that works well in many circumstances.
-Here, they have opted for one factor and 3 lags, as can be infered from the output.
+Here, they have opted for one factor and 3 lags, as can be inferred from the output.
 If you're using monthly data, 3 lags (one quarter) is a decent starting point.
 For daily data, 7 lags (one week, or 5 if data includes only business days) is probably a good guess.
 
@@ -101,7 +101,7 @@ m_fct <- dfm(econ_small, forecast = 3)
 predict(m_fct)
 ```
 
-An important question with any dynamic factor model is how much each observed series contributes to factors. The `summary` function gives a more comprehensive overview of the estmation:
+An important question with any dynamic factor model is how much each observed series contributes to factors. The `summary` function gives a more comprehensive overview of the estimation:
 
 ```{r}
 summary(m)
@@ -191,7 +191,7 @@ If it is really necessary to look at this plots, we should have a function that 
 Parameter posterior distributions are stored as `Bstore`, `Hstore`, `Qstore`, and `Rstore`.
 The first three are cubes.
 `Bstore`, for example, has dimensions `[m, m*p, reps]`.
-For the first model we estimated,mwe can look at a few trace plots using the following:
+For the first model we estimated, we can look at a few trace plots using the following:
 ```{r echo= T}
 # Look at traces for a few of the parameters in our first estimation
 par(mfrow=c(2,2))
@@ -213,7 +213,7 @@ While this is not a formal test, things here look pretty good, so there is proba
 By default, `dfm` stores the posterior median for predicted values of a series and drops the full distribution, in order to keep object size small.
 
 
-However, if we are interested in predicting a certain variable, such as a nowcast of industrial production, it is more accurate to use the full distribution of predicted values for the series of interest.
+However, if we are interested in predicting a certain variable, such as a "nowcast" of industrial production, it is more accurate to use the full distribution of predicted values for the series of interest.
 This is due to the fact that the posterior median for predicted values of a series is more robust to non-stationary parameter draws and under identification.
 
 

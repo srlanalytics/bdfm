@@ -29,6 +29,7 @@ remotes::install_github("srlanalytics/bdfm")
 
 Estimate a model with one factor and two lags in the transition
 equation:
+<!-- to avoid progress indicator: https://github.com/srlanalytics/bdfm/issues/72 -->
 
 ``` r
 library(bdfm)
@@ -49,7 +50,7 @@ plot(predict(m))
 
 ![](man/figures/README-predict-1.png)<!-- -->
 
-Or have a look at the esimated factors, using `factors()`:
+Or have a look at the estimated factors, using `factors()`:
 
 ``` r
 plot(factors(m))
@@ -60,15 +61,15 @@ plot(factors(m))
 ## Estimation Details
 
 You can find details on estimation routines and derivations in the short
-book *Practical Implementation of Factor Models*. [Free
-Download](http://srlquantitative.com)
+book [*Practical Implementation of Factor
+Models*](http://srlquantitative.com/docs/Factor_Models.pdf).
 
 ## Related Packages
 
   - [MARSS](https://cran.r-project.org/web/packages/MARSS/index.html),
-    [dynfactoR](https://rdrr.io/github/guilbran/dynfactoR/)
+    [dynfactoR](https://rdrr.io/github/guilbran/dynfactoR/)  
     Offer maximum likelihood estimation only
-  - [greta](https://cran.r-project.org/web/packages/greta/index.html)
+  - [greta](https://cran.r-project.org/web/packages/greta/index.html)  
     Uses Hamiltonian Monte Carlo simulation find posterior distributions
     of model parameters for whatever model the user specifies. It looks
     superb, but being general purpose it is much more difficult to

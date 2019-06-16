@@ -2,10 +2,10 @@
 #' Extractor Functions for Dynamic Factor Models
 #'
 #' `predict` extracts the predicted values of model. `adjusted` returns the
-#' orginal series with the predicted values subsituted if missing. `factors`
+#' original series with the predicted values substituted if missing. `factors`
 #' return the factor(s) of the model.
 #'
-#' @param object obeject of class `"dfm"`
+#' @param object object of class `"dfm"`
 #' @param ... unused, to comply with generic
 #' @export
 #' @examples

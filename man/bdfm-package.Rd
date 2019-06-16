@@ -4,7 +4,7 @@
 \name{bdfm-package}
 \alias{bdfm-package}
 \alias{bdfm}
-\title{Bayesain and Maximum Likelihood Estimation of Dynamic Factor Models}
+\title{Bayesian and Maximum Likelihood Estimation of Dynamic Factor Models}
 \description{
 Estimates dynamic factor models by simulation using the Durbin and Koopman
 (2012) disturbance smoother. Maximum likelihood estimation via Watson and

@@ -250,37 +250,37 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, keep_posterior, 
 
 
 
-#' MCMC Routine for Bayesian Dynamic Factor Models
-#'
-#' \code{Cppbdfm} is the core C++ function for estimating a linear-Gaussian
-#' Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's
-#' disturbance smoother. This function may be called directly by advanced
-#' users. The only dependencies are the  Armadillo
-#' (\url{http://arma.sourceforge.net/}) linear algebra library for C++ and the
-#' packages needed for interfacing with R (\code{\link{Rcpp}} and
-#' \code{\link{RcppArmadillo}}).
-#'
-#' @param B  initial guess for B in transition equation
-#' @param Bp prior for B
-#' @param Jb Helper matrix for transition equation, identity matrix if uniform frequency
-#' @param lam_B prior tightness for B (additive)
-#' @param q initial guess for q in the transition equation
-#' @param nu_q prior "degrees of freedom" for inverse-Whishart prior for q (additive, prior scale is fixed so that increasing nu_q shrinks the variance towards zero)
-#' @param H initial guess for H in the trasition equation
-#' @param Hp prior for H
-#' @param lam_H prior tightness for H (additive)
-#' @param R initial guess for diagonal elements of R in the transition equation, entered as a vector
-#' @param nu_r prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r[j] shrinks the variance of shocks to series j towards zero)
-#' @param Y Input data. Data must be scaled and centered prior to estimation if desired.
-#' @param freq vector, number of high frequency periods in an observation
-#' @param LD vector, 0 for level data and 1 for differenced data
-#' @param Ystore T/F, should the distribution of Y be stored
-#' @param store_idx, if Ystore is TRUE, index of which observed series to store. Note C++ uses zero indexing (i.e. subtract 1 from the R index value)
-#' @param reps number of repetitions for MCMC sampling
-#' @param burn number of iterations to burn in MCMC sampling
-#' @param verbose print status of function during evaluation.
-#' @importFrom Rcpp evalCpp
-#' @useDynLib bdfm
+# MCMC Routine for Bayesian Dynamic Factor Models
+#
+# \code{Cppbdfm} is the core C++ function for estimating a linear-Gaussian
+# Bayesain dynamic factor model by MCMC methods using Durbin and Koopman's
+# disturbance smoother. This function may be called directly by advanced
+# users. The only dependencies are the  Armadillo
+# (\url{http://arma.sourceforge.net/}) linear algebra library for C++ and the
+# packages needed for interfacing with R (\code{\link{Rcpp}} and
+# \code{\link{RcppArmadillo}}).
+#
+# @param B  initial guess for B in transition equation
+# @param Bp prior for B
+# @param Jb Helper matrix for transition equation, identity matrix if uniform frequency
+# @param lam_B prior tightness for B (additive)
+# @param q initial guess for q in the transition equation
+# @param nu_q prior "degrees of freedom" for inverse-Whishart prior for q (additive, prior scale is fixed so that increasing nu_q shrinks the variance towards zero)
+# @param H initial guess for H in the trasition equation
+# @param Hp prior for H
+# @param lam_H prior tightness for H (additive)
+# @param R initial guess for diagonal elements of R in the transition equation, entered as a vector
+# @param nu_r prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r[j] shrinks the variance of shocks to series j towards zero)
+# @param Y Input data. Data must be scaled and centered prior to estimation if desired.
+# @param freq vector, number of high frequency periods in an observation
+# @param LD vector, 0 for level data and 1 for differenced data
+# @param Ystore T/F, should the distribution of Y be stored
+# @param store_idx, if Ystore is TRUE, index of which observed series to store. Note C++ uses zero indexing (i.e. subtract 1 from the R index value)
+# @param reps number of repetitions for MCMC sampling
+# @param burn number of iterations to burn in MCMC sampling
+# @param verbose print status of function during evaluation.
+# @importFrom Rcpp evalCpp
+# @useDynLib bdfm
 Cppbdfm <- function(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD, Ystore = FALSE, store_idx = 0, reps = 1000, burn = 500, verbose = FALSE) {
   OUT <- EstDFM(B = B, Bp = Bp, Jb = Jb, lam_B = lam_B, q = q, nu_q = nu_q, H = H, Hp = Hp, lam_H = lam_H, R = R, nu_r = nu_r, Y = Y, freq = freq, LD = LD, reps = reps, burn = burn, verbose = verbose)
   return(OUT)

@@ -1,6 +1,6 @@
 Package: bdfm
 Type: Package
-Title: Bayesain and Maximum Likelihood Estimation of Dynamic Factor Models
+Title: Bayesian and Maximum Likelihood Estimation of Dynamic Factor Models
 Version: 0.0.2
 Date: 2019-06-14
 Authors@R: c(
