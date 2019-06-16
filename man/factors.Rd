@@ -13,13 +13,13 @@ adjusted(object)
 \method{predict}{dfm}(object, ...)
 }
 \arguments{
-\item{object}{obeject of class `"dfm"`}
+\item{object}{obeject of class \code{"dfm"}}
 
 \item{...}{unused, to comply with generic}
 }
 \description{
-`predict` extracts the predicted values of model. `adjusted` returns the
-orginal series with the predicted values subsituted if missing. `factors`
+\code{predict} extracts the predicted values of model. \code{adjusted} returns the
+orginal series with the predicted values subsituted if missing. \code{factors}
 return the factor(s) of the model.
 }
 \examples{

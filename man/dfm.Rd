@@ -15,40 +15,40 @@ dfm(data, factors = 1, lags = "auto", forecasts = 0,
 }
 \arguments{
 \item{data}{one or multiple time series. The data to be used for estimation.
-This can be entered as a `"ts"` object of as a matrix. If
-[https://tsbox.help](tsbox) is installed, any ts-boxable time series can be
-supplied (`ts`, `xts`, `zoo`, `data.frame`, `data.table`, `tbl`, `tbl_ts`,
-`tbl_time`, or `timeSeries`)}
+This can be entered as a \code{"ts"} object of as a matrix. If
+\href{tsbox}{https://tsbox.help} is installed, any ts-boxable time series can be
+supplied (\code{ts}, \code{xts}, \code{zoo}, \code{data.frame}, \code{data.table}, \code{tbl}, \code{tbl_ts},
+\code{tbl_time}, or \code{timeSeries})}
 
 \item{factors}{integer. The number of unobserved factors to be estimated. A
 larger number of factors leads to a more complex model.}
 
 \item{lags}{integer. The number of lags in the transition equation. If
-`"auto"` (default), the number is equal to highest frequency in `data`.}
+\code{"auto"} (default), the number is equal to highest frequency in \code{data}.}
 
 \item{forecasts}{integer. Number of periods ahead to forecasts.}
 
-\item{method}{character. Method to be used; one of `"bayesian"`, `"ml"` or
+\item{method}{character. Method to be used; one of \code{"bayesian"}, \code{"ml"} or
 `"pc". See details.}
 
-\item{scale}{logical. Should data be scaled before estimation? `TRUE`
-(default) resolves some numerical problems during estimation. `FALSE`
+\item{scale}{logical. Should data be scaled before estimation? \code{TRUE}
+(default) resolves some numerical problems during estimation. \code{FALSE}
 ensures that the coefficient estimates are interpretable.}
 
 \item{logs}{names or index values (see details). Series of which the
-logarithm is taken (can be combined with `diffs`). If `"auto"` (default)
+logarithm is taken (can be combined with \code{diffs}). If \code{"auto"} (default)
 this is done for all series that are differentiated and have no values < 0.}
 
 \item{diffs}{names or index values (see details). Series to be
-differentiated. If `"auto"` (default), a modified Durbin-Watson test is
+differentiated. If \code{"auto"} (default), a modified Durbin-Watson test is
 performed.}
 
-\item{outlier_threshold}{integer. Observations more than `outlier_threshold`
+\item{outlier_threshold}{integer. Observations more than \code{outlier_threshold}
 standard deviations from the series mean are removed. This is useful to
 increase the stability of the estimation.}
 
-\item{frequency_mix}{integer or `"auto"`. Number of high frequency periods
-in a low frequency period. If `"auto"` (default), this is inferred from the
+\item{frequency_mix}{integer or \code{"auto"}. Number of high frequency periods
+in a low frequency period. If \code{"auto"} (default), this is inferred from the
 time series.}
 
 \item{pre_differenced}{names or index values (see details). series entered in
@@ -68,16 +68,16 @@ Default is zeros.}
 
 \item{obs_df}{named vector (see details). prior degree of freedom
 for observables. This is useful to give specific series a larger weight,
-e.g. 1. (default 0, method `bayesian` only).}
+e.g. 1. (default 0, method \code{bayesian} only).}
 
-\item{identification}{names or index values (see details), or character. Factor identification. `"pc_long"`
+\item{identification}{names or index values (see details), or character. Factor identification. \code{"pc_long"}
 (default) finds series with the most observations over time, on which it uses principal components. '"pc_full"'
-uses all observed series, `"pc_sub"` finds a submatrix of the data that
+uses all observed series, \code{"pc_sub"} finds a submatrix of the data that
 maximizes the number of observations for a square (no missing values) data
 set. Identification can also be done manually, by suppling names or index
 values.}
 
-\item{keep_posterior}{names or index values (see details). Series of which to keep the full posterior distribution of predicted values (method `bayesian` only). This is useful for forecasting.}
+\item{keep_posterior}{names or index values (see details). Series of which to keep the full posterior distribution of predicted values (method \code{bayesian} only). This is useful for forecasting.}
 
 \item{interpolate}{logical. If data is mixed frequency, should low frequency be interpolated?}
 
@@ -88,27 +88,27 @@ values.}
 \item{burn}{number of iterations to burn in MCMC sampling}
 
 \item{verbose}{print status of function during evalutation. If ML, print
- difference in likelihood at each iteration of the EM algorithm. Default is
-`TRUE` in interactive mode, `FALSE` otherwise, so it does not appear, e.g., in `reprex::reprex()`.}
+difference in likelihood at each iteration of the EM algorithm. Default is
+\code{TRUE} in interactive mode, \code{FALSE} otherwise, so it does not appear, e.g., in \code{reprex::reprex()}.}
 
-\item{tol}{tolerance for convergence of EM algorithm (method `ml` only). Convergence
+\item{tol}{tolerance for convergence of EM algorithm (method \code{ml} only). Convergence
 criteria is calculated as 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0) where Lik1
 is the log likelihood from this iteration and Lik0 is the likelihood from
 the previous iteration.}
 }
 \description{
 Estimates a Baysian or non-Baysian dynamic factor Model. With the default
-options, `dfm` calls  automatic procedures that works well in many
+options, \code{dfm} calls  automatic procedures that works well in many
 circumstances.
 }
 \details{
-**Specifying series**: Individual series can be specified either by *names*
+\strong{Specifying series}: Individual series can be specified either by \emph{names}
 (recommended) or index values. An index value refers to the position of the
-series in `data`
+series in \code{data}
 
-**Specifying prameters for specific series**: Parameters for individual
-series can be specified using a *named* vector (recommended) or using a
-unnamed vector of the same length as as the number of series in `data`.
+\strong{Specifying prameters for specific series}: Parameters for individual
+series can be specified using a \emph{named} vector (recommended) or using a
+unnamed vector of the same length as as the number of series in \code{data}.
 }
 \examples{
 
@@ -137,7 +137,7 @@ predict(dfm(dta_mixed, interpolate = TRUE))
 }
 }
 \seealso{
-`vignette("dfm")`, for a more comprehensive intro to the package.
+\code{vignette("dfm")}, for a more comprehensive intro to the package.
 
-[*Practical Implementation of Factor Models*](http://srlquantitative.com/docs/Factor_Models.pdf) for a comprehensive overview of dynamic factor models.
+\href{http://srlquantitative.com/docs/Factor_Models.pdf}{Practical Implementation of Factor Models} for a comprehensive overview of dynamic factor models.
 }

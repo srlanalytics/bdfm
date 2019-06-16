@@ -19,6 +19,6 @@ The best way to start is to have a look at the vignette:
 }
 \seealso{
 \code{\link{dfm}} for the core function and more information on
-  package usage.
+package usage.
 }
 \keyword{package}

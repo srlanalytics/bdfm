@@ -11,10 +11,10 @@ https://fred.stlouisfed.org
 FRED
 }
 \description{
-US Economic Data Series from [FRED](https://fred.stlouisfed.org). The latest
+US Economic Data Series from \href{https://fred.stlouisfed.org}{FRED}. The latest
 version of the data can be retrieved by running the example code. You need
 FRED API Key, which can be optained
-[here](https://research.stlouisfed.org/docs/api/api_key.html)
+\href{https://research.stlouisfed.org/docs/api/api_key.html}{here}
 }
 \examples{
 

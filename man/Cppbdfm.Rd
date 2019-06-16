@@ -29,7 +29,7 @@ Cppbdfm(B, Bp, Jb, lam_B, q, nu_q, H, Hp, lam_H, R, nu_r, Y, freq, LD,
 
 \item{R}{initial guess for diagonal elements of R in the transition equation, entered as a vector}
 
-\item{nu_r}{prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r[j] shrinks the variance of shocks to series j towards zero)}
+\item{nu_r}{prior deg. of freedom for elements of R, entered as a vector (additive, prior scale is fixed so that increasing nu_r\link{j} shrinks the variance of shocks to series j towards zero)}
 
 \item{Y}{Input data. Data must be scaled and centered prior to estimation if desired.}
 

@@ -25,4 +25,5 @@ LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.1
 LazyData: true
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
