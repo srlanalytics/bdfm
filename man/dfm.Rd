@@ -16,7 +16,7 @@ dfm(data, factors = 1, lags = "auto", forecasts = 0,
 \arguments{
 \item{data}{one or multiple time series. The data to be used for estimation.
 This can be entered as a \code{"ts"} object of as a matrix. If
-\href{tsbox}{https://tsbox.help} is installed, any ts-boxable time series can be
+\href{https://tsbox.help}{tsbox} is installed, any ts-boxable time series can be
 supplied (\code{ts}, \code{xts}, \code{zoo}, \code{data.frame}, \code{data.table}, \code{tbl}, \code{tbl_ts},
 \code{tbl_time}, or \code{timeSeries})}
 

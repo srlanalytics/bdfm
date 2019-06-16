@@ -14,7 +14,7 @@
 #'
 #' @param data one or multiple time series. The data to be used for estimation.
 #'   This can be entered as a `"ts"` object of as a matrix. If
-#'   [https://tsbox.help](tsbox) is installed, any ts-boxable time series can be
+#'   [tsbox](https://tsbox.help) is installed, any ts-boxable time series can be
 #'   supplied (`ts`, `xts`, `zoo`, `data.frame`, `data.table`, `tbl`, `tbl_ts`,
 #'   `tbl_time`, or `timeSeries`)
 #' @param factors integer. The number of unobserved factors to be estimated. A
