@@ -4,21 +4,21 @@
 \name{bdfm-package}
 \alias{bdfm-package}
 \alias{bdfm}
-\title{bdfm: ...}
+\title{Bayesian and Maximum Likelihood Estimation of Dynamic Factor Models}
 \description{
-\pkg{bdfm} is ....
-
-  The best way to start is to have a look at the vignette:
-
-  \code{vignette("seas")}
+Estimates dynamic factor models by simulation using the Durbin and Koopman
+(2012) disturbance smoother. Maximum likelihood estimation via Watson and
+Engle (1983) and 2-step estimation via principal components is also
+supported. Input data may be mixed frequency, noisy, have missing values, or
+ragged edges with different start or end dates.
 }
-\references{
-Sax C, Eddelbuettel D (2018). "Seasonal Adjustment by X-13ARIMA-SEATS
-  in R." \emph{Journal of Statistical Software}, \emph{87}(11), 1-17. doi:
-  10.18637/jss.v087.i11 (\url{http://doi.org/10.18637/jss.v087.i11}).
+\details{
+The best way to start is to have a look at the vignette:
+
+\code{vignette("dfm")}
 }
 \seealso{
 \code{\link{dfm}} for the core function and more information on
-  package usage.
+package usage.
 }
 \keyword{package}

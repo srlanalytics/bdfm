@@ -3,15 +3,35 @@
 \name{factors}
 \alias{factors}
 \alias{adjusted}
+\alias{predict.dfm}
 \title{Extractor Functions for Dynamic Factor Models}
 \usage{
-factors(x)
+factors(object)
 
-adjusted(x)
+adjusted(object)
+
+\method{predict}{dfm}(object, ...)
 }
 \arguments{
-\item{x}{obeject of class `"dfm"`}
+\item{object}{object of class \code{"dfm"}}
+
+\item{...}{unused, to comply with generic}
 }
 \description{
-Extractor Functions for Dynamic Factor Models
+\code{predict} extracts the predicted values of model. \code{adjusted} returns the
+original series with the predicted values substituted if missing. \code{factors}
+return the factor(s) of the model.
+}
+\examples{
+\dontrun{
+# predict vs. adjusted
+library(tsbox)
+dta0 <- ts_seas(cbind(mdeaths, fdeaths))  # seasonally adjust
+dta <- dta0
+dta[1:10, 2] <- NA
+
+m <- dfm(dta)
+ts_plot(predict(m)[, 'fdeaths'], dta0[, 'fdeaths'])
+ts_plot(adjusted(m)[, 'fdeaths'], dta0[, 'fdeaths'])
+}
 }

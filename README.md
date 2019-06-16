@@ -1,16 +1,23 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-bdfm
-====
+
+# bdfm
 
 Bayesian dynamic factor model estimation in R.
 
-[![Build Status](https://travis-ci.org/christophsax/tsbox.svg?branch=master)](https://travis-ci.org/srlanalytics/bdfm) [![codecov](https://codecov.io/github/srlanalytics/bdfm/branch/master/graphs/badge.svg)](https://codecov.io/github/srlanalytics/bdfm)
+[![Build
+Status](https://travis-ci.org/christophsax/tsbox.svg?branch=master)](https://travis-ci.org/srlanalytics/bdfm)
+[![codecov](https://codecov.io/github/srlanalytics/bdfm/branch/master/graphs/badge.svg)](https://codecov.io/github/srlanalytics/bdfm)
 
-bdfm estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother and returns estimated factors, predicted values of observables, posterior distributions for predicted values (optional), and forecast updates by series (optional). Maximum likelihood estimation via Watson and Engle (1983) is also supported. Input data may be noisy, have missing values, or "ragged edges" due to different start or end dates.
+bdfm estimates dynamic factor models by simulation using the Durbin and
+Koopman (2012) disturbance smoother and returns estimated factors,
+predicted values of observables, posterior distributions for predicted
+values (optional), and forecast updates by series (optional). Maximum
+likelihood estimation via Watson and Engle (1983) is also supported.
+Input data may be noisy, have missing values, or “ragged edges” due to
+different start or end dates.
 
-Installation
-------------
+## Installation
 
 To install the development version:
 
@@ -18,10 +25,11 @@ To install the development version:
 remotes::install_github("srlanalytics/bdfm")
 ```
 
-Basic Use
----------
+## Basic Use
 
-Estimate a model with one factor and two lags in the transition equation:
+Estimate a model with one factor and two lags in the transition
+equation:
+<!-- to avoid progress indicator: https://github.com/srlanalytics/bdfm/issues/72 -->
 
 ``` r
 library(bdfm)
@@ -29,7 +37,10 @@ dta <- cbind(fdeaths, mdeaths)
 m <- dfm(dta, forecast = 2)
 ```
 
-Input data should be an object of class `"ts"`. If the [tsbox](https://www.tsbox.help/) package is installed, any ts-boxable time series objects can be supplied, such as `"xts"`, `"zoo"`, `"timeSeries"` or `"data.frame"`.
+Input data should be an object of class `"ts"`. If the
+[tsbox](https://www.tsbox.help/) package is installed, any ts-boxable
+time series objects can be supplied, such as `"xts"`, `"zoo"`,
+`"timeSeries"` or `"data.frame"`.
 
 Extract the resulting series, using `predict()`.
 
@@ -37,17 +48,29 @@ Extract the resulting series, using `predict()`.
 plot(predict(m))
 ```
 
-![](man/figures/README-predict-1.png)
+![](man/figures/README-predict-1.png)<!-- -->
 
-Or have a look at the esimated factors, using `factors()`:
+Or have a look at the estimated factors, using `factors()`:
 
 ``` r
 plot(factors(m))
 ```
 
-![](man/figures/README-factors-1.png)
+![](man/figures/README-factors-1.png)<!-- -->
 
-Estimation Details
-------------------
+## Estimation Details
 
-You can find details on estimation routines and derivations in the short book *Practical Implementation of Factor Models*. [Free Download](http://srlquantitative.com)
+You can find details on estimation routines and derivations in the short
+book [*Practical Implementation of Factor
+Models*](http://srlquantitative.com/docs/Factor_Models.pdf).
+
+## Related Packages
+
+  - [MARSS](https://cran.r-project.org/web/packages/MARSS/index.html),
+    [dynfactoR](https://rdrr.io/github/guilbran/dynfactoR/)  
+    Offer maximum likelihood estimation only
+  - [greta](https://cran.r-project.org/web/packages/greta/index.html)  
+    Uses Hamiltonian Monte Carlo simulation find posterior distributions
+    of model parameters for whatever model the user specifies. It looks
+    superb, but being general purpose it is much more difficult to
+    implement DFMs than with **bdfm**.

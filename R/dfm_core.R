@@ -10,7 +10,7 @@
 # lam_H = 0
 # obs_df = NULL
 # ID = "pc_long"
-# store_idx = 1
+# keep_posterior = 1
 # reps = 1000
 # burn = 500
 # verbose = T
@@ -27,8 +27,8 @@
 dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = "auto",
                      outlier_threshold = 4, diffs = "auto", freq = "auto", preD = NULL,
                      Bp = NULL, lam_B = 0, trans_df = 0, Hp = NULL, lam_H = 0, obs_df = NULL, ID = "pc_long",
-                     store_idx = NULL, reps = 1000, burn = 500, verbose = TRUE,
-                     tol = 0.01, return_intermediates = FALSE, orthogonal_shocks = FALSE) {
+                     keep_posterior = NULL, reps = 1000, burn = 500, verbose = TRUE,
+                     tol = 0.01, interpolate = FALSE, orthogonal_shocks = FALSE) {
 
   #-------Data processing-------------------------
 
@@ -132,11 +132,11 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     y_center <- attr(Y, "scaled:center")
   }
 
-  if (!is.null(store_idx)){
-    if(length(store_idx)>1){
-      stop("Length of 'store_idx' cannot be greater than 1")
+  if (!is.null(keep_posterior)){
+    if(length(keep_posterior)>1){
+      stop("Length of 'keep_posterior' cannot be greater than 1")
     }
-    store_idx <- standardize_index(store_idx, Y)
+    keep_posterior <- standardize_index(keep_posterior, Y)
   }
 
   if(all(!ID%in%c("pc_wide", "pc_long", "name"))){
@@ -151,7 +151,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     est <- bdfm(
       Y = Y, m = m, p = p, Bp = Bp,
       lam_B = lam_B, Hp = Hp, lam_H = lam_H, nu_q = trans_df, nu_r = obs_df,
-      ID = ID, store_idx = store_idx, freq = freq, LD = LD, reps = reps,
+      ID = ID, keep_posterior = keep_posterior, freq = freq, LD = LD, reps = reps,
       burn = burn, verbose = verbose, orthogonal_shocks = orthogonal_shocks
     )
   } else if (method == "ml") {
@@ -191,10 +191,10 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   est$Kstore  <- NULL # this is huge and no longer needed, so drop it
   est$PEstore <- NULL
 
-  # get updates to store_idx if specified
-  if(!is.null(store_idx)){
-    idx_loading <- est$H[store_idx,,drop=FALSE]%*%J_MF(freq[store_idx], m = m, ld = LD[store_idx], sA = NCOL(est$Jb))
-    idx_scale <- if (scale) y_scale[store_idx]/100 else 1
+  # get updates to keep_posterior if specified
+  if(!is.null(keep_posterior)){
+    idx_loading <- est$H[keep_posterior,,drop=FALSE]%*%J_MF(freq[keep_posterior], m = m, ld = LD[keep_posterior], sA = NCOL(est$Jb))
+    idx_scale <- if (scale) y_scale[keep_posterior]/100 else 1
     idx_update <- lapply(factor_update, function(x) as.matrix(idx_scale * (idx_loading %*% x)) )
     # same structure as data: missing values as NA
     idx_update <- lapply(idx_update, function(e){
@@ -211,9 +211,9 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   if(scale){
     est$values <- (matrix(1, nrow(est$values), 1) %x% t(y_scale)) * (est$values / 100) + (matrix(1, nrow(est$values), 1) %x% t(y_center))
     est$R2     <- 1 - est$R/10000
-    if(!is.null(store_idx) && method == "bayesian"){
-      est$Ystore <- est$Ystore*(y_scale[store_idx]/100) + y_center[store_idx]
-      est$Ymedian <- est$Ymedian*(y_scale[store_idx]/100) + y_center[store_idx]
+    if(!is.null(keep_posterior) && method == "bayesian"){
+      est$Ystore <- est$Ystore*(y_scale[keep_posterior]/100) + y_center[keep_posterior]
+      est$Ymedian <- est$Ymedian*(y_scale[keep_posterior]/100) + y_center[keep_posterior]
     }
   }else{
     est$R2 <- 1 - est$R/apply(X = Y, MARGIN = 2, FUN = var, na.rm = TRUE)
@@ -222,23 +222,23 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   # undo differences
   if (!is.null(diffs)) {
     est$values[,diffs] <- sapply(diffs, FUN = level, fq = freq, Y_lev = Y_lev, vals = est$values)
-    if(!is.null(store_idx) && method == "bayesian" && store_idx%in%diffs){
-      est$Ymedian <- level_simple(est$Ymedian, y_lev = Y_lev[,store_idx], fq = freq[store_idx])
-      est$Ystore  <- apply(est$Ystore, MARGIN = 2, FUN = level_simple, y_lev = Y_lev[,store_idx], fq = freq[store_idx])
+    if(!is.null(keep_posterior) && method == "bayesian" && keep_posterior%in%diffs){
+      est$Ymedian <- level_simple(est$Ymedian, y_lev = Y_lev[,keep_posterior], fq = freq[keep_posterior])
+      est$Ystore  <- apply(est$Ystore, MARGIN = 2, FUN = level_simple, y_lev = Y_lev[,keep_posterior], fq = freq[keep_posterior])
     }
   }
 
   # undo logs
   if (!is.null(logs)) {
     est$values[,logs] <- exp(est$values[,logs])
-    if(!is.null(store_idx) && method == "bayesian" && store_idx%in%logs){
+    if(!is.null(keep_posterior) && method == "bayesian" && keep_posterior%in%logs){
       est$Ymedian <- exp(est$Ymedian)
       est$Ystore  <- exp(est$Ystore)
     }
   }
 
   #Return intermediate values of low frequency data?
-  if (length(unique(freq))>1 && !return_intermediates){
+  if (length(unique(freq))>1 && !interpolate){
     est$values[,which(freq != 1)] <- do.call(cbind, lapply(X = which(freq != 1), FUN = drop_intermediates,
                                                            freq = freq, Y_raw = Y, vals = est$values))
   }
@@ -253,7 +253,8 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   colnames(est$values) <- colnames(data)
 
   # adjusted series: align 'values' with original series
-  est$adjusted <- align_with_benchmark(est$values, data_orig)
+  # browser()
+  est$adjusted <- substitute_in_benchmark(est$values, data_orig)
 
   return(est)
 }
@@ -282,5 +283,16 @@ align_with_benchmark <- function(x, benchmark) {
   dff <- benchmark - x
   dff_approx <- na_appox(dff)
   x + dff_approx
+}
+
+substitute_in_benchmark <- function(x, benchmark) {
+  nfct <- NROW(x) - NROW(benchmark)
+  if (nfct > 0) {
+    benchmark <- rbind(benchmark, matrix(NA_real_, ncol = NCOL(benchmark), nrow = nfct))
+  }
+  stopifnot(identical(NROW(x), NROW(benchmark)))
+
+  benchmark[is.na(benchmark)] <- x[is.na(benchmark)]
+  benchmark
 }
 

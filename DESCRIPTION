@@ -1,13 +1,13 @@
 Package: bdfm
 Type: Package
-Title: Bayesain and Maximum Likelihood Estimation of Factor Models
+Title: Bayesian and Maximum Likelihood Estimation of Dynamic Factor Models
 Version: 0.0.2
-Date: 2018-12-13
+Date: 2019-06-14
 Authors@R: c(
   person("Seth", "Leonard", email = "seth@srlanalytics.com", role = c("aut", "cre")),
   person("Christoph", "Sax", role = "aut")
   )
-Description: Estimates dynamic factors models. Bayesian estimation is by simulation while ML estimation follows Watson and Engle 1983.
+Description: Estimates dynamic factor models by simulation using the Durbin and Koopman (2012) disturbance smoother. Maximum likelihood estimation via Watson and Engle (1983) and 2-step estimation via principal components is also supported. Input data may be mixed frequency, noisy, have missing values, or ragged edges with different start or end dates.
 BugReports: https://github.com/srlanalytics/bdfm
 License: MIT + file LICENSE
 Imports:
@@ -25,4 +25,5 @@ LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.1.1
 LazyData: true
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
