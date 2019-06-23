@@ -55,33 +55,49 @@ time series.}
 differences (If series are specified in 'diffs', this is not needed.)}
 
 \item{trans_prior}{prior matrix for B in the transition equation. Default is
-zeros.}
+zeros. E.g., to use a random walk prior with m factors and p lags, set
+\code{trans_prior = cbind(diag(1,m,m), matrix(0,m,m*(p-1)))}.}
 
-\item{trans_shrink}{prior tightness on B matrix in transition equation}
+\item{trans_shrink}{prior tightness on B matrix in transition equation. Use
+to shrink forecast values towards the prior \code{trans_prior},
+which may help reduce parameter uncertainty.}
 
-\item{trans_df}{prior degree of freedom for transition equation}
+\item{trans_df}{prior degrees of freedom for transition equation.
+Shrinking shocks to the trasition equation will increase the magnitude
+of shocks to the observation equation dampening updates from observed
+series (method \code{bayesian} only).}
 
 \item{obs_prior}{prior matrix for H (loadings) in the observation equation
 Default is zeros.}
 
-\item{obs_shrink}{prior tightness on H (loadings) in the observation equation}
+\item{obs_shrink}{prior tightness on H (loadings) in the observation
+equation; a greater value will shrink estimates of loadings more
+aggressively towards the prior 'obs_prior'. When the prior is zero (the
+default value), this is an alternative (and typically more stable) approach
+to dampening the impact of updates from observed series.}
 
-\item{obs_df}{named vector (see details). prior degree of freedom
-for gamma distribution in the observation equation. This is useful to give specific series a larger weight,
-e.g. 1. (default 0, method \code{bayesian} only).}
+\item{obs_df}{named vector (see details). prior degrees of freedom
+for gamma distribution in the observation equation. This is useful to give
+specific series a larger weight, e.g. 1. (default 0, method \code{bayesian}
+only).}
 
-\item{identification}{names or index values (see details), or character. Factor identification. \code{"pc_long"}
-(default) finds series with the most observations over time, on which it uses principal components. '"pc_full"'
+\item{identification}{names or index values (see details), or character.
+Factor identification. \code{"pc_long"} (default) finds series with the most
+observations over time, on which it uses principal components. '"pc_full"'
 uses all observed series, \code{"pc_sub"} finds a submatrix of the data that
 maximizes the number of observations for a square (no missing values) data
 set. Identification can also be done manually, by supplying names or index
 values.}
 
-\item{keep_posterior}{names or index values (see details). Series of which to keep the full posterior distribution of predicted values (method \code{bayesian} only). This is useful for forecasting.}
+\item{keep_posterior}{names or index values (see details). Series of which to
+keep the full posterior distribution of predicted values (method
+\code{"bayesian"} only). This is useful for forecasting.}
 
-\item{interpolate}{logical. If data is mixed frequency, should low frequency be interpolated?}
+\item{interpolate}{logical. If data is mixed frequency, should low frequency
+be interpolated?}
 
-\item{orthogonal_shocks}{return a rotation of the model with orthogonal shocks and factors. This is useful ....}
+\item{orthogonal_shocks}{return a rotation of the model with orthogonal
+shocks and factors. This is useful ....}
 
 \item{reps}{number of repetitions for MCMC sampling}
 
@@ -89,7 +105,8 @@ values.}
 
 \item{verbose}{print status of function during evaluation. If ML, print
 difference in likelihood at each iteration of the EM algorithm. Default is
-\code{TRUE} in interactive mode, \code{FALSE} otherwise, so it does not appear, e.g., in \code{reprex::reprex()}.}
+\code{TRUE} in interactive mode, \code{FALSE} otherwise, so it does not appear, e.g.,
+in \code{reprex::reprex()}.}
 
 \item{tol}{tolerance for convergence of EM algorithm (method \code{ml} only).}
 }
