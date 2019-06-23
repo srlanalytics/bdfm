@@ -37,7 +37,7 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, keep_posterior, 
     if(length(ID)<m){
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_wide'")
     }
-    PC <- PrinComp(Y[, ID], m)
+    PC <- PrinComp(Y[, ID, drop = FALSE], m)
     Y <- cbind(PC$components, Y)
     k <- k + m
     if (!is.null(nu_r)) {
