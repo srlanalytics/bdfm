@@ -66,6 +66,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     #   paste0(name, " = c(\n", z, "\n)")
     # }
     parse_vector <- function(x, name = deparse(substitute(x))) {
+      if (length(x) == 1 && is.null(names(x)) && x == TRUE) return(paste0(name, " = 1"))
       x.char <- names(x)[x]
       if (length(x.char) == 0) return(paste0(name, " = NULL"))
       z <- paste(paste0("  \"", x.char, "\""), collapse = ",\n")
@@ -74,11 +75,11 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     do_log_diff <- should_log_diff(Y)
     if (verbose) message("auto log/diff detection, with:")
     if(logs == "auto"){
-      logs <- do_log_diff[1,]
+      logs <- do_log_diff[1,,drop = FALSE]
       if (verbose) message(parse_vector(logs), if (diffs == "auto") ",")
     }
     if(diffs == "auto"){
-      diffs <- do_log_diff[2,]
+      diffs <- do_log_diff[2,,drop = FALSE]
       if (verbose) message(parse_vector(diffs))
     }
   }
@@ -259,31 +260,6 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   return(est)
 }
 
-
-# benchmark <- fdeaths
-# benchmark[c(1:10, 20:25)] <- NA
-# tsbox::ts_plot(mdeaths, fdeaths, aligned = align_with_benchmark(x, benchmark))
-align_with_benchmark <- function(x, benchmark) {
-
-  nfct <- NROW(x) - NROW(benchmark)
-  if (nfct > 0) {
-    benchmark <- rbind(benchmark, matrix(NA_real_, ncol = NCOL(benchmark), nrow = nfct))
-  }
-  stopifnot(identical(NROW(x), NROW(benchmark)))
-
-  if (NCOL(x) > 1) {  # multivariate mode
-    stopifnot(identical(dim(x), dim(benchmark)))
-    z <- x
-    for (i in 1:NCOL(x)) {
-      z[, i] <- align_with_benchmark(x[, i], benchmark[, i])
-    }
-    return(z)
-  }
-
-  dff <- benchmark - x
-  dff_approx <- na_appox(dff)
-  x + dff_approx
-}
 
 substitute_in_benchmark <- function(x, benchmark) {
   nfct <- NROW(x) - NROW(benchmark)
