@@ -55,4 +55,21 @@ test_that("tsbox is supported", {
 })
 
 
+test_that("manual logs, diffs specification works", {
+  m <- dfm(cbind(fdeaths, mdeaths), logs = "fdeaths", diffs = "fdeaths")
+  expect_is(predict(m), "ts")
+})
+
+
+test_that("prior setting for obs_df works", {
+  m <- dfm(cbind(fdeaths, mdeaths), obs_df = c("fdeaths" = 1))
+  expect_is(predict(m), "ts")
+})
+
+
+test_that("non-stationary series are differenced", {
+  m <- dfm(econ_us[,c(4, 5)])
+  expect_is(predict(m), "ts")
+})
+
 
