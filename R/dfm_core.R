@@ -260,31 +260,6 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
 }
 
 
-# benchmark <- fdeaths
-# benchmark[c(1:10, 20:25)] <- NA
-# tsbox::ts_plot(mdeaths, fdeaths, aligned = align_with_benchmark(x, benchmark))
-align_with_benchmark <- function(x, benchmark) {
-
-  nfct <- NROW(x) - NROW(benchmark)
-  if (nfct > 0) {
-    benchmark <- rbind(benchmark, matrix(NA_real_, ncol = NCOL(benchmark), nrow = nfct))
-  }
-  stopifnot(identical(NROW(x), NROW(benchmark)))
-
-  if (NCOL(x) > 1) {  # multivariate mode
-    stopifnot(identical(dim(x), dim(benchmark)))
-    z <- x
-    for (i in 1:NCOL(x)) {
-      z[, i] <- align_with_benchmark(x[, i], benchmark[, i])
-    }
-    return(z)
-  }
-
-  dff <- benchmark - x
-  dff_approx <- na_appox(dff)
-  x + dff_approx
-}
-
 substitute_in_benchmark <- function(x, benchmark) {
   nfct <- NROW(x) - NROW(benchmark)
   if (nfct > 0) {
