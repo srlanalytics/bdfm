@@ -13,17 +13,19 @@
 #' unnamed vector of the same length as as the number of series in `data`.
 #'
 #' @param data one or multiple time series. The data to be used for estimation.
-#'   This can be entered as a `"ts"` object of as a matrix. If
+#'   This can be entered as a `"ts"` object or as a matrix. If
 #'   [tsbox](https://tsbox.help) is installed, any ts-boxable time series can be
 #'   supplied (`ts`, `xts`, `zoo`, `data.frame`, `data.table`, `tbl`, `tbl_ts`,
 #'   `tbl_time`, or `timeSeries`)
 #' @param factors integer. The number of unobserved factors to be estimated. A
-#'   larger number of factors leads to a more complex model.
+#'   larger number of factors leads to a more complex model. Denoted as 'm' 
+#'   in the documentation.
 #' @param lags integer. The number of lags in the transition equation. If
 #'  `"auto"` (default), the number is equal to highest frequency in `data`.
+#'  Denoted as 'p' in the documentation. 
 #' @param forecasts integer. Number of periods ahead to forecasts.
 #' @param method character. Method to be used; one of `"bayesian"`, `"ml"` or
-#'   `"pc". See details.
+#'   `"pc"`. See details.
 #' @param scale logical. Should data be scaled before estimation? `TRUE`
 #'   (default) resolves some numerical problems during estimation. `FALSE`
 #'   ensures that the coefficient estimates are interpretable.
@@ -41,49 +43,60 @@
 #'   time series.
 #' @param pre_differenced names or index values (see details). series entered in
 #'   differences (If series are specified in 'diffs', this is not needed.)
-#' @param trans_prior prior matrix for B in the transition equation. Default is
+#' @param trans_prior m x mp (m: factors, p: lags) prior matrix for B (the transition matrix) in the transition equation. Default is
 #'   zeros. E.g., to use a random walk prior with m factors and p lags, set
 #'   `trans_prior = cbind(diag(1,m,m), matrix(0,m,m*(p-1)))`.
-#' @param trans_shrink prior tightness on B matrix in transition equation. Use
+#' @param trans_shrink scaler. Prior tightness on B matrix in transition equation where a value of zero is
+#'   used to denote an improper (flat) prior (i.e. no shrinkage). Use
 #'   to shrink forecast values towards the prior `trans_prior`,
-#'   which may help reduce parameter uncertainty.
-#' @param trans_df prior degrees of freedom for transition equation.
+#'   which may help reduce parameter uncertainty in estimation.
+#' @param trans_df scaler. Prior degrees of freedom for inverse-Wishart distribution of shocks
+#'   in the transition equation, where 0 implies no shrinkage.   
 #'   Shrinking shocks to the trasition equation will increase the magnitude
 #'   of shocks to the observation equation dampening updates from observed
-#'   series (method `bayesian` only).
-#' @param obs_prior prior matrix for H (loadings) in the observation equation
+#'   series. High values of `trans_df` can lead to
+#'   instability in simulations. 
+#' @param obs_prior k x m (k: observed series, m: factors) prior matrix for H (loadings) in the observation equation
 #'   Default is zeros.
-#' @param obs_shrink prior tightness on H (loadings) in the observation
-#'   equation; a greater value will shrink estimates of loadings more
+#' @param obs_shrink scaler. Prior tightness on H (loadings) in the observation
+#'   equation where a value of zero is
+#'   used to denote an improper (flat) prior (i.e. no shrinkage). A greater value will shrink estimates of loadings more
 #'   aggressively towards the prior 'obs_prior'. When the prior is zero (the
 #'   default value), this is an alternative (and typically more stable) approach
 #'   to dampening the impact of updates from observed series.
 #' @param obs_df named vector (see details). prior degrees of freedom
-#'   for gamma distribution in the observation equation. This is useful to give
-#'   specific series a larger weight, e.g. 1. (default 0, method `bayesian`
-#'   only).
+#'   for inverse chi-squared distribution in the observation equation. This is useful to give
+#'   specific series a larger weight, e.g. 1. (default 0).
 #' @param identification names or index values (see details), or character.
-#'   Factor identification. `"pc_long"` (default) finds series with the most
-#'   observations over time, on which it uses principal components. '"pc_full"'
-#'   uses all observed series, `"pc_sub"` finds a submatrix of the data that
-#'   maximizes the number of observations for a square (no missing values) data
-#'   set. Identification can also be done manually, by supplying names or index
-#'   values.
+#'   Factor identification. `"pc_long"` (default) identifies on principal components
+#'   from series with at least the median number of observations. `"pc_wide"` 
+#'   identifies on principal components using all series, where rows of the observations
+#'   matrix containing missing data are omitted. `"name"` uses Stock and Watson's "naming
+#'   factors" identification, i.e. identifying on the first m series provided where m is the
+#'   number of factors. Identification can also be done manually, by supplying names or index
+#'   values from which identifying series are derived via principal components.
 #' @param keep_posterior names or index values (see details). Series of which to
 #'   keep the full posterior distribution of predicted values (method
-#'   `"bayesian"` only). This is useful for forecasting.
-#' @param interpolate logical. If data is mixed frequency, should low frequency
-#'   be interpolated?
-#' @param orthogonal_shocks return a rotation of the model with orthogonal
-#'   shocks and factors. This is useful ....
-#' @param reps number of repetitions for MCMC sampling
-#' @param burn number of iterations to burn in MCMC sampling
-#' @param verbose print status of function during evaluation. If ML, print
+#'   `"bayesian"` only). This is useful for forecasting as the posterior median forecast
+#'   value tends to me more accurate than forecasts using the posterior median parameter 
+#'   estimates, and allows for the evaluation of forecast accuracy.
+#' @param interpolate logical. Should output return intra-frequency estimates of low
+#'   frequency observables? Put differently, if the model includes monthly and quarterly data,
+#'   should output include
+#'   estimates of quarterly data every month (where quarterly refers to an aggregate of the
+#'   current and previous 2 months; for `interpolate = TRUE`) or just at the end of the quarter (months 3, 6, 9, and 12; 
+#'   for `interpolate = FALSE`, default)?
+#' @param orthogonal_shocks logical. Return a rotation of the model with orthogonal
+#'   shocks and factors. This is used to isolate the impact of each factor on observables,
+#'   allowing for a clean intepretation of how shocks (which, if `TRUE` are not correlated) 
+#'   impact observed series. 
+#' @param reps integer. Number of repetitions for MCMC sampling
+#' @param burn integer. Number of iterations to burn in MCMC sampling
+#' @param verbose logical. Print status of function during evaluation. If ML, print
 #'   difference in likelihood at each iteration of the EM algorithm. Default is
 #'  `TRUE` in interactive mode, `FALSE` otherwise, so it does not appear, e.g.,
 #'  in `reprex::reprex()`.
-#'
-#' @param tol tolerance for convergence of EM algorithm (method `ml` only).
+#' @param tol scaler. Tolerance for convergence of EM algorithm (method `ml` only).
 #' @seealso `vignette("dfm")`, for a more comprehensive intro to the package.
 #' @seealso [*Practical Implementation of Factor Models*](http://srlquantitative.com/docs/Factor_Models.pdf) for a comprehensive overview of dynamic factor models.
 #' @export
