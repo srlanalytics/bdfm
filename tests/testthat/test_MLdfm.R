@@ -9,9 +9,8 @@ test_that("alternative identification works", {
   m <- dfm(cbind(mdeaths, fdeaths), identification = "pc_wide", method = "ml")
 
   # should work?
-  # m <- dfm(cbind(mdeaths, fdeaths), identification = "mdeaths", method = "ml")
-  # m <- dfm(cbind(mdeaths, fdeaths), identification = 1, method = "ml")
-  # m <- dfm(cbind(mdeaths, fdeaths), identification = "pc_sub", method = "ml")
+  m <- dfm(cbind(mdeaths, fdeaths), identification = "mdeaths", method = "ml")
+  m <- dfm(cbind(mdeaths, fdeaths), identification = 1, method = "ml")
 
 })
 

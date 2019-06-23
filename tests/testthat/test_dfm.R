@@ -72,4 +72,14 @@ test_that("non-stationary series are differenced", {
   expect_is(predict(m), "ts")
 })
 
+test_that("alternative identification works", {
+  # works
+  m <- dfm(cbind(mdeaths, fdeaths), identification = "pc_long")
+  m <- dfm(cbind(mdeaths, fdeaths), identification = "pc_wide")
+
+  # should work?
+  m <- dfm(cbind(mdeaths, fdeaths), identification = "mdeaths")
+  m <- dfm(cbind(mdeaths, fdeaths), identification = 1)
+
+})
 
