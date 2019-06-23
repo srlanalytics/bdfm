@@ -46,3 +46,13 @@ test_that("forecast > 0 works", {
   dfm(mdeaths, factors = 1, lags = 3)
 })
 
+
+test_that("tsbox is supported", {
+  library(tsbox)
+  data_xts <- ts_xts(cbind(mdeaths, fdeaths))
+  m <- dfm(data_xts, forecast = 3)
+  expect_is(predict(m), "xts")
+})
+
+
+
