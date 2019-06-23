@@ -63,8 +63,8 @@ mf_diff <- function(ind, fq, Y) {
 }
 
 # x <- c(NA, 2, 4, NA, NA, 2, NA)
-# na_appox(x)
-na_appox <- function(x) {
+# na_approx(x)
+na_approx <- function(x) {
   idx <- seq_along(x)
 
   x_here <- x[!is.na(x)]
@@ -85,8 +85,8 @@ level <- function(ind, fq, Y_lev, vals) {
   indx    <- seq(1, length(y_lev))%%fq[ind] == rmdr
   y       <- vals[indx, ind]
   cs      <- cumsum(y)
-  appox   <- na_appox(y_lev[indx] - cs)
-  y_lev[indx]   <- appox + cs #return at same frequency as input
+  approx   <- na_approx(y_lev[indx] - cs)
+  y_lev[indx]   <- approx + cs #return at same frequency as input
   return(y_lev)
 }
 
@@ -98,19 +98,9 @@ level_simple <- function(val, y_lev, fq) {
   indx    <- seq(1, length(y_lev))%%fq == rmdr
   y       <- val[indx]
   cs      <- cumsum(y)
-  appox   <- na_appox(y_lev[indx] - cs)
-  y_lev[indx]   <- appox + cs #return at same frequency as input
+  approx   <- na_approx(y_lev[indx] - cs)
+  y_lev[indx]   <- approx + cs #return at same frequency as input
   return(y_lev)
-}
-
-#return only values that correspond to the end of the quarter (or whatever the low frequency periods are)
-drop_intermediates <- function(ind, freq, Y_raw, vals){
-  y_raw <- Y_raw[,ind]
-  y     <- vals[,ind]
-  rmdr  <- median(which(is.finite(y_raw))%%freq[ind])
-  indx    <- seq(1, length(y_raw))%%freq[ind] == rmdr
-  y[!indx]<- NA
-  return(y)
 }
 
 
