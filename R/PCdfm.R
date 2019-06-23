@@ -22,7 +22,7 @@ PCdfm <- function(Y, m, p, Bp = NULL, lam_B = 0, Hp = NULL, lam_H = 0,
     if(length(ID)<m){
       stop("Number of factors is too great for selected identification routine. Try fewer factors or 'pc_full'")
     }
-    PC <- PrinComp(Y[, ID], m)
+    PC <- PrinComp(Y[, ID, drop = FALSE], m)
     X  <- PC$components
   } else if (ID == "pc_wide") {
     PC <- PrinComp(Y, m)
