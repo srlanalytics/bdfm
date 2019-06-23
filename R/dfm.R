@@ -177,16 +177,16 @@ dfm <- function(data,
   } else {
     # no requirement for tsbox if data is ts or mts
     if (inherits(data, "ts")) {
-      data_tsp <- attr(data, "tsp")
-      data_unclassed <- as.matrix(unclass(data))
+      data_ts <- data
     } else {
       # all other time series classes are handled by tsbox
       stopifnot(requireNamespace("tsbox"))
       stopifnot(tsbox::ts_boxable(data))
-      data_tsp <- attr(tsbox::ts_ts(data), "tsp")
-      data_unclassed <- unclass(tsbox::ts_ts(data))
+      data_ts <- tsbox::ts_ts(data)
     }
 
+    data_tsp <- attr(data_ts, "tsp")
+    data_unclassed <- as.matrix(unclass(data_ts))
     attr(data_unclassed, "tsp") <- NULL
 
     all_NA <- apply(X = data_unclassed, MARGIN = 2, FUN = AllNA)
@@ -212,7 +212,7 @@ dfm <- function(data,
       ans$Ymedian <- ts(ans$Ymedian, start = data_tsp[1], frequency = data_tsp[3])
       ans$idx_update <- ts(ans$idx_update, start = data_tsp[1], frequency = data_tsp[3])
     }
-    colnames(ans$values) <- colnames(data)
+    colnames(ans$values) <- colnames(data_ts)
 
     # put values back into original class (other than ts)
     if (!inherits(data, "ts")) {
