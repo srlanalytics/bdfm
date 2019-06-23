@@ -43,9 +43,6 @@ MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE, orthogonal_shocks = FALS
     Lik1 <- Est$Lik
     Conv <- 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0)
     Lik0 <- Lik1
-    if (verbose) {
-      print(Conv)
-    }
     count <- count + 1
   }
 
@@ -60,24 +57,24 @@ MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE, orthogonal_shocks = FALS
   # }
   # Ydm <- Y - matrix(1, r, 1) %x% t(itc)
   # HJ <- sparseMatrix(i = rep(1:k, m), j = (1:m) %x% rep(1, k), x = c(H), dims = c(k, m * p), symmetric = FALSE, triangular = FALSE, giveCsparse = TRUE)
-  # 
+  #
   # Smth <- Ksmoother(A, Q, HJ, R, Ydm)
-  
+
   B  <- matrix(A[1:m, 1:(m * p)], m, m*p)
   q  <- as.matrix(Q[1:m,1:m])
-  
+
   if(orthogonal_shocks){ #if we want to return a model with orthogonal shocks, rotate the parameters
     id <- Identify(H,q)
     H  <- H%*%id[[1]]
     B  <- id[[2]]%*%B%*%(diag(1,p,p)%x%id[[1]])
     q  <- id[[2]]%*%q%*%t(id[[2]])
   }
-  
+
   Jb <- Matrix::Diagonal(m * p)
   Ydm <- Y - matrix(1, r, 1) %x% t(itc)
-  
+
   Smth <- DSmooth(B, Jb =  Jb, q, H, R, Y = Ydm, freq = rep(1, k), LD = rep(0, k))
-  
+
   #Format output a bit
   rownames(H) <- colnames(Y)
   R <- diag(R)
