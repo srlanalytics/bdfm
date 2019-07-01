@@ -15,21 +15,23 @@ dfm(data, factors = 1, lags = "auto", forecasts = 0,
 }
 \arguments{
 \item{data}{one or multiple time series. The data to be used for estimation.
-This can be entered as a \code{"ts"} object of as a matrix. If
+This can be entered as a \code{"ts"} object or as a matrix. If
 \href{https://tsbox.help}{tsbox} is installed, any ts-boxable time series can be
 supplied (\code{ts}, \code{xts}, \code{zoo}, \code{data.frame}, \code{data.table}, \code{tbl}, \code{tbl_ts},
 \code{tbl_time}, or \code{timeSeries})}
 
 \item{factors}{integer. The number of unobserved factors to be estimated. A
-larger number of factors leads to a more complex model.}
+larger number of factors leads to a more complex model. Denoted as 'm'
+in the documentation.}
 
 \item{lags}{integer. The number of lags in the transition equation. If
-\code{"auto"} (default), the number is equal to highest frequency in \code{data}.}
+\code{"auto"} (default), the number is equal to highest frequency in \code{data}.
+Denoted as 'p' in the documentation.}
 
 \item{forecasts}{integer. Number of periods ahead to forecasts.}
 
 \item{method}{character. Method to be used; one of \code{"bayesian"}, \code{"ml"} or
-`"pc". See details.}
+\code{"pc"}. See details.}
 
 \item{scale}{logical. Should data be scaled before estimation? \code{TRUE}
 (default) resolves some numerical problems during estimation. \code{FALSE}
@@ -54,61 +56,73 @@ time series.}
 \item{pre_differenced}{names or index values (see details). series entered in
 differences (If series are specified in 'diffs', this is not needed.)}
 
-\item{trans_prior}{prior matrix for B in the transition equation. Default is
+\item{trans_prior}{m x mp (m: factors, p: lags) prior matrix for B (the transition matrix) in the transition equation. Default is
 zeros. E.g., to use a random walk prior with m factors and p lags, set
 \code{trans_prior = cbind(diag(1,m,m), matrix(0,m,m*(p-1)))}.}
 
-\item{trans_shrink}{prior tightness on B matrix in transition equation. Use
+\item{trans_shrink}{scaler. Prior tightness on B matrix in transition equation where a value of zero is
+used to denote an improper (flat) prior (i.e. no shrinkage). Use
 to shrink forecast values towards the prior \code{trans_prior},
-which may help reduce parameter uncertainty.}
+which may help reduce parameter uncertainty in estimation.}
 
-\item{trans_df}{prior degrees of freedom for transition equation.
+\item{trans_df}{scaler. Prior degrees of freedom for inverse-Wishart distribution of shocks
+in the transition equation, where 0 implies no shrinkage.
 Shrinking shocks to the trasition equation will increase the magnitude
 of shocks to the observation equation dampening updates from observed
-series (method \code{bayesian} only).}
+series. High values of \code{trans_df} can lead to
+instability in simulations.}
 
-\item{obs_prior}{prior matrix for H (loadings) in the observation equation
+\item{obs_prior}{k x m (k: observed series, m: factors) prior matrix for H (loadings) in the observation equation
 Default is zeros.}
 
-\item{obs_shrink}{prior tightness on H (loadings) in the observation
-equation; a greater value will shrink estimates of loadings more
+\item{obs_shrink}{scaler. Prior tightness on H (loadings) in the observation
+equation where a value of zero is
+used to denote an improper (flat) prior (i.e. no shrinkage). A greater value will shrink estimates of loadings more
 aggressively towards the prior 'obs_prior'. When the prior is zero (the
 default value), this is an alternative (and typically more stable) approach
 to dampening the impact of updates from observed series.}
 
 \item{obs_df}{named vector (see details). prior degrees of freedom
-for gamma distribution in the observation equation. This is useful to give
-specific series a larger weight, e.g. 1. (default 0, method \code{bayesian}
-only).}
+for inverse chi-squared distribution in the observation equation. This is useful to give
+specific series a larger weight, e.g. 1. (default 0).}
 
 \item{identification}{names or index values (see details), or character.
-Factor identification. \code{"pc_long"} (default) finds series with the most
-observations over time, on which it uses principal components. '"pc_full"'
-uses all observed series, \code{"pc_sub"} finds a submatrix of the data that
-maximizes the number of observations for a square (no missing values) data
-set. Identification can also be done manually, by supplying names or index
-values.}
+Factor identification. \code{"pc_long"} (default) identifies on principal components
+from series with at least the median number of observations. \code{"pc_wide"}
+identifies on principal components using all series, where rows of the observations
+matrix containing missing data are omitted. \code{"name"} uses Stock and Watson's "naming
+factors" identification, i.e. identifying on the first m series provided where m is the
+number of factors. Identification can also be done manually, by supplying names or index
+values from which identifying series are derived via principal components.}
 
 \item{keep_posterior}{names or index values (see details). Series of which to
 keep the full posterior distribution of predicted values (method
-\code{"bayesian"} only). This is useful for forecasting.}
+\code{"bayesian"} only). This is useful for forecasting as the posterior median forecast
+value tends to me more accurate than forecasts using the posterior median parameter
+estimates, and allows for the evaluation of forecast accuracy.}
 
-\item{interpolate}{logical. If data is mixed frequency, should low frequency
-be interpolated?}
+\item{interpolate}{logical. Should output return intra-frequency estimates of low
+frequency observables? Put differently, if the model includes monthly and quarterly data,
+should output include
+estimates of quarterly data every month (where quarterly refers to an aggregate of the
+current and previous 2 months; for \code{interpolate = TRUE}) or just at the end of the quarter (months 3, 6, 9, and 12;
+for \code{interpolate = FALSE}, default)?}
 
-\item{orthogonal_shocks}{return a rotation of the model with orthogonal
-shocks and factors. This is useful ....}
+\item{orthogonal_shocks}{logical. Return a rotation of the model with orthogonal
+shocks and factors. This is used to isolate the impact of each factor on observables,
+allowing for a clean intepretation of how shocks (which, if \code{TRUE} are not correlated)
+impact observed series.}
 
-\item{reps}{number of repetitions for MCMC sampling}
+\item{reps}{integer. Number of repetitions for MCMC sampling}
 
-\item{burn}{number of iterations to burn in MCMC sampling}
+\item{burn}{integer. Number of iterations to burn in MCMC sampling}
 
-\item{verbose}{print status of function during evaluation. If ML, print
+\item{verbose}{logical. Print status of function during evaluation. If ML, print
 difference in likelihood at each iteration of the EM algorithm. Default is
 \code{TRUE} in interactive mode, \code{FALSE} otherwise, so it does not appear, e.g.,
 in \code{reprex::reprex()}.}
 
-\item{tol}{tolerance for convergence of EM algorithm (method \code{ml} only).}
+\item{tol}{scaler. Tolerance for convergence of EM algorithm (method \code{ml} only).}
 }
 \description{
 Estimates a Bayesian or non-Bayesian dynamic factor Model. With the default
