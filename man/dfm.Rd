@@ -11,7 +11,8 @@ dfm(data, factors = 1, lags = "auto", forecasts = 0,
   trans_df = 0, obs_prior = NULL, obs_shrink = 0, obs_df = NULL,
   identification = "pc_long", keep_posterior = NULL,
   interpolate = FALSE, orthogonal_shocks = FALSE, reps = 1000,
-  burn = 500, verbose = interactive(), tol = 0.01)
+  burn = 500, verbose = interactive() &&
+  !isTRUE(getOption("knitr.in.progress")), tol = 0.01)
 }
 \arguments{
 \item{data}{one or multiple time series. The data to be used for estimation.

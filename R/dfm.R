@@ -153,7 +153,7 @@ dfm <- function(data,
                 orthogonal_shocks = FALSE,
                 reps = 1000,
                 burn = 500,
-                verbose = interactive(),
+                verbose = interactive() && !isTRUE(getOption("knitr.in.progress")),
                 tol = 0.01
                 ) {
 
