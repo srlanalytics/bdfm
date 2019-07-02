@@ -54,20 +54,20 @@ in a low frequency period. If \code{"auto"} (default), this is inferred from the
 time series.}
 
 \item{pre_differenced}{names or index values (see details). series entered in
-differences (If series are specified in 'diffs', this is not needed.)}
+differences (If series are specified in \code{diffs}, this is not needed.)}
 
 \item{trans_prior}{m x mp (m: factors, p: lags) prior matrix for B (the transition matrix) in the transition equation. Default is
 zeros. E.g., to use a random walk prior with m factors and p lags, set
 \code{trans_prior = cbind(diag(1,m,m), matrix(0,m,m*(p-1)))}.}
 
-\item{trans_shrink}{scaler. Prior tightness on B matrix in transition equation where a value of zero is
+\item{trans_shrink}{numeric. Prior tightness on B matrix in transition equation where a value of zero is
 used to denote an improper (flat) prior (i.e. no shrinkage). Use
 to shrink forecast values towards the prior \code{trans_prior},
 which may help reduce parameter uncertainty in estimation.}
 
-\item{trans_df}{scaler. Prior degrees of freedom for inverse-Wishart distribution of shocks
+\item{trans_df}{numeric. Prior degrees of freedom for inverse-Wishart distribution of shocks
 in the transition equation, where 0 implies no shrinkage.
-Shrinking shocks to the trasition equation will increase the magnitude
+Shrinking shocks to the transition equation will increase the magnitude
 of shocks to the observation equation dampening updates from observed
 series. High values of \code{trans_df} can lead to
 instability in simulations.}
@@ -75,10 +75,10 @@ instability in simulations.}
 \item{obs_prior}{k x m (k: observed series, m: factors) prior matrix for H (loadings) in the observation equation
 Default is zeros.}
 
-\item{obs_shrink}{scaler. Prior tightness on H (loadings) in the observation
+\item{obs_shrink}{numeric. Prior tightness on H (loadings) in the observation
 equation where a value of zero is
 used to denote an improper (flat) prior (i.e. no shrinkage). A greater value will shrink estimates of loadings more
-aggressively towards the prior 'obs_prior'. When the prior is zero (the
+aggressively towards the prior \code{obs_prior}. When the prior is zero (the
 default value), this is an alternative (and typically more stable) approach
 to dampening the impact of updates from observed series.}
 
@@ -110,19 +110,20 @@ for \code{interpolate = FALSE}, default)?}
 
 \item{orthogonal_shocks}{logical. Return a rotation of the model with orthogonal
 shocks and factors. This is used to isolate the impact of each factor on observables,
-allowing for a clean intepretation of how shocks (which, if \code{TRUE} are not correlated)
+allowing for a clean interpretation of how shocks (which, if \code{TRUE} are not correlated)
 impact observed series.}
 
 \item{reps}{integer. Number of repetitions for MCMC sampling}
 
 \item{burn}{integer. Number of iterations to burn in MCMC sampling}
 
-\item{verbose}{logical. Print status of function during evaluation. If ML, print
-difference in likelihood at each iteration of the EM algorithm. Default is
+\item{verbose}{logical. Print status of function during evaluation. Default is
 \code{TRUE} in interactive mode, \code{FALSE} otherwise, so it does not appear, e.g.,
 in \code{reprex::reprex()}.}
 
-\item{tol}{scaler. Tolerance for convergence of EM algorithm (method \code{ml} only).}
+\item{tol}{numeric. Tolerance for convergence of EM algorithm (method \code{"ml"}
+only). The default value is 0.01 which corresponds to the convergence
+criteria used in Doz, Giannone, and Reichlin (2012).}
 }
 \description{
 Estimates a Bayesian or non-Bayesian dynamic factor Model. With the default
