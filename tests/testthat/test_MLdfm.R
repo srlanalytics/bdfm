@@ -1,7 +1,7 @@
 library(testthat)
 library(bdfm)
 
-context("PCdfm")
+context("MLdfm")
 
 test_that("alternative identification works", {
   # works
