@@ -159,20 +159,6 @@ Note that because Bayesian models are estimated by simulation, results will not 
 **bdfm** does not currently support setting the random number generator seed in the C++ functions.
 
 
-## Including Informative Priors
-
-A great advantage of fully Bayesian DFM estimation is that it allows us to incorporate prior beliefs into parameter estimates.
-Suppose, for example, that we wanted a model in which initial jobless claims played a bigger role.
-We can accomplish this by incorporating the prior belief that shocks to initial jobless claims in the transition equation are small.
-We can specify this prior using the degrees of freedom for the inverse gamma prior distribution for the variance of shocks to the observed series initial jobless claims. It's default in 0, so setting higher value will increase its weight:
-
-```{r}
-
-m_ic <- dfm(econ_small, obs_df = c("ICSA" = 1))
-summary(m_ic)
-```
-Estimated shocks to the transition equation are now smaller implying jobless claims will play a bigger role in updating our factor.
-
 ## Checking Convergence
 
 Parameters for Bayesian DFMs estimated using the **bdfm** package are median values of the entire posterior distribution of draws.
@@ -184,6 +170,17 @@ The best way to evaluate whether our model has converged to a stationary distrib
 <!-- CHS: I would really like to have a formal test to tell me if convergence has reached or not!
 
 If it is really necessary to look at this plots, we should have a function that makes all of the following functions
+
+SETH:
+
+A few notes on this:
+
+(1) Assessing convergence via a formal test isn't trivial: there is a nice overview here: http://www.mcmchandbook.net/HandbookChapter6.pdf. There is already an R package to do this --- the coda pacakge. We could introduce this as a dependency. However, I'm not inclined to make bdfm yet more complicated and draw out the project. Interested users should be albe to plug stored simulation values into coda functions to test convergence. However, looking at the trace plot works well, is simple, and obvious. 
+
+(2) There are a LOT of parameters that would need checking --- generating plots for all of them may not be very practical. For example, in a model with 20 observables, 2 factors and 3 lags we would have 40 loadings, 20 shocks to the observation equation (this matrix is diagonal), 12 transition equation parameters, and 4 shocks to the transition equation (this matrix is square) for a total of 76 parameters to check, and that's a pretty small model. 
+
+(3) A lot of convergence testing is used to update the mixing distribution in the Metropolis Hastings algorithm used to generate MCMC simulations. We just use Gibbs sampling, meaning the probability of accepting a draw is 1 and there is nothing to tweak. This is not necessarily the most efficient approach, but is simple, doesn’t require user input, and works well most of the time.
+
 
  -->
 
@@ -206,47 +203,67 @@ par(mar = saved_par)    # this is just for knitting the document
 
 While this is not a formal test, things here look pretty good, so there is probably no need to change the defaults.
 
-<!-- CHS: A lot of questions here: Why do things look good, how could I tell if they weren't, and mostly: how could I change the defaults to make them better -->
+<!-- CHS: A lot of questions here: Why do things look good, how could I tell if they weren't, and mostly: how could I change the defaults to make them better 
+
+SETH:
+
+"Looking good" means sampling from a stationary distribution --- i.e. we're drawing values around a posterior mean. Not good would be something obviously non stationary, or with obvious breaks in the model jumping between 2 or more different mean parameter values. It's not always obvious to me how one might change defaults to make things look better --- good data is probably the biggest issue. Another time issues come up is when we use priors to force the model towards somewhere it doesn't want to be. Instead of gradually shifting towards the prior distribution, it is often the case that at a certain point the model will "jump" to a new distribution that satisfies the priors. If our priors put it right on edge, it might jump between models making our posterior estimates invalid. There's no obvious way to control for this that I'm aware of.. it's just guess and check with priors until you get somewhere where the model is "happy". 
+
+-->
 
 ## Full Posterior Distributions of Predicted Values
 
-By default, `dfm` stores the posterior median for predicted values of a series and drops the full distribution, in order to keep object size small.
+By default, `dfm` does not store the full distribution of estimated values of observables in order to keep object size small. In a model with 20 observables (input series) over 500 periods using 1000 MCMC simulations this would result in 10 million stored values --- 500,000 for each data series. Instead, fitted values are derived from filtering and smoothing using posteior median parameter estimates. 
 
 
-However, if we are interested in predicting a certain variable, such as a "nowcast" of industrial production, it is more accurate to use the full distribution of predicted values for the series of interest.
-This is due to the fact that the posterior median for predicted values of a series is more robust to non-stationary parameter draws and under identification.
+However, if we are interested in predicting a certain variable, such as industrial production, it is usually more accurate to use the full distribution of predicted values for the series of interest. This is due to the fact that the posterior median for predicted values of a series is more robust to non-stationary parameter draws and under-identification. 
 
 
 <!-- CHS: I don't get this reasoning, if the median is more robust, this sounds like a good thing? -->
 
-<!--
+<!-- SETH:
+I think there is some confusion here between using the posterior median for parameters and the posterior median for the actual series of interest. Our MCMC simulations work as follows:
 
-However, the full distribution of fitted or predicted values can be very large.
-In the current example with 5 observed series, 322 observations, and 1000 draws, storing the distribution of every series would require storing 1.6 million elements.
-For bigger data sets, obviously this number would increase.
-Therefore the package **bdfm** will store posterior distributions for only one series of interest, specified by setting the input `keep_posterior` to the index value of the series of interest.
-By default, `keep_posterior = NULL` and no posterior distributions of observables are stored.
- -->
+(1) Simulate factors. From this we can also derive simulated fitted values of observed series (just the loadings times the factors). By default none of this is stored. However, if `keep_posterior` is specified, once the algorithm is through the "burn" iterations and into the "simulate" iterations, the program will store fitted values for `keep_posterior` only at each iteration. 
 
-We can store the distribution of predicted scaled and centered industrial production by re-estimating the model as follows:
+(2) Simulate parameters. Once the algorithm is through the "burn" iterations and into the "simulate" iterations these are always stored.
+
+(3) Once simulations are complete, we collect posterior medians for all parameter values.
+
+(4) Posterior medians are then fed into the disturbance smoother along with observations to get fitted values (including nowcasts/forecasts and missing observations) for all series. However, because we are using posterior median parameter estimates, these fitted values are subject to identification uncertainty (in addition to the usual uncertainty from parameter estimation and shocks to the model). However, simulated observations from (1), if `keep_posterior` is specified, do not suffer from identification uncertainty. Thus posterior medians from simulated observables will always be more accurate. 
+
+Just to be clear, errors in fitted values enter the model in 3 ways (ignoring model misspecification):
+
+(1) Shocks to the model. Suppose we knew the “true” model parameters (B, Q, H and R) --- or from a Bayesian point of view, suppose model parameters had zero variance. Estimates would still not be exactly accurate due to shocks to the model from Q and R (shocks to the transition equation and observation equation respectively).
+
+(2) Parameter estimation. We don’t know the “true” parameters. Our Bayesian estimates instead give us a distribution for parameters. Because using posterior medians is not exactly right, this introduces a second source of error in the model.
+
+(3) Identification uncertainty. Factor models are underidentified --- there are many different rotations of the parameters that will fit observed data. For this reason there is no guarantee our simulations will be drawing from the same rotation of the parameters at each iteration. This introduces yet another source of error in the model. However, using the posterior median for simulated observations eliminates this source of error. This is because each individual simulation is a valid representation of the model --- the problem only arises when drawing parameters for many simulations which may wobble around a bit. Imagine, for example, using the transition matrix B from one rotation of the model and the loadings H from a different rotation. Obviously things won’t line up quite right. 
+
+-->
+
+For example, suppose our series for industrial production had a number of missing values we wished to estimate, including at the tail of the data thus constituting a forecast/nowcast (For our purposes "nowcast" just means predicting the tail of the data when there are other series available to update our predictions, "forecast" just means predicting the tail of the data where there are no other series available to update our predictions). We can store the posterior median and distribution of predicted scaled and centered industrial production by re-estimating the model as follows:
 ```{r}
-
-est <- dfm(econ_small, keep_posterior = "INDPRO")
+input_data <- econ_small
+input_data[c(381:385, 401:405, 431:435, 465:469),1] <- NA #drop data that we would like to predict
+est <- dfm(input_data, keep_posterior = "INDPRO")
 median_parameters <- mean((est$values[,1] - econ_small[,1])^2, na.rm = T)
 median_draw       <- mean((est$Ymedian - econ_small[,1])^2, na.rm = T)
 cat("MSE for estimate using median parameters:", median_parameters, "\n")
 cat("MSE for estimate using median of draws for IP:", median_draw)
 ```
-
+Note that we can store posterior distributions for only one series at a time.
 <!--
 
 CHS: And which one should I use for forecasting
 
+SETH: For any application (forecasting or nowcasting) using the posterior median for the simulated series --- not the posterior median parameter estimates --- will be better. 
+
  -->
-In this case the mean squared error for predicted values using the median value of draws for industrial production in our MCMC simulations is less than the value calculated by using the median values of parameters.
+In most cases the mean squared error for predicted values using the median value of draws for industrial production in our MCMC simulations will be less than the value calculated by using the median values of parameters.
 We can look at the full distribution of predicted values for industrial production in a given period as follows:
 ```{r echo = T}
-period = 321
+period = 469
 hist(est$Ystore[period,], breaks = 30)
 ```
 
@@ -254,31 +271,18 @@ hist(est$Ystore[period,], breaks = 30)
 
 For every type of estimation including maximum likelihood, `method = "ml"`, and two step principal components, `method = 'pc`,**bdfm** will store the prediction error and Kalman gain at every period.
 This allows us to look at exactly how much each series contributes to forecast updates at any point in time.
-Continuing with our model estimated using scaled centered data from Fred, in period 320 each series contributed to factor updates as follows:
+Continuing with previous example of estimating industrial production when some values are missing, in period 467 each series contributed to factor updates as follows:
 ```{r echo=T}
-# Update <- c(est$Kstore[[320]][1,]*est$PEstore[[320]])
-# names(Update) <- colnames(data)
-# print(Update)
+est$idx_update[467,]
 ```
-The syntax here might be a little confusing at first.
-`est$Kstore[[320]]` is the Kalman gain at period 320.
-The stored Kalman gain is a list because its dimensions are not constant --- only observed series contribute to updates, thus if a series is not observed in period $t$ there will be no Kalman gain stored for that period.
-The same is true of the prediction error, `est$PEstore`.
-In period 321 only two series are observed: industrial production and initial jobless claims.
-The we have
+What this result shows is the impact each series had on the estimated value of (log) insustrial production in period 467. Every series brought our estimate for (log) industrial production down in that period, though seasonally adjusted initial jobless claims (ICSA) had the largest effect. Technichally, what we are looking at here is the Kalman gain times (element-wise, as in the Hatamard product, not the matrix product) the prediction error for each series, multiplied by the loadings for industrial production. Note that forecast updates will only be reported for series that are observed in a given period.
+
+We can also look at the impact each series had our factor(s) in any time period. Again, looking at period 467:
 ```{r echo=T}
-# Update <- c(est$Kstore[[321]][1,]*est$PEstore[[321]])
-# names(Update) <- colnames(data)[is.finite(data[321,])]
-# print(Update)
+est$factor_update[[467]]
 ```
 
-A second issue is that we only use the first row of the Kalman gain.
-This is because we are only interested in the update to contemporaneous factors.
-The entire matrix of factors is stacked over the number of lags we specified in the model.
-Because we specified $p = 3$ lags and $m = 1$ factor, `est$Kstore` will have $m*p = 3$ rows.
-The second two rows specify updates to lagged factors (where are around zero) and are thus not very interesting.
-In a model with $p = 3$ lags and $m = 3$ factors, `est$Kstore` would have $m*p = 9$ rows of which the first three are of interest.
-The remaining rows are stored because they are used internally for disturbance smoothing.
+Again we see that seasonally adjusted initial jobless claims had the largest effect on factors. Note that `factor_update` is a list to accomidate the case of more than one factor. For example, with two factors each element of `factor_update` would have two rows, one corresponding to each factor. Also, note that the Hatamard product (element-wise multiplication) of the loadings `H` and `factor_update` will not directly correspond to `idx_update` as `idx_update` has been re-scaled to match the original (log) units of the data.
 
 # Other Estimation Methods
 
