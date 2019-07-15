@@ -90,7 +90,7 @@ The `predict` function returns the predicted values, including the forecasts.
 They are automatically converted to the original units. No special attention needs to be paid to the fact that some series have been differentiated. Note that the quarterly nature of some series is also preserved:
 
 ```{r}
-predict(m)
+tail(predict(m))
 ```
 
 To generate forecasts using **bdfm** the user can specify the number of periods ahead to forecast using the `forecast` argument.
@@ -98,7 +98,7 @@ Keep in mind that the last observation may not be the same for every series when
 
 ```{r}
 m_fct <- dfm(econ_small, forecast = 3)
-predict(m_fct)
+tail(predict(m_fct))
 ```
 
 An important question with any dynamic factor model is how much each observed series contributes to factors. The `summary` function gives a more comprehensive overview of the estimation:
@@ -231,13 +231,28 @@ For every type of estimation, **bdfm** will store the prediction error and Kalma
 This allows us to look at exactly how much each series contributes to forecast updates at any point in time.
 Continuing with previous example of estimating industrial production when some values are missing, in period 467 each series contributed to factor updates as follows:
 
-```{r echo=T}
-window(m_ind$idx_update, start = c(2018, 10))
+```{r echo = TRUE}
+window(m_ind$idx_update, start = c(2017, 10))
 ```
+
+A visualization of the data looks as follows:
+
+```{r echo = FALSE, include = FALSE, message = FALSE}
+library(ggplot2)
+```
+
+```{r echo = TRUE}
+library(tsbox)
+library(ggplot2)
+ggplot(ts_na_omit(ts_df(window(m_ind$idx_update, start = c(2017, 10))))) +
+  geom_col(aes(x = time, y = value, fill = id), position = "stack") +
+  theme_tsbox() + scale_fill_tsbox()
+```
+
 What this result shows is the impact each series had on the estimated value of (log) industrial production in October 2018. Every series brought our estimate for (log) industrial production down in that period, though seasonally adjusted initial jobless claims (ICSA) had the largest effect. Technichally, what we are looking at here is the Kalman gain times (element-wise, as in the Hatamard product, not the matrix product) the prediction error for each series, multiplied by the loadings for industrial production. Note that forecast updates will only be reported for series that are observed in a given period.
 
 We can also look at the impact each series had our factor(s) in any time period. Again, looking at October 2018:
-```{r echo=T}
+```{r echo = TRUE}
 window(m_ind$factor_update$factor_1, start = c(2018, 10))
 
 ```
@@ -272,7 +287,7 @@ However, fitted values should be similar.
 Forecasting using a model estimated by ML uses the same syntax the Bayesian case.
 ```{r}
 m_ml_fct <- dfm(econ_small, forecast = 3, method = "ml")
-predict(m_ml_fct)
+tail(predict(m_ml_fct))
 ```
 When using ML estimation any specification of priors for Bayesian estimation will be ignored.
 
@@ -284,7 +299,7 @@ We can estimate the simple five variable model introduced above using two step e
 
 ```{r}
 m_pc_fct <- dfm(econ_small, forecast = 3, method = "pc")
-predict(m_pc_fct)
+tail(predict(m_pc_fct))
 ```
 
 This approach estimates parameters of the model by treating principal components as factors, then re-estimates factors based on estimated parameters.
