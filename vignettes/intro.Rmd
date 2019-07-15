@@ -199,13 +199,17 @@ However, if we are interested in predicting a certain variable, such as industri
 For example, suppose our series for industrial production had a number of missing values we wished to estimate, including at the tail of the data thus constituting a forecast/nowcast (For our purposes "nowcast" just means predicting the tail of the data when there are other series available to update our predictions, "forecast" just means predicting the tail of the data where there are no other series available to update our predictions). We can store the posterior median and distribution of predicted scaled and centered industrial production by re-estimating the model as follows:
 
 ```{r}
-input_data <- econ_small
-input_data[c(381:385, 401:405, 431:435, 465:469),1] <- NA #drop data that we would like to predict
-est <- dfm(input_data, keep_posterior = "INDPRO")
-median_parameters <- mean((est$values[,1] - econ_small[,1])^2, na.rm = T)
-median_draw       <- mean((est$Ymedian - econ_small[,1])^2, na.rm = T)
-cat("MSE for estimate using median parameters:", median_parameters, "\n")
-cat("MSE for estimate using median of draws for IP:", median_draw)
+# drop observations from 'INDPRO' that we would like to predict
+econ_small_na <- econ_small
+econ_small_na[c(381:385, 401:405, 431:435, 465:469), "INDPRO"] <- NA
+
+m_ind <- dfm(econ_small_na, keep_posterior = "INDPRO")
+
+# MSE for estimate using median parameters
+mean((m_ind$values[,1] - econ_small[,1])^2, na.rm = T)
+
+# MSE for estimate using median of draws
+mean((m_ind$Ymedian - econ_small[,1])^2, na.rm = T)
 ```
 Note that we can store posterior distributions for only one series at a time.
 <!--
@@ -218,13 +222,12 @@ SETH: For any application (forecasting or nowcasting) using the posterior median
 In most cases the mean squared error for predicted values using the median value of draws for industrial production in our MCMC simulations will be less than the value calculated by using the median values of parameters.
 We can look at the full distribution of predicted values for industrial production in a given period as follows:
 ```{r echo = T}
-period = 469
-hist(est$Ystore[period,], breaks = 30)
+hist(window(m_ind$Ystore, start = 2019, end = 2019), breaks = 30)
 ```
 
 ## Forecast Updates
 
-For every type of estimation including maximum likelihood, `method = "ml"`, and two step principal components, `method = 'pc`,**bdfm** will store the prediction error and Kalman gain at every period.
+For every type of estimation including maximum likelihood, `method = "ml"`, and two step principal components, `method = 'pc`, **bdfm** will store the prediction error and Kalman gain at every period.
 This allows us to look at exactly how much each series contributes to forecast updates at any point in time.
 Continuing with previous example of estimating industrial production when some values are missing, in period 467 each series contributed to factor updates as follows:
 ```{r echo=T}

@@ -224,6 +224,7 @@ dfm <- function(data,
     ans$factors <- ts(ans$factors, start = data_tsp[1], frequency = data_tsp[3])
     if (!is.null(keep_posterior)) {
       ans$Ymedian <- ts(ans$Ymedian, start = data_tsp[1], frequency = data_tsp[3])
+      ans$Ystore <- ts(ans$Ystore, start = data_tsp[1], frequency = data_tsp[3])
       ans$idx_update <- ts(ans$idx_update, start = data_tsp[1], frequency = data_tsp[3])
     }
     colnames(ans$values) <- colnames(data_ts)
@@ -235,6 +236,7 @@ dfm <- function(data,
       ans$factors <- tsbox::copy_class(ans$factors, data, preserve.mode = FALSE)
       if (!is.null(keep_posterior)) {
         ans$Ymedian <- tsbox::copy_class(ans$Ymedian, data)
+        ans$Ystore <- tsbox::copy_class(ans$Ystore, data)
         ans$idx_update <- tsbox::copy_class(ans$idx_update, data)
       }
     }
