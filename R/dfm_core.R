@@ -168,13 +168,11 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     )
   }
 
-  # any reason why est$Kstore is in such a strange form? why not simple lists?
-  # SL: These objects are arma::field<mat> in the Rcpp code, which works much better
-  # than a list internally. As I understand it, in R it is in fact already a list, just
-  # one in which all the objects are matrices.
-  # k_list <- lapply(seq(NROW(est$Kstore)), function(i) est$Kstore[i, 1, drop = FALSE][[1]])
-  # pe_list <- lapply(seq(NROW(est$PEstore)), function(i) est$PEstore[i, 1, drop = FALSE][[1]])
-  # gain_list <- lapply(k_list, function(e) t(e[1:m, , drop = FALSE]))
+  # make result of arma::field<mat> a normal R list
+  pe_store <- as.list(est$PEstore[,1])
+  k_store <- as.list(est$Kstore[,1])
+  est$Kstore  <- NULL  # no longer needed
+  est$PEstore <- NULL
 
   names_list <- lapply(seq(NROW(Y)), function(i) names(Y[i, ])[is.finite(Y[i, ])])
 
@@ -184,13 +182,22 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
       colnames(x) <- nm
       x
     },
-    g = est$Kstore,
-    pe = est$PEstore,
+    g = k_store,
+    pe = pe_store,
     nm = names_list
   )
 
-  est$Kstore  <- NULL # this is huge and no longer needed, so drop it
-  est$PEstore <- NULL
+  # transform in list of length m, one element per factor
+  factor_update_each <- function(factor_idx) {
+    z <- lapply(factor_update, function(e){
+      tmp <- setNames(rep(NA, k), colnames(Y))
+      tmp[colnames(e)] <- e[factor_idx, ]
+      return(tmp)
+    })
+    do.call(rbind, z)
+  }
+  est$factor_update <- lapply(seq(m), factor_update_each)
+  names(est$factor_update) <- paste0("factor_", seq(m))
 
   # get updates to keep_posterior if specified
   if(!is.null(keep_posterior)){
@@ -205,8 +212,6 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     })
     est$idx_update <- do.call(rbind, idx_update)
   }
-
-  est$factor_update <- lapply(factor_update, function(e) e[1:m,]) #return this instead of gain and prediction error far more useful!
 
   # undo scaling
   if(scale){

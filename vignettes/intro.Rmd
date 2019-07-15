@@ -227,20 +227,27 @@ hist(window(m_ind$Ystore, start = 2019, end = 2019), breaks = 30)
 
 ## Forecast Updates
 
-For every type of estimation including maximum likelihood, `method = "ml"`, and two step principal components, `method = 'pc`, **bdfm** will store the prediction error and Kalman gain at every period.
+For every type of estimation, **bdfm** will store the prediction error and Kalman gain at every period.
 This allows us to look at exactly how much each series contributes to forecast updates at any point in time.
 Continuing with previous example of estimating industrial production when some values are missing, in period 467 each series contributed to factor updates as follows:
-```{r echo=T}
-est$idx_update[467,]
-```
-What this result shows is the impact each series had on the estimated value of (log) insustrial production in period 467. Every series brought our estimate for (log) industrial production down in that period, though seasonally adjusted initial jobless claims (ICSA) had the largest effect. Technichally, what we are looking at here is the Kalman gain times (element-wise, as in the Hatamard product, not the matrix product) the prediction error for each series, multiplied by the loadings for industrial production. Note that forecast updates will only be reported for series that are observed in a given period.
 
-We can also look at the impact each series had our factor(s) in any time period. Again, looking at period 467:
 ```{r echo=T}
-est$factor_update[[467]]
+window(m_ind$idx_update, start = c(2018, 10))
+```
+What this result shows is the impact each series had on the estimated value of (log) industrial production in October 2018. Every series brought our estimate for (log) industrial production down in that period, though seasonally adjusted initial jobless claims (ICSA) had the largest effect. Technichally, what we are looking at here is the Kalman gain times (element-wise, as in the Hatamard product, not the matrix product) the prediction error for each series, multiplied by the loadings for industrial production. Note that forecast updates will only be reported for series that are observed in a given period.
+
+We can also look at the impact each series had our factor(s) in any time period. Again, looking at October 2018:
+```{r echo=T}
+window(m_ind$factor_update$factor_1, start = c(2018, 10))
+
 ```
 
-Again we see that seasonally adjusted initial jobless claims had the largest effect on factors. Note that `factor_update` is a list to accomidate the case of more than one factor. For example, with two factors each element of `factor_update` would have two rows, one corresponding to each factor. Also, note that the Hatamard product (element-wise multiplication) of the loadings `H` and `factor_update` will not directly correspond to `idx_update` as `idx_update` has been re-scaled to match the original (log) units of the data.
+Again we see that seasonally adjusted initial jobless claims had the largest effect on factors. Note that `factor_update` is a list to accomidate the case of more than one factor.
+
+<!-- CHS: too much of a detail? -->
+<!--
+Also, note that the Hatamard product (element-wise multiplication) of the loadings `H` and `factor_update` will not directly correspond to `idx_update` as `idx_update` has been re-scaled to match the original (log) units of the data.
+-->
 
 # Other Estimation Methods
 

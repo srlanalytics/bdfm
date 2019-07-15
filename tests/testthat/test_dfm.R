@@ -52,6 +52,8 @@ test_that("tsbox is supported", {
   data_df <- ts_data.frame(cbind(mdeaths, fdeaths))
   m <- dfm(data_df, forecast = 3)
   expect_is(predict(m), "data.frame")
+  m <- dfm(data_df, forecast = 3, factors = 2)
+  expect_is(predict(m), "data.frame")
 })
 
 
