@@ -97,35 +97,19 @@ summary.dfm <- function(object, digits = max(3, getOption("digits") - 3), ...) {
   cat("Log Likelihood:", object$Lik)
   cat("  BIC:", object$BIC)
   cat("\n\n")
+
+  # add to output, as data.frame
+  df <- cbind(id = rownames(obs), as.data.frame(obs))
+  rownames(df) <- NULL
+  colnames(df) <- gsub(" ", "_", gsub("\\(|\\)", "", tolower(colnames(df))))
+  object$df <- df
+
   invisible(object)
 
-
-  # cat(
-  #   "Call: \n Bayesian dynamic factor model with", nrow(object$B),
-  #   "factor(s) and", ncol(object$B) / nrow(object$B), "lag(s)."
-  # )
-  # cat("\n \n")
-  # cat("Log Likelihood:", object$Lik)
-  # cat("\n \n")
-  # cat("BIC:", object$BIC)
-  # cat("\n \n")
-  # cat("Posterior medians for transition equation: \n")
-  # cat("\n Coefficients B: \n")
-  # print(object$B)
-  # cat("\n Covariance Q: \n")
-  # print(object$q)
-  # cat("\n \n")
-  # cat("Posterior medians for observation equation: \n")
-  # cat("\n Coefficients H: \n")
-  # # H <- data.frame(object$H)
-  # # row.names(H) <- colnames(object$values)
-  # # colnames(H) <- as.character(seq(1, ncol(H)))
-  # print(object$H)
-  # cat("\n Shocks R: \n")
-  # # r <- data.frame(diag(object$R))
-  # # row.names(r) <- colnames(object$values)
-  # # colnames(r) <- "Variance of Shocks"
-  # print(object$R)
 }
 
+#' @export
+as.data.frame.dfm <- function(x, ...){
+  x$df
+}
 
