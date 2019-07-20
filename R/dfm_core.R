@@ -67,7 +67,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     # }
     parse_vector <- function(x, name = deparse(substitute(x))) {
       if (length(x) == 1 && is.null(names(x)) && x == TRUE) return(paste0(name, " = 1"))
-      x.char <- names(x)[x]
+      x.char <- colnames(x)[x]
       if (length(x.char) == 0) return(paste0(name, " = NULL"))
       z <- paste(paste0("  \"", x.char, "\""), collapse = ",\n")
       paste0(name, " = c(\n", z, "\n)")
