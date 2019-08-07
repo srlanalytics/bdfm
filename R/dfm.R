@@ -164,7 +164,7 @@ dfm <- function(data,
   # check need for tsbox
   tsobjs <- c(
     "zoo", "xts", "tslist", "tbl_ts", "timeSeries",
-    "tbl_time", "tbl_df", "data.table", "data.frame", "dts"
+    "tbl_time", "tbl_df", "data.table", "data.frame", "dts", "tis", "irts"
   )
   if (any(class(data) %in% tsobjs) && !requireNamespace("tsbox")) {
     stop('"tsbox" is needed to support non ts-time-series. To install: \n\n  install.packages("tsbox")', call. = FALSE)
