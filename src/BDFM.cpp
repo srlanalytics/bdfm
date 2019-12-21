@@ -39,11 +39,11 @@ List EstDFM(      arma::mat B,     // transition matrix
                   arma::mat Y,     // data
                   arma::uvec freq, // frequency denoted as number of high frequency periods in a low frequency period
                   arma::uvec LD,  // 0 for level data and 1 for first difference
-                  bool store_Y = false, //Store distribution of Y?
-                  arma::uword store_idx = 0, // index to store distribution of predicted values
+                  bool store_Y, //Store distribution of Y?
+                  arma::uvec store_idx, // index to store distribution of predicted values
                   arma::uword reps = 1000, //repetitions
                   arma::uword burn = 500,
-                  bool verbose = false){ //burn in periods
+                  bool verbose = true){ //burn in periods
 
   // preliminaries
 
@@ -74,11 +74,11 @@ List EstDFM(      arma::mat B,     // transition matrix
   cube Hstore(k,m,reps);  //store draws for H
   cube Qstore(m,m,reps);  //store draws for Q
   mat  Rstore(k,reps);    //R is diagonal so only diagonals stored (hence matrix not cube)
-  mat  Ystore;
-  vec  Y_median;
+  cube Ystore;
+  mat  Ymedian;
   if(store_Y){
-    Ystore = zeros<mat>(Y.n_rows, reps);
-    Y_median = zeros<vec>(Y.n_rows);
+    Ystore = zeros<cube>(T+p, store_idx.n_elem, reps);
+    Ymedian = zeros<mat>(T+p, store_idx.n_elem);
   }
   List Out;
   field<mat> FSim;
@@ -217,11 +217,12 @@ List EstDFM(      arma::mat B,     // transition matrix
     Zsim  = Zs + Zd; // Draw for factors
 
     if(store_Y){
-      Jh        = J_MF(freq(store_idx), m, LD(store_idx), sA);
-      //Ystore(t,rep) =  as_scalar(Zsim.row(t)*trans(Jh)*trans(H.row(0)));
-      Ystore.col(rep) = Zsim*trans(Jh)*trans(H.row(store_idx));
+      for(uword j=0;j<store_idx.n_elem;j++){
+        Jh        = J_MF(freq(store_idx[j]), m, LD(store_idx[j]), sA);
+        Ymedian.col(store_idx[j]) = Zsim*trans(Jh)*trans(H.row(store_idx[j]));
+      }
+      Ystore.slice(rep) = Ymedian;
     }
-
 
     Zsim.shed_rows(0,p-1);
 
@@ -336,12 +337,13 @@ List EstDFM(      arma::mat B,     // transition matrix
   }
   //For Y
   if(store_Y){
-    for(uword rw=0;rw<Y.n_rows;rw++){
-      Y_median(rw) = median(Ystore.row(rw));
+    for(uword rw=0;rw<T;rw++){
+      for(uword cl=0;cl<store_idx.n_elem;cl++)
+        Ymedian(rw,cl) = as_scalar(median(vectorise(Ystore.tube(rw,cl))));
     }
   }else{
-    Ystore = zeros<mat>(0,0);
-    Y_median = zeros<vec>(0);
+    Ystore = zeros<cube>(0,0,0);
+    Ymedian = zeros<mat>(0,0);
   }
 
   Out["B"]  = B;
@@ -354,7 +356,7 @@ List EstDFM(      arma::mat B,     // transition matrix
   Out["Rstore"]  = Rstore;
   Out["Zsim"]  = Zsim;
   Out["Ystore"] = Ystore;
-  Out["Y_median"] = Y_median;
+  Out["Y_median"] = Ymedian;
 
   return(Out);
 }

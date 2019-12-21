@@ -208,6 +208,11 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
 
   est$factor_update <- lapply(factor_update, function(e) e[1:m,]) #return this instead of gain and prediction error far more useful!
 
+  if(!is.null(keep_posterior) && method == "bayesian"){ #fudge untill we allow keep_posterior to be a vector
+    est$Ystore <- est$Ystore[,,1]
+    est$Ymedian <- est$Ymedian[,1]
+  }
+  
   # undo scaling
   if(scale){
     est$values <- (matrix(1, nrow(est$values), 1) %x% t(y_scale)) * (est$values / 100) + (matrix(1, nrow(est$values), 1) %x% t(y_center))

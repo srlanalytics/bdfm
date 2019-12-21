@@ -7,7 +7,7 @@
 using namespace Rcpp;
 
 // EstDFM
-List EstDFM(arma::mat B, arma::mat Bp, arma::sp_mat Jb, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, arma::uvec freq, arma::uvec LD, bool store_Y, arma::uword store_idx, arma::uword reps, arma::uword burn, bool verbose);
+List EstDFM(arma::mat B, arma::mat Bp, arma::sp_mat Jb, double lam_B, arma::mat q, double nu_q, arma::mat H, arma::mat Hp, double lam_H, arma::vec R, arma::vec nu_r, arma::mat Y, arma::uvec freq, arma::uvec LD, bool store_Y, arma::uvec store_idx, arma::uword reps, arma::uword burn, bool verbose);
 RcppExport SEXP _bdfm_EstDFM(SEXP BSEXP, SEXP BpSEXP, SEXP JbSEXP, SEXP lam_BSEXP, SEXP qSEXP, SEXP nu_qSEXP, SEXP HSEXP, SEXP HpSEXP, SEXP lam_HSEXP, SEXP RSEXP, SEXP nu_rSEXP, SEXP YSEXP, SEXP freqSEXP, SEXP LDSEXP, SEXP store_YSEXP, SEXP store_idxSEXP, SEXP repsSEXP, SEXP burnSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -27,7 +27,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::uvec >::type freq(freqSEXP);
     Rcpp::traits::input_parameter< arma::uvec >::type LD(LDSEXP);
     Rcpp::traits::input_parameter< bool >::type store_Y(store_YSEXP);
-    Rcpp::traits::input_parameter< arma::uword >::type store_idx(store_idxSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type store_idx(store_idxSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type reps(repsSEXP);
     Rcpp::traits::input_parameter< arma::uword >::type burn(burnSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
