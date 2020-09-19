@@ -73,15 +73,16 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
       paste0(name, " = c(\n", z, "\n)")
     }
     do_log_diff <- should_log_diff(Y)
-    if (verbose) message("auto log/diff detection, with:")
-    if(logs == "auto"){
-      logs <- do_log_diff[1,,drop = FALSE]
-      if (verbose) message(parse_vector(logs), if (diffs == "auto") ",")
-    }
-    if(diffs == "auto"){
-      diffs <- do_log_diff[2,,drop = FALSE]
-      if (verbose) message(parse_vector(diffs))
-    }
+    if (verbose) message("auto log/diff detection, with:", do_log_diff)
+    # if(logs == "auto"){
+    #   logs <- do_log_diff[1,,drop = FALSE]
+    #   print(logs)
+    #   if (verbose) message(paste("logs:", names(logs)[logs]), if (diffs == "auto") ",")
+    # }
+    # if(diffs == "auto"){
+    #   diffs <- do_log_diff[2,,drop = FALSE]
+    #   if (verbose) message(paste("diffs:", names(diffs)[diffs]))
+    # }
   }
 
 
@@ -101,6 +102,10 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     Y[, logs] <- log(Y[, logs])
   }
 
+  
+  print(diffs)
+  
+  
   # differences
   if (!is.null(diffs)) {
     Y_lev <- Y

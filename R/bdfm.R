@@ -199,7 +199,8 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, keep_posterior, 
       Lik = Est$Lik,
       BIC = BIC,
       Ystore = Parms$Ystore,
-      Ymedian = Parms$Y_median
+      Ymedian = Parms$Y_median,
+      update = Est$update
     )
   } else {
     B <- Parms$B
@@ -242,7 +243,8 @@ bdfm <- function(Y, m, p, Bp, lam_B, Hp, lam_H, nu_q, nu_r, ID, keep_posterior, 
       Lik = Est$Lik,
       BIC = BIC,
       Ystore = Parms$Ystore,
-      Ymedian = Parms$Y_median
+      Ymedian = Parms$Y_median,
+      update = Est$update
     )
   }
   return(Out)

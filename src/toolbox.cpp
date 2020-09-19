@@ -343,6 +343,8 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
   field<mat> Kstr(T); //store Kalman gain
   field<vec> PEstr(T); //store prediction error
   field<mat> Hstr(T), Sstr(T); //store H and S^-1
+  cube Update(m,k+1,T, fill::zeros);
+  mat ud(m,k+1,fill::zeros);
   mat VarY, ZP(T+1,sA,fill::zeros), Z(T,sA,fill::zeros), Zs(T,sA,fill::zeros), Lik, K, Rn, Si, tmp_mat;
   sp_mat Hn;
   vec PE, Yt, Yn, Yp;
@@ -384,6 +386,10 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
       PE        = Yn-Yp; // prediction error
       PEstr(t)  = PE; //store prediction error
       Kstr(t)   = K;  //store Kalman gain
+      ud.fill(0);
+      ud.col(0) = Zp.rows(0,m-1);
+      ud.cols(ind+1) = K.rows(0,m-1)%trans(kron(ones(1,m), PE)); 
+      Update.slice(t) = ud; //update contribution for each observable
       Z.row(t)  = trans(Zp+K*PE); //updating step for Z
       P0        = P1-P1*trans(Hn)*Si*Hn*P1; // variance Z(t+1)|Y(1:t+1)
       P0        = symmatu((P0+trans(P0))/2); //enforce pos semi def
@@ -426,7 +432,7 @@ List DSmooth(      arma::mat B,     // companion form of transition matrix
   Out["Kstr"] = Kstr;
   Out["PEstr"]= PEstr;
   Out["r"]    = r;
-  
+  Out["update"] = Update;
   return(Out);
 }
 
