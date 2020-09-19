@@ -41,6 +41,7 @@ MLdfm <- function(Y, m, p, tol = 0.01, verbose = FALSE, orthogonal_shocks = FALS
     R <- Est$R
     itc <- Est$itc
     Lik1 <- Est$Lik
+    if(verbose) print(paste("Likelihood:", Est$Lik))
     Conv <- 200 * (Lik1 - Lik0) / abs(Lik1 + Lik0)
     Lik0 <- Lik1
     count <- count + 1
