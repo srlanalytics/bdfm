@@ -74,13 +74,17 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
     }
     do_log_diff <- should_log_diff(Y)
     if (verbose) message("auto log/diff detection, with:")
-    if(logs == "auto"){
-      logs <- do_log_diff[1,,drop = FALSE]
-      if (verbose) message(parse_vector(logs), if (diffs == "auto") ",")
+    if(!is.null(logs)){
+      if(logs == "auto"){
+        logs <- do_log_diff[1,,drop = FALSE]
+        if (verbose) message(parse_vector(logs))
+      }
     }
-    if(diffs == "auto"){
-      diffs <- do_log_diff[2,,drop = FALSE]
-      if (verbose) message(parse_vector(diffs))
+    if(!is.null(diffs)){
+      if(diffs == "auto"){
+        diffs <- do_log_diff[2,,drop = FALSE]
+        if (verbose) message(parse_vector(diffs))
+      }
     }
   }
 
@@ -147,6 +151,8 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   if (length(unique(freq)) != 1 && method != "bayesian") {
     stop("Mixed freqeuncy models are only supported for Bayesian estimation")
   }
+  
+  Y_in <- Y
 
   if (method == "bayesian") {
     est <- bdfm(
@@ -255,6 +261,7 @@ dfm_core <- function(Y, m, p, FC = 0, method = "bayesian", scale = TRUE, logs = 
   est$scale <- scale
   est$outlier_threshold <- outlier_threshold
   est$differences <- LD
+  est$Y_in <- Y_in
 
   colnames(est$values) <- colnames(data)
 
