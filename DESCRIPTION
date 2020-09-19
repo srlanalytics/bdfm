@@ -16,6 +16,7 @@ Imports:
   Matrix (>= 1.2),
   data.table
 Suggests:
+  ggplot2,
   testthat,
   tsbox,
   seasonal,

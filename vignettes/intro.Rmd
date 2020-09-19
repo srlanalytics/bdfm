@@ -90,7 +90,7 @@ The `predict` function returns the predicted values, including the forecasts.
 They are automatically converted to the original units. No special attention needs to be paid to the fact that some series have been differentiated. Note that the quarterly nature of some series is also preserved:
 
 ```{r}
-predict(m)
+tail(predict(m))
 ```
 
 To generate forecasts using **bdfm** the user can specify the number of periods ahead to forecast using the `forecast` argument.
@@ -98,7 +98,7 @@ Keep in mind that the last observation may not be the same for every series when
 
 ```{r}
 m_fct <- dfm(econ_small, forecast = 3)
-predict(m_fct)
+tail(predict(m_fct))
 ```
 
 An important question with any dynamic factor model is how much each observed series contributes to factors. The `summary` function gives a more comprehensive overview of the estimation:
@@ -199,13 +199,17 @@ However, if we are interested in predicting a certain variable, such as industri
 For example, suppose our series for industrial production had a number of missing values we wished to estimate, including at the tail of the data thus constituting a forecast/nowcast (For our purposes "nowcast" just means predicting the tail of the data when there are other series available to update our predictions, "forecast" just means predicting the tail of the data where there are no other series available to update our predictions). We can store the posterior median and distribution of predicted scaled and centered industrial production by re-estimating the model as follows:
 
 ```{r}
-input_data <- econ_small
-input_data[c(381:385, 401:405, 431:435, 465:469),1] <- NA #drop data that we would like to predict
-est <- dfm(input_data, keep_posterior = "INDPRO")
-median_parameters <- mean((est$values[,1] - econ_small[,1])^2, na.rm = T)
-median_draw       <- mean((est$Ymedian - econ_small[,1])^2, na.rm = T)
-cat("MSE for estimate using median parameters:", median_parameters, "\n")
-cat("MSE for estimate using median of draws for IP:", median_draw)
+# drop observations from 'INDPRO' that we would like to predict
+econ_small_na <- econ_small
+econ_small_na[c(381:385, 401:405, 431:435, 465:469), "INDPRO"] <- NA
+
+m_ind <- dfm(econ_small_na, keep_posterior = "INDPRO")
+
+# MSE for estimate using median parameters
+mean((m_ind$values[,1] - econ_small[,1])^2, na.rm = T)
+
+# MSE for estimate using median of draws
+mean((m_ind$Ymedian - econ_small[,1])^2, na.rm = T)
 ```
 Note that we can store posterior distributions for only one series at a time.
 <!--
@@ -218,26 +222,47 @@ SETH: For any application (forecasting or nowcasting) using the posterior median
 In most cases the mean squared error for predicted values using the median value of draws for industrial production in our MCMC simulations will be less than the value calculated by using the median values of parameters.
 We can look at the full distribution of predicted values for industrial production in a given period as follows:
 ```{r echo = T}
-period = 469
-hist(est$Ystore[period,], breaks = 30)
+hist(window(m_ind$Ystore, start = 2019, end = 2019), breaks = 30)
 ```
 
 ## Forecast Updates
 
-For every type of estimation including maximum likelihood, `method = "ml"`, and two step principal components, `method = 'pc`,**bdfm** will store the prediction error and Kalman gain at every period.
+For every type of estimation, **bdfm** will store the prediction error and Kalman gain at every period.
 This allows us to look at exactly how much each series contributes to forecast updates at any point in time.
 Continuing with previous example of estimating industrial production when some values are missing, in period 467 each series contributed to factor updates as follows:
-```{r echo=T}
-est$idx_update[467,]
-```
-What this result shows is the impact each series had on the estimated value of (log) insustrial production in period 467. Every series brought our estimate for (log) industrial production down in that period, though seasonally adjusted initial jobless claims (ICSA) had the largest effect. Technichally, what we are looking at here is the Kalman gain times (element-wise, as in the Hatamard product, not the matrix product) the prediction error for each series, multiplied by the loadings for industrial production. Note that forecast updates will only be reported for series that are observed in a given period.
 
-We can also look at the impact each series had our factor(s) in any time period. Again, looking at period 467:
-```{r echo=T}
-est$factor_update[[467]]
+```{r echo = TRUE}
+window(m_ind$idx_update, start = c(2017, 10))
 ```
 
-Again we see that seasonally adjusted initial jobless claims had the largest effect on factors. Note that `factor_update` is a list to accomidate the case of more than one factor. For example, with two factors each element of `factor_update` would have two rows, one corresponding to each factor. Also, note that the Hatamard product (element-wise multiplication) of the loadings `H` and `factor_update` will not directly correspond to `idx_update` as `idx_update` has been re-scaled to match the original (log) units of the data.
+A visualization of the data looks as follows:
+
+```{r echo = FALSE, include = FALSE, message = FALSE}
+library(ggplot2)
+```
+
+```{r echo = TRUE}
+library(tsbox)
+library(ggplot2)
+ggplot(ts_na_omit(ts_df(window(m_ind$idx_update, start = c(2017, 10))))) +
+  geom_col(aes(x = time, y = value, fill = id), position = "stack") +
+  theme_tsbox() + scale_fill_tsbox()
+```
+
+What this result shows is the impact each series had on the estimated value of (log) industrial production in October 2018. Every series brought our estimate for (log) industrial production down in that period, though seasonally adjusted initial jobless claims (ICSA) had the largest effect. Technichally, what we are looking at here is the Kalman gain times (element-wise, as in the Hatamard product, not the matrix product) the prediction error for each series, multiplied by the loadings for industrial production. Note that forecast updates will only be reported for series that are observed in a given period.
+
+We can also look at the impact each series had our factor(s) in any time period. Again, looking at October 2018:
+```{r echo = TRUE}
+window(m_ind$factor_update$factor_1, start = c(2018, 10))
+
+```
+
+Again we see that seasonally adjusted initial jobless claims had the largest effect on factors. Note that `factor_update` is a list to accomidate the case of more than one factor.
+
+<!-- CHS: too much of a detail? -->
+<!--
+Also, note that the Hatamard product (element-wise multiplication) of the loadings `H` and `factor_update` will not directly correspond to `idx_update` as `idx_update` has been re-scaled to match the original (log) units of the data.
+-->
 
 # Other Estimation Methods
 
@@ -262,7 +287,7 @@ However, fitted values should be similar.
 Forecasting using a model estimated by ML uses the same syntax the Bayesian case.
 ```{r}
 m_ml_fct <- dfm(econ_small, forecast = 3, method = "ml")
-predict(m_ml_fct)
+tail(predict(m_ml_fct))
 ```
 When using ML estimation any specification of priors for Bayesian estimation will be ignored.
 
@@ -274,7 +299,7 @@ We can estimate the simple five variable model introduced above using two step e
 
 ```{r}
 m_pc_fct <- dfm(econ_small, forecast = 3, method = "pc")
-predict(m_pc_fct)
+tail(predict(m_pc_fct))
 ```
 
 This approach estimates parameters of the model by treating principal components as factors, then re-estimates factors based on estimated parameters.
